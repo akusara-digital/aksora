@@ -269,6 +269,9 @@ Create a crisp, professional update with three sections:
 - Blockers (critical bugs, environment issues, missing specs)
 Respond ONLY with valid JSON:
 {
+  "yesterday": "- Bullet point of items completed yesterday",
+  "today": "- Bullet point of focus items for today",
+  "blockers": "None or description of blockers",
   "markdown": "Formatted standup text ready to copy-paste",
   "headline": "One-line summary for morning call"
 }`;
@@ -288,6 +291,9 @@ Respond ONLY with valid JSON:
   });
 
   return parseJsonSafe(res.content, {
+    yesterday: "- Executed test runs and verified defects",
+    today: "- Continuing test coverage and regression checks",
+    blockers: "None",
     markdown: `**Yesterday:** Executed test runs and verified defects.\n**Today:** Continuing test coverage and regression checks.\n**Blockers:** None currently.`,
     headline: "QA execution and regression on schedule",
   });

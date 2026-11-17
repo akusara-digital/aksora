@@ -162,7 +162,9 @@ describe("auth-core", () => {
   });
 
   it("registers users and maps unique errors", async () => {
-    await expect(registerUser("user@example.com", "secret", "User", "fullstack", "acme")).resolves.toEqual({ success: true });
+    await expect(registerUser("user@example.com", "secret", "User", "fullstack", "acme")).resolves.toEqual(
+      expect.objectContaining({ success: true }),
+    );
     expect(mocks.db.run).toHaveBeenCalledWith(
       'INSERT INTO "User" ("uuid", "email", "password", "name", "role", "company") VALUES (?, ?, ?, ?, ?, ?)',
       [expect.any(String), "user@example.com", expect.stringMatching(/^scrypt\$/), "User", "fullstack", "acme"],

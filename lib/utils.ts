@@ -24,15 +24,34 @@ function normalizeDate(value: string | Date): Date {
   return new Date(normalized);
 }
 
-export function formatDate(value?: string | Date | null) {
+export function formatDate(value?: string | Date | null, locale = "en-US", timeZone?: string) {
   if (!value) return "-";
   try {
     const date = normalizeDate(value);
     if (isNaN(date.getTime())) return String(value);
-    return new Intl.DateTimeFormat("id-ID", {
+    return new Intl.DateTimeFormat(locale || "en-US", {
       day: "2-digit",
       month: "short",
       year: "numeric",
+      ...(timeZone ? { timeZone } : {}),
+    }).format(date);
+  } catch {
+    return String(value);
+  }
+}
+
+export function formatDateTime(value?: string | Date | null, locale = "en-US", timeZone?: string) {
+  if (!value) return "-";
+  try {
+    const date = normalizeDate(value);
+    if (isNaN(date.getTime())) return String(value);
+    return new Intl.DateTimeFormat(locale || "en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      ...(timeZone ? { timeZone } : {}),
     }).format(date);
   } catch {
     return String(value);

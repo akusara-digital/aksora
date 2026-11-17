@@ -34,10 +34,12 @@ export async function GET(request: NextRequest) {
     sessionCookieName(),
     await createSessionToken(user.email, {
       id: user.id,
+      uuid: user.uuid,
       name: user.name,
       role: membership.role,
       company: membership.name,
       activeWorkspaceId: membership.workspaceId,
+      workspaceUuid: membership.uuid,
     }),
     {
       httpOnly: true,

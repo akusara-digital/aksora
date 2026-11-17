@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Lightning, Sparkle, Check } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
@@ -20,6 +20,9 @@ interface QuickBugModalProps {
   initialExpected?: string;
   initialActual?: string;
   initialEvidence?: string;
+  initialPreconditions?: string;
+  initialRelatedItems?: string;
+  autoAnalyze?: boolean;
 }
 
 export function QuickBugModal({
@@ -31,11 +34,17 @@ export function QuickBugModal({
   initialExpected = "",
   initialActual = "",
   initialEvidence = "",
+  initialPreconditions = "-",
+  initialRelatedItems = "",
+  autoAnalyze = false,
 }: QuickBugModalProps) {
   const router = useRouter();
   const [showUnconfigured, setShowUnconfigured] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, startSaving] = useTransition();
+  const [activeModel, setActiveModel] = useState("");
+  const [aiConfigured, setAiConfigured] = useState(false);
+  const autoAnalyzedRef = useRef(false);
 
   // Step 1: Unstructured input
   const [project, setProject] = useState(defaultProject);
@@ -46,38 +55,39 @@ export function QuickBugModal({
   const [steps, setSteps] = useState(initialSteps);
   const [expected, setExpected] = useState(initialExpected);
   const [actual, setActual] = useState(initialActual);
+  const [preconditions, setPreconditions] = useState(initialPreconditions);
+  const [relatedItems, setRelatedItems] = useState(initialRelatedItems);
   const [severity, setSeverity] = useState("Major");
   const [bugType, setBugType] = useState("Functional");
   const [hasPreview, setHasPreview] = useState(Boolean(initialTitle || initialSteps));
 
-  // Additional Feature 1 & 6 states
+  // Additional Feature states
   const [duplicates, setDuplicates] = useState<Array<{ id: number; title: string; similarityScore: number; matchReason: string }>>([]);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   const [analyzingImage, setAnalyzingImage] = useState(false);
-  const [evidenceImage, setEvidenceImage] = useState<string>("");
+  const [evidenceImage, setEvidenceImage] = useState("");
 
-  useEffect(() => {
-    if (isOpen) {
-      if (initialTitle) setTitle(initialTitle);
-      if (initialSteps) setSteps(initialSteps);
-      if (initialExpected) setExpected(initialExpected);
-      if (initialActual) setActual(initialActual);
-      if (initialEvidence) setEvidenceImage(initialEvidence);
-      if (defaultProject) setProject(defaultProject);
-      if (initialTitle || initialSteps || initialEvidence) setHasPreview(true);
-    }
-  }, [isOpen, initialTitle, initialSteps, initialExpected, initialActual, initialEvidence, defaultProject]);
+  const failureContext = [
+    initialTitle ? `Test Case: ${initialTitle}` : "",
+    initialSteps ? `Steps to Reproduce:\n${initialSteps}` : "",
+    initialExpected ? `Expected Result:\n${initialExpected}` : "",
+    initialActual ? `Actual Result / Failure Finding:\n${initialActual}` : "",
+    initialPreconditions && initialPreconditions !== "-" ? `Preconditions: ${initialPreconditions}` : "",
+  ].filter(Boolean).join("\n\n");
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = async (textOverride?: string) => {
     if (!isAiConfigured()) {
       setShowUnconfigured(true);
       return;
     }
 
-    if (!rawText.trim()) {
+    const textToAnalyze = (textOverride ?? (rawText.trim() || failureContext)).trim();
+    if (!textToAnalyze) {
       toast("Please enter bug notes or error text first", "warning");
       return;
     }
+
+    if (!rawText.trim() && failureContext) setRawText(failureContext);
 
     setAnalyzing(true);
     try {
@@ -87,32 +97,25 @@ export function QuickBugModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "enhance_bug",
-          payload: {
-            title: rawText.slice(0, 80),
-            rawText: rawText.trim(),
-          },
+          payload: { title: textToAnalyze.slice(0, 80), rawText: textToAnalyze },
           ai: credentials,
         }),
       });
 
       const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error || "Failed to analyze bug text");
-      }
+      if (!res.ok) throw new Error(json.error || "Failed to analyze bug text");
 
       const enhanced = json.data?.enhanced;
       if (enhanced) {
-        setTitle(enhanced.title || rawText.slice(0, 60));
-        setSteps(enhanced.stepsToReproduce || rawText);
+        setTitle(enhanced.title || textToAnalyze.slice(0, 60));
+        setSteps(enhanced.stepsToReproduce || textToAnalyze);
         setExpected(enhanced.expectedResult || "System operates according to specification");
         setActual(
           enhanced.suspectedCause
             ? `${enhanced.actualResult}\n\n[Suspected Cause]: ${enhanced.suspectedCause}`
-            : enhanced.actualResult || rawText
+            : enhanced.actualResult || textToAnalyze
         );
-        if (enhanced.suggestedSeverity) {
-          setSeverity(enhanced.suggestedSeverity);
-        }
+        if (enhanced.suggestedSeverity) setSeverity(enhanced.suggestedSeverity);
         setHasPreview(true);
         toast("Bug structured by AI! Review and save.", "success");
       }
@@ -123,13 +126,44 @@ export function QuickBugModal({
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      autoAnalyzedRef.current = false;
+      return;
+    }
+
+    if (initialTitle) setTitle(initialTitle);
+    if (initialSteps) setSteps(initialSteps);
+    if (initialExpected) setExpected(initialExpected);
+    if (initialActual) setActual(initialActual);
+    if (initialPreconditions) setPreconditions(initialPreconditions);
+    if (initialRelatedItems) setRelatedItems(initialRelatedItems);
+    if (initialEvidence) setEvidenceImage(initialEvidence);
+    if (defaultProject) setProject(defaultProject);
+    if (initialTitle || initialSteps || initialEvidence) setHasPreview(true);
+
+    const configured = isAiConfigured();
+    const creds = getActiveAiCredentials();
+    setActiveModel(creds.model || "Active AI");
+    setAiConfigured(configured);
+
+    const initialRaw = rawText.trim() || failureContext;
+    if (!rawText.trim() && failureContext) setRawText(failureContext);
+
+    if (autoAnalyze && !autoAnalyzedRef.current) {
+      autoAnalyzedRef.current = true;
+      if (!configured) {
+        setShowUnconfigured(true);
+      } else {
+        handleAnalyze(initialRaw);
+      }
+    }
+  }, [isOpen, initialTitle, initialSteps, initialExpected, initialActual, initialEvidence, defaultProject, initialPreconditions, initialRelatedItems, autoAnalyze]);
+
   const handleAnalyzeImage = async (file: File) => {
     setAnalyzingImage(true);
     try {
-      const compressed = await compressImageToWebp(file, {
-        maxDimension: 1440,
-        quality: 0.8,
-      });
+      const compressed = await compressImageToWebp(file, { maxDimension: 1440, quality: 0.8 });
       setEvidenceImage(compressed.dataUrl);
 
       if (!isAiConfigured()) {
@@ -138,17 +172,13 @@ export function QuickBugModal({
         return;
       }
 
-      const credentials = getActiveAiCredentials();
       const res = await fetch("/api/ai/qa-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "analyze_screenshot",
-          payload: {
-            imageBase64: compressed.dataUrl,
-            mimeType: compressed.mimeType,
-          },
-          ai: credentials,
+          payload: { imageBase64: compressed.dataUrl, mimeType: compressed.mimeType },
+          ai: getActiveAiCredentials(),
         }),
       });
 
@@ -161,11 +191,7 @@ export function QuickBugModal({
         if (extracted.stepsToReproduce) setSteps(extracted.stepsToReproduce);
         if (extracted.expectedResult) setExpected(extracted.expectedResult);
         if (extracted.actualResult) {
-          setActual(
-            extracted.extractedText
-              ? `${extracted.actualResult}\n\n[OCR Text]: ${extracted.extractedText}`
-              : extracted.actualResult
-          );
+          setActual(extracted.extractedText ? `${extracted.actualResult}\n\n[OCR Text]: ${extracted.extractedText}` : extracted.actualResult);
         }
         if (extracted.suggestedSeverity) setSeverity(extracted.suggestedSeverity);
         setHasPreview(true);
@@ -184,7 +210,6 @@ export function QuickBugModal({
       toast("Please enter a title or notes first", "warning");
       return;
     }
-
     if (!isAiConfigured()) {
       setShowUnconfigured(true);
       return;
@@ -196,18 +221,13 @@ export function QuickBugModal({
       const openBugs = ((resBugs.data as Array<{ id: number; title: string; status?: string }>) || [])
         .filter((b) => String(b.status || "").toLowerCase() !== "closed");
 
-      const credentials = getActiveAiCredentials();
       const res = await fetch("/api/ai/qa-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "check_duplicate_bugs",
-          payload: {
-            title: textToCheck,
-            rawText,
-            existingBugs: openBugs,
-          },
-          ai: credentials,
+          payload: { title: textToCheck, rawText, existingBugs: openBugs },
+          ai: getActiveAiCredentials(),
         }),
       });
 
@@ -216,11 +236,7 @@ export function QuickBugModal({
 
       const found = json.data?.duplicates || [];
       setDuplicates(found);
-      if (found.length > 0) {
-        toast(`Found ${found.length} potential duplicate bug(s)`, "warning");
-      } else {
-        toast("No duplicates detected. Safe to file!", "success");
-      }
+      toast(found.length > 0 ? `Found ${found.length} potential duplicate bug(s)` : "No duplicates detected. Safe to file!", found.length > 0 ? "warning" : "success");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Duplicate check failed", "error");
     } finally {
@@ -241,23 +257,18 @@ export function QuickBugModal({
       fd.append("module", "General");
       fd.append("bugType", bugType);
       fd.append("title", title.trim());
-      fd.append("preconditions", "-");
+      fd.append("preconditions", preconditions.trim() || "-");
       fd.append("stepsToReproduce", steps.trim());
       fd.append("expectedResult", expected.trim());
       fd.append("actualResult", actual.trim());
       fd.append("severity", severity);
       fd.append("priority", severity === "Critical" ? "Critical" : "High");
       fd.append("status", "Open");
-      if (evidenceImage) {
-        fd.append("evidence", evidenceImage);
-      }
+      if (relatedItems.trim()) fd.append("relatedItems", relatedItems.trim());
+      if (evidenceImage) fd.append("evidence", evidenceImage);
 
       try {
-        const res = await fetch("/api/items/bugs", {
-          method: "POST",
-          body: fd,
-        });
-
+        const res = await fetch("/api/items/bugs", { method: "POST", body: fd });
         if (res.ok) {
           toast("Bug created successfully with evidence!", "success");
           onClose();
@@ -298,17 +309,17 @@ export function QuickBugModal({
               Cancel
             </button>
             <div className="flex items-center gap-2">
-              {!hasPreview ? (
-                <button
-                  type="button"
-                  onClick={handleAnalyze}
-                  disabled={analyzing || !rawText.trim()}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <Sparkle size={14} weight="bold" className={cn(analyzing && "animate-spin")} />
-                  {analyzing ? "Structuring with AI..." : "Structure Bug with AI"}
-                </button>
-              ) : (
+              <button
+                type="button"
+                onClick={() => handleAnalyze()}
+                disabled={analyzing}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-bold text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
+                title="Re-run AI to structure notes into bug report"
+              >
+                <Sparkle size={14} weight="bold" className={cn(analyzing && "animate-spin")} />
+                {analyzing ? "Structuring..." : hasPreview ? "Re-structure with AI" : "Structure Bug with AI"}
+              </button>
+              {hasPreview && (
                 <button
                   type="button"
                   onClick={handleSaveBug}
@@ -323,32 +334,50 @@ export function QuickBugModal({
           </div>
         }
       >
+        <div className="mb-3 flex items-center justify-between rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50/80 to-indigo-50/40 px-3 py-2 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
+              <Sparkle size={12} weight="fill" />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-slate-700">AI Engine:</span>
+              <span className="inline-flex items-center gap-1 rounded-md bg-blue-600/10 px-2 py-0.5 text-[11px] font-bold text-blue-700 border border-blue-300/60">
+                {activeModel || "Active AI"}
+              </span>
+            </div>
+          </div>
+          {aiConfigured ? (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Connected
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowUnconfigured(true)}
+              className="text-[10px] font-bold text-amber-700 hover:underline"
+            >
+              Configure AI
+            </button>
+          )}
+        </div>
+
         <QuickBugFormContent
-          project={project}
-          setProject={setProject}
-          rawText={rawText}
-          setRawText={setRawText}
-          title={title}
-          setTitle={setTitle}
-          severity={severity}
-          setSeverity={setSeverity}
-          bugType={bugType}
-          setBugType={setBugType}
-          steps={steps}
-          setSteps={setSteps}
-          expected={expected}
-          setExpected={setExpected}
-          actual={actual}
-          setActual={setActual}
-          analyzing={analyzing}
-          analyzingImage={analyzingImage}
-          checkingDuplicates={checkingDuplicates}
-          duplicates={duplicates}
-          hasPreview={hasPreview}
-          evidenceImage={evidenceImage}
+          project={project} setProject={setProject}
+          rawText={rawText} setRawText={setRawText}
+          title={title} setTitle={setTitle}
+          severity={severity} setSeverity={setSeverity}
+          bugType={bugType} setBugType={setBugType}
+          steps={steps} setSteps={setSteps}
+          expected={expected} setExpected={setExpected}
+          actual={actual} setActual={setActual}
+          analyzing={analyzing} analyzingImage={analyzingImage}
+          checkingDuplicates={checkingDuplicates} duplicates={duplicates}
+          hasPreview={hasPreview} evidenceImage={evidenceImage}
           setEvidenceImage={setEvidenceImage}
           handleAnalyzeImage={handleAnalyzeImage}
           handleCheckDuplicates={handleCheckDuplicates}
+          activeModel={activeModel}
         />
       </ModalShell>
 

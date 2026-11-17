@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { GlobalSearch } from "@/components/shared/search/global-search";
 import { NotificationPanel } from "./sidebar";
-import { Bell, Buildings, CaretDown, CaretUp, Gear, List, SignOut, UserCircle } from "@phosphor-icons/react";
+import { Bell, CaretUp, List } from "@phosphor-icons/react";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
@@ -15,34 +14,16 @@ import { AnnouncementBanner } from "@/components/layout/announcement-banner";
 import { CommandPalette } from "@/components/shared/search/command-palette";
 import { OnboardingTour } from "@/components/layout/onboarding-tour";
 import { useAssignmentNotifications } from "@/hooks/use-assignment-notifications";
-import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { WorkspaceOnboardingModal } from "@/components/layout/workspace-onboarding-modal";
 import { AppSplashScreen } from "@/components/layout/app-splash-screen";
 import { InstallPromptBanner } from "@/components/layout/install-prompt-banner";
 import { SectionSubNav } from "@/components/layout/section-sub-nav";
+import { AccountDropdown, type AppUser } from "@/components/layout/account-dropdown";
 import { isStandaloneRoute } from "@/lib/route-utils";
+import { toast } from "@/components/ui/toast";
 
 type AppWrapperProps = {
   children: React.ReactNode;
-};
-
-type WorkspaceMembership = {
-  id: number;
-  workspaceId: number;
-  role: string;
-  status: string;
-  name: string;
-  slug: string;
-};
-
-type AppUser = {
-  role?: string;
-  company?: string | null;
-  name?: string | null;
-  email?: string | null;
-  avatar?: string | null;
-  activeWorkspaceId?: number | null;
-  memberships?: WorkspaceMembership[];
 };
 
 export function AppWrapper({ children }: AppWrapperProps) {
@@ -55,12 +36,11 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const [notifCount, setNotifCount] = useState(0);
   const [user, setUser] = useState<AppUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [accountOpen, setAccountOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const notifRef = useRef<HTMLDivElement | null>(null);
-  const accountRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const companyName = String(user?.company || "").trim();
   const accountLabel = companyName || (user ? getRoleLabel(user?.role || "") : "Workspace");
 
@@ -72,7 +52,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const refreshUser = async () => {
     try {
       const response = await fetch("/api/auth/me");
-      const data = await response.json() as { user?: AppUser | null };
+      const data = (await response.json()) as { user?: AppUser | null };
       const fetchedUser = data.user || null;
       setUser(fetchedUser);
       // Redirect to onboarding if logged in but has no workspace membership
@@ -85,6 +65,57 @@ export function AppWrapper({ children }: AppWrapperProps) {
       setAuthLoading(false);
     }
   };
+
+  const switchingRef = useRef<string | null>(null);
+  const unauthorizedToastRef = useRef<string | null>(null);
+
+  // Sync workspace UUID in URL so user URLs are strictly scoped to their workspace (?ws=<uuid>)
+  useEffect(() => {
+    if (!user?.workspaceUuid || isStandalone) return;
+    const currentWs = searchParams?.get("ws");
+
+    if (!currentWs) {
+      const currentParams = new URLSearchParams(searchParams?.toString() || "");
+      currentParams.set("ws", user.workspaceUuid);
+      router.replace(`${pathname}?${currentParams.toString()}`);
+    } else if (currentWs !== user.workspaceUuid) {
+      const matching = user.memberships?.find((m) => m.uuid === currentWs);
+      if (matching) {
+        if (switchingRef.current === currentWs) return;
+        switchingRef.current = currentWs;
+        fetch("/api/auth/workspace/switch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ workspaceId: matching.workspaceId, workspaceUuid: currentWs }),
+        })
+          .then(async (res) => {
+            if (res.ok) {
+              await refreshUser();
+              router.refresh();
+            } else {
+              toast("Failed to switch workspace.", "error");
+              router.replace(`${pathname}?ws=${encodeURIComponent(user.workspaceUuid!)}`);
+            }
+          })
+          .catch(() => {
+            toast("Failed to switch workspace.", "error");
+            router.replace(`${pathname}?ws=${encodeURIComponent(user.workspaceUuid!)}`);
+          })
+          .finally(() => {
+            switchingRef.current = null;
+          });
+      } else {
+        // CRITICAL SECURITY GUARD: If user is NOT a member of the workspace in the URL
+        if (unauthorizedToastRef.current !== currentWs) {
+          unauthorizedToastRef.current = currentWs;
+          toast("You do not have access to this workspace.", "error");
+        }
+        router.replace(`${pathname}?ws=${encodeURIComponent(user.workspaceUuid)}`);
+      }
+    } else {
+      unauthorizedToastRef.current = null;
+    }
+  }, [user?.workspaceUuid, user?.memberships, searchParams, pathname, isStandalone, router]);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("qa-sidebar-collapsed");
@@ -126,24 +157,18 @@ export function AppWrapper({ children }: AppWrapperProps) {
   }, []);
 
   useEffect(() => {
-    const handler = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (accountRef.current && !accountRef.current.contains(target)) {
-        setAccountOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+    setMobileOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey;
       if (!mod) return;
       if (e.key === "k") return;
-      if (e.key === "n") { e.preventDefault(); window.dispatchEvent(new Event("qa:open-form")); }
+      if (e.key === "n") {
+        e.preventDefault();
+        window.dispatchEvent(new Event("qa:open-form"));
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -164,12 +189,24 @@ export function AppWrapper({ children }: AppWrapperProps) {
     }
   };
 
-  const sidebarWidth = !mounted ? "240px" : (collapsed ? "64px" : "240px");
+  const sidebarWidth = !mounted ? "240px" : collapsed ? "64px" : "240px";
 
-  const avatarColors = ["bg-blue-600", "bg-violet-600", "bg-emerald-600", "bg-amber-600", "bg-rose-600", "bg-cyan-600", "bg-indigo-600", "bg-teal-600"];
-  const avatarColor = avatarColors[
-    (String(user?.name || user?.email || "U").charCodeAt(0) + String(user?.name || user?.email || "U").length) % avatarColors.length
+  const avatarColors = [
+    "bg-blue-600",
+    "bg-violet-600",
+    "bg-emerald-600",
+    "bg-amber-600",
+    "bg-rose-600",
+    "bg-cyan-600",
+    "bg-indigo-600",
+    "bg-teal-600",
   ];
+  const avatarColor =
+    avatarColors[
+      (String(user?.name || user?.email || "U").charCodeAt(0) +
+        String(user?.name || user?.email || "U").length) %
+        avatarColors.length
+    ];
 
   if (isStandalone) {
     return <>{children}</>;
@@ -190,10 +227,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={() => setMobileOpen(false)} />
       )}
-      <div className={cn(
-        "fixed inset-y-0 left-0 z-50 transition-transform duration-150 ease-in-out md:translate-x-0",
-        mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      )}>
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 transition-transform duration-150 ease-in-out md:translate-x-0",
+          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+        )}
+      >
         <Sidebar
           collapsed={collapsed}
           onToggle={() => setCollapsed(!collapsed)}
@@ -235,135 +274,13 @@ export function AppWrapper({ children }: AppWrapperProps) {
                 </button>
               </div>
               <GlobalSearch />
-              <div ref={accountRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setAccountOpen((v) => !v)}
-                  className="flex h-8 items-center gap-2 border border-gray-200 bg-white px-2 text-left transition hover:bg-gray-50"
-                >
-                  {user?.avatar ? (
-                    <img src={user.avatar} alt="" loading="lazy" decoding="async" className="h-6 w-6 rounded-full object-cover" />
-                  ) : (
-                    <span className={cn("flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white", avatarColor)}>
-                      {String(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
-                    </span>
-                  )}
-                  <span className="hidden max-w-28 flex-col leading-tight md:flex">
-                    <span className="truncate text-xs font-semibold text-gray-800">
-                      {user?.name || user?.email || "Account"}
-                    </span>
-                    <span className="truncate text-[10px] text-gray-500">
-                      {accountLabel}
-                    </span>
-                  </span>
-                  <CaretDown size={12} weight="bold" className="text-gray-400" />
-                </button>
-
-                {accountOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-1 w-72 border border-gray-200 bg-white p-4 shadow-lg">
-                    <div className="flex flex-col items-center gap-2">
-                      <label className="group relative cursor-pointer" title="Change avatar">
-                        {user?.avatar ? (
-                          <img src={user.avatar} alt="Avatar" loading="lazy" decoding="async" className="h-14 w-14 rounded-full object-cover ring-2 ring-gray-200" />
-                        ) : (
-                          <div className={cn("flex h-14 w-14 items-center justify-center rounded-full text-lg font-bold text-white", avatarColor)}>
-                            {String(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
-                          </div>
-                        )}
-                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition group-hover:opacity-100">
-                          <UserCircle size={20} weight="bold" className="text-white" />
-                        </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            // Compress to tiny avatar (64x64, quality 0.6)
-                            const canvas = document.createElement("canvas");
-                            const ctx = canvas.getContext("2d");
-                            const img = new Image();
-                            img.onload = async () => {
-                              canvas.width = 64;
-                              canvas.height = 64;
-                              ctx?.drawImage(img, 0, 0, 64, 64);
-                              const dataUrl = canvas.toDataURL("image/webp", 0.6);
-                              try {
-                                const res = await fetch("/api/auth/avatar", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ avatar: dataUrl }),
-                                });
-                                if (res.ok) {
-                                  await refreshUser();
-                                }
-                              } catch {}
-                            };
-                            img.src = URL.createObjectURL(file);
-                          }}
-                        />
-                      </label>
-                      <p className="text-sm font-bold text-gray-900">{user?.name || user?.email || "Account"}</p>
-                    </div>
-
-                    <div className="mt-3 border border-gray-100 bg-gray-50 p-3 text-xs">
-                      <div className="flex items-center justify-between py-1">
-                        <span className="text-gray-500">Email</span>
-                        <span className="font-semibold text-gray-800">{user?.email || "-"}</span>
-                      </div>
-                      <div className="flex items-center justify-between py-1">
-                        <span className="text-gray-500">Role</span>
-                        <span className="font-semibold text-gray-800">{getRoleLabel(user?.role || "")}</span>
-                      </div>
-                      {companyName && (
-                        <div className="flex items-center justify-between py-1">
-                          <span className="text-gray-500">Workspace</span>
-                          <span className="max-w-36 truncate font-semibold text-gray-800">{companyName}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {(user?.memberships?.length ?? 0) >= 1 && (
-                      <div className="mt-3 border-t border-gray-100 pt-3">
-                        <WorkspaceSwitcher
-                          memberships={user?.memberships ?? []}
-                          activeWorkspaceId={user?.activeWorkspaceId}
-                          compact
-                          onSwitched={() => setAccountOpen(false)}
-                        />
-                        <div className="mt-2 border-t border-gray-100 pt-2">
-                          <Link href="/settings/workspaces" onClick={() => setAccountOpen(false)} className="flex items-center gap-2 px-2 py-1 text-xs font-semibold text-sky-700 hover:text-sky-900">
-                            <Buildings size={14} weight="bold" />
-                            Manage Workspaces
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="mt-3 space-y-0.5 border-t border-gray-100 pt-3">
-                      <Link href="/settings/profile" onClick={() => setAccountOpen(false)} className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
-                        <UserCircle size={15} weight="bold" />
-                        Profile
-                      </Link>
-                      {(String(user?.role || "").trim() === "admin" || String(user?.role || "").trim() === "superadmin") && (
-                        <Link href="/settings/users" onClick={() => setAccountOpen(false)} className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
-                          <Gear size={15} weight="bold" />
-                          Account settings
-                        </Link>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => { setAccountOpen(false); setShowLogoutConfirm(true); }}
-                        className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50"
-                      >
-                        <SignOut size={15} weight="bold" />
-                        Logout
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <AccountDropdown
+                user={user}
+                accountLabel={accountLabel}
+                avatarColor={avatarColor}
+                refreshUser={refreshUser}
+                onLogoutClick={() => setShowLogoutConfirm(true)}
+              />
             </div>
           </header>
           <main className="flex-1 min-w-0 p-4 md:p-6 lg:p-8">
@@ -376,7 +293,15 @@ export function AppWrapper({ children }: AppWrapperProps) {
           </main>
           <footer className="border-t border-[var(--border-color)] bg-gray-50/50 px-4 py-3 text-center">
             <p className="text-[11px] font-medium text-gray-400">
-              © 2026 — Aksora by <a href="https://akusaradigital.com" className="text-gray-500 hover:text-blue-600" target="_blank" rel="noopener noreferrer">Akusara Digital</a>
+              © 2026 — Aksora by{" "}
+              <a
+                href="https://akusaradigital.com"
+                className="text-gray-500 hover:text-blue-600"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Akusara Digital
+              </a>
             </p>
           </footer>
         </div>
@@ -407,4 +332,3 @@ export function AppWrapper({ children }: AppWrapperProps) {
     </div>
   );
 }
-

@@ -282,7 +282,7 @@ export const tables = [
     name: "User",
     schema: `
       "id" SERIAL_OR_PK,
-      "uuid" TEXT,
+      "uuid" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
       "company" TEXT NOT NULL DEFAULT '',
       "workspaceId" INTEGER,
       "activeWorkspaceId" INTEGER,
@@ -440,7 +440,7 @@ export const tables = [
     name: "Workspace",
     schema: `
       "id" SERIAL_OR_PK,
-      "uuid" TEXT,
+      "uuid" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
       "name" TEXT NOT NULL UNIQUE,
       "slug" TEXT NOT NULL UNIQUE,
       "createdByUserId" INTEGER,
@@ -464,6 +464,28 @@ export const tables = [
       "customRoleId" INTEGER,
       "createdAt" DATE_TYPE NOT NULL DEFAULT CURRENT_TIMESTAMP,
       "updatedAt" DATE_TYPE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `
+  },
+  {
+    name: "ExtensionDeviceConnection",
+    schema: `
+      "userId" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+      "deviceId" TEXT NOT NULL,
+      "secretHash" TEXT NOT NULL,
+      "deviceName" TEXT DEFAULT '',
+      "createdAt" DATE_TYPE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "lastUsedAt" DATE_TYPE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY ("userId", "deviceId")
+    `
+  },
+  {
+    name: "ExtensionPairingCode",
+    schema: `
+      "codeHash" TEXT PRIMARY KEY,
+      "userId" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+      "expiresAt" DATE_TYPE NOT NULL,
+      "usedAt" DATE_TYPE,
+      "createdAt" DATE_TYPE NOT NULL DEFAULT CURRENT_TIMESTAMP
     `
   },
   {

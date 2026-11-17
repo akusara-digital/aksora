@@ -51,7 +51,11 @@ export default async function WorkspacesPage() {
     >
       <div className="space-y-6">
         <InviteManager embedded />
-        <WorkspaceSwitcher memberships={memberships} activeWorkspaceId={activeWorkspaceId} />
+        <WorkspaceSwitcher
+          memberships={memberships}
+          activeWorkspaceId={activeWorkspaceId}
+          activeWorkspaceUuid={activeWorkspace?.uuid || user.workspaceUuid}
+        />
 
         {activeWorkspace && activeWorkspace.role === "admin" && (
           <WorkspaceBrandingForm

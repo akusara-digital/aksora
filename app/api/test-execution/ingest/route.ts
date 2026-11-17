@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
       company,
       workspaceId,
       activeWorkspaceId: apiKeyData.workspaceId ?? null,
+      workspaceUuid: "",
     };
   }
 

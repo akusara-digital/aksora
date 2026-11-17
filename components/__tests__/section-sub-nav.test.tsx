@@ -5,6 +5,13 @@ let currentPathname = "/test-cases";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => currentPathname,
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({
+    prefetch: vi.fn(),
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  }),
 }));
 
 vi.mock("next/link", () => ({

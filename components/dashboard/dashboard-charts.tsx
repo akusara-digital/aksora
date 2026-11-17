@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { DotsThreeVertical } from "@phosphor-icons/react";
 import { ResponsiveContainer } from "@/components/shared/responsive-container";
+import { useTheme } from "@/hooks/use-theme";
 
 const SafeAreaChart = (AreaChart || (({ children }: { children?: React.ReactNode }) => <div>{children}</div>)) as typeof AreaChart;
 const SafeArea = (Area || (() => null)) as typeof Area;
@@ -46,6 +47,15 @@ export type ResultBreakdownData = {
 // ─── 1. Left Card: Reports (Curved Area Chart) ──────────────────────────────────
 export function TestExecutionTrendChart({ data }: { data: ExecutionTrendPoint[] }) {
   const [metricKey, setMetricKey] = useState<"passed" | "total">("passed");
+  const { theme } = useTheme();
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  const gridStroke = isDark ? "#1e293b" : "#f1f5f9";
+  const axisColor = isDark ? "#94a3b8" : "#64748b";
 
   // Format data with synthetic total if needed
   const chartData = data.map((d) => ({
@@ -107,16 +117,16 @@ export function TestExecutionTrendChart({ data }: { data: ExecutionTrendPoint[] 
                 <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.0} />
               </linearGradient>
             </defs>
-            <SafeCartesianGrid stroke="#f1f5f9" vertical={false} strokeDasharray="3 3" />
+            <SafeCartesianGrid stroke={gridStroke} vertical={false} strokeDasharray="3 3" />
             <SafeXAxis
               dataKey="date"
-              tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 500 }}
+              tick={{ fontSize: 11, fill: axisColor, fontWeight: 500 }}
               axisLine={false}
               tickLine={false}
               dy={8}
             />
             <SafeYAxis
-              tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 500 }}
+              tick={{ fontSize: 11, fill: axisColor, fontWeight: 500 }}
               axisLine={false}
               tickLine={false}
               dx={-4}
@@ -126,12 +136,18 @@ export function TestExecutionTrendChart({ data }: { data: ExecutionTrendPoint[] 
                 if (active && payload && payload.length) {
                   const item = payload[0].payload as ExecutionTrendPoint & { total: number };
                   return (
-                    <div className="rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2 text-xs text-white shadow-xl">
-                      <p className="font-semibold text-slate-300">{item.date}</p>
-                      <p className="mt-1 font-bold text-[#a3e635]">
+                    <div
+                      className={`rounded-xl border px-3.5 py-2 text-xs shadow-xl ${
+                        isDark
+                          ? "border-slate-800 bg-slate-900 text-white"
+                          : "border-slate-200 bg-white text-slate-900 shadow-md"
+                      }`}
+                    >
+                      <p className={`font-semibold ${isDark ? "text-slate-300" : "text-slate-500"}`}>{item.date}</p>
+                      <p className={`mt-1 font-bold ${isDark ? "text-[#a3e635]" : "text-emerald-600"}`}>
                         {metricKey === "passed" ? `Passed: ${item.passed}` : `Total: ${item.total}`}
                       </p>
-                      {item.failed > 0 && <p className="text-[10px] text-rose-400">Failed: {item.failed}</p>}
+                      {item.failed > 0 && <p className="text-[10px] text-rose-500 font-semibold">Failed: {item.failed}</p>}
                     </div>
                   );
                 }
@@ -157,21 +173,26 @@ export function TestExecutionTrendChart({ data }: { data: ExecutionTrendPoint[] 
 export function TestCaseBreakdownChart({ data }: { data: ResultBreakdownData }) {
   const sum = data.passed.count + data.notRun.count + (data.failed.count + data.blocked.count);
   const passRate = sum > 0 ? Math.round((data.passed.count / sum) * 100) : 0;
+  const { theme } = useTheme();
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-  // 3 segments matching Group 659: Sale (Blue), Distribute (Yellow), Return (Orange-Red)
   const pieData = [
-    { name: "Sale", label: "Passed", value: data.passed.count || 0, color: "#2563eb" },
-    { name: "Distribute", label: "Untested / In Progress", value: data.notRun.count || 0, color: "#f59e0b" },
-    { name: "Return", label: "Failed / Blocked", value: (data.failed.count + data.blocked.count) || 0, color: "#ef4444" },
+    { name: "Passed", label: "Passed", value: data.passed.count || 0, color: "#10b981" },
+    { name: "In Progress", label: "In Progress / Untested", value: data.notRun.count || 0, color: "#f59e0b" },
+    { name: "Failed", label: "Failed / Blocked", value: (data.failed.count + data.blocked.count) || 0, color: "#ef4444" },
   ];
 
   return (
     <div className="flex h-full flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 transition-colors">
-      {/* Header matching Group 659 Analytics card */}
+      {/* Header */}
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Analytics</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Test verdict distribution</p>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">Test Verdict Distribution</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Execution outcomes across test suites</p>
         </div>
         <button
           type="button"
@@ -182,10 +203,32 @@ export function TestCaseBreakdownChart({ data }: { data: ResultBreakdownData }) 
         </button>
       </div>
 
-      {/* Donut Chart with centered "% Transactions / Pass Rate" */}
+      {/* Donut Chart with centered Pass Rate */}
       <div className="relative flex h-52 items-center justify-center">
         <ResponsiveContainer width="100%" height="100%">
           <SafePieChart>
+            <SafeTooltip
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const item = payload[0];
+                  return (
+                    <div
+                      className={`rounded-xl border px-3.5 py-2 text-xs shadow-xl ${
+                        isDark
+                          ? "border-slate-800 bg-slate-900 text-white"
+                          : "border-slate-200 bg-white text-slate-900 shadow-md"
+                      }`}
+                    >
+                      <p className={`font-semibold ${isDark ? "text-slate-300" : "text-slate-500"}`}>{item.name}</p>
+                      <p className="mt-0.5 font-bold tabular-nums">
+                        {item.value} cases ({sum > 0 ? Math.round((Number(item.value) / sum) * 100) : 0}%)
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
             <SafePie
               data={pieData}
               innerRadius={65}
@@ -201,7 +244,7 @@ export function TestCaseBreakdownChart({ data }: { data: ResultBreakdownData }) 
         </ResponsiveContainer>
 
         <div className="pointer-events-none absolute flex flex-col items-center justify-center text-center">
-          <span className="text-2xl font-black text-slate-900 dark:text-white leading-none tabular-nums">
+          <span className="text-3xl font-black text-slate-900 dark:text-white leading-none tabular-nums">
             {passRate}%
           </span>
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-1">
@@ -210,18 +253,18 @@ export function TestCaseBreakdownChart({ data }: { data: ResultBreakdownData }) 
         </div>
       </div>
 
-      {/* Legend with colored squares matching Group 659 */}
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-6 border-t border-slate-100 dark:border-slate-800/80 pt-4 text-xs font-semibold">
-        <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-xs bg-[#2563eb]" />
+      {/* Legend with matching colors */}
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-4 border-t border-slate-100 dark:border-slate-800/80 pt-4 text-xs font-semibold">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#10b981]" />
           <span className="text-slate-700 dark:text-slate-200">Passed ({data.passed.count})</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-xs bg-[#f59e0b]" />
-          <span className="text-slate-700 dark:text-slate-200">Untested ({data.notRun.count})</span>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#f59e0b]" />
+          <span className="text-slate-700 dark:text-slate-200">In Progress ({data.notRun.count})</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-xs bg-[#ef4444]" />
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#ef4444]" />
           <span className="text-slate-700 dark:text-slate-200">Failed ({data.failed.count + data.blocked.count})</span>
         </div>
       </div>

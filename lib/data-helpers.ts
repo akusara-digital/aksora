@@ -43,7 +43,7 @@ export function getAccessScope(user: CurrentUser | null = null) {
     return ` WHERE ${getScopedColumn(prefix)} = ?`;
   };
 
-  return { company: effectiveCompany, isAdmin, workspaceId, where, andWhere, params, getScopedColumn, getScopedAndClause, getScopedWhereClause };
+  return { company: effectiveCompany, isAdmin, workspaceId, workspaceUuid: user?.workspaceUuid || "", where, andWhere, params, getScopedColumn, getScopedAndClause, getScopedWhereClause };
 }
 
 export function buildScopedCondition(isAdmin: boolean, workspaceId: number | null | undefined, company: string, prefix = "", useWhere = false) {

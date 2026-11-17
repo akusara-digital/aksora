@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Checks,
   Table,
@@ -120,6 +120,8 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
 
 export function SectionSubNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const ws = searchParams?.get("ws");
 
   const group = SUB_NAV_GROUPS.find((g) => g.match(pathname));
   if (!group) return null;
@@ -143,11 +145,16 @@ export function SectionSubNav() {
             (tab.href === "/notes" && (pathname === "/notes" || pathname.startsWith("/notes/")));
 
           const Icon = tab.icon;
+          const targetHref = ws
+            ? (tab.href.includes("?")
+                ? `${tab.href}&ws=${encodeURIComponent(ws)}`
+                : `${tab.href}?ws=${encodeURIComponent(ws)}`)
+            : tab.href;
 
           return (
             <Link
               key={tab.href}
-              href={tab.href}
+              href={targetHref}
               className={cn(
                 "group flex items-center gap-2 whitespace-nowrap rounded px-3 py-2 text-xs font-medium transition-colors",
                 active

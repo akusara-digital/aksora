@@ -101,7 +101,7 @@ describe("auth register route", () => {
 
     expect(mocks.registerUser).toHaveBeenCalledWith("user@example.com", "secret", "User", "admin", "User's Workspace");
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ ok: true });
+    await expect(response.json()).resolves.toMatchObject({ ok: true });
   });
 
   it("registers invited user with invite role and workspace", async () => {
@@ -141,6 +141,6 @@ describe("auth register route", () => {
     expect(ensureWorkspaceMembership).toHaveBeenCalledWith(42, 99, "qa");
     expect(markInviteAccepted).toHaveBeenCalledWith("valid-token", "invited@example.com");
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ ok: true });
+    await expect(response.json()).resolves.toMatchObject({ ok: true });
   });
 });

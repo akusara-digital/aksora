@@ -33,6 +33,13 @@ vi.mock("@/hooks/use-translation", () => ({
         backToSignIn: "Back to sign in",
       },
       login: {
+        loginToContinue: "Log in to continue",
+        loginTagline: "The workspace for engineering teams: test planning, execution, bug tracking, and tasks — all in one app.",
+        continueWithGoogle: "Continue with Google",
+        termsAgreement: "By continuing, you agree to our",
+        termsLink: "Terms of Service",
+        and: "and",
+        privacyLink: "Privacy Policy",
         workspaceAccess: "Workspace access",
         tagCreateAccount: "Create Account",
         tagPasswordRecovery: "Password Recovery",
@@ -109,14 +116,20 @@ vi.mock("@/hooks/use-translation", () => ({
 import LoginPage, { LoginContent } from "@/app/login/page";
 
 describe("login page", () => {
-  it("renders the sign-in form and honors next query param", () => {
+  it("renders the Google-only sign-in page without manual username/password inputs", () => {
     mocks.searchParams.mockReturnValue("/dashboard");
 
     const html = renderToStaticMarkup(<LoginContent />);
 
-    expect(html).toContain("Sign In to Aksora");
-    expect(html).toContain("Sign in with Google or email to access your workspace.");
-    expect(html).toContain("Sign In");
+    expect(html).toContain("Log in to continue");
+    expect(html).toContain("The workspace for engineering teams: test planning, execution, bug tracking, and tasks — all in one app.");
+    expect(html).toContain("Continue with Google");
+    expect(html).toContain("Terms of Service");
+    expect(html).toContain("Privacy Policy");
+    // Ensure manual username / password inputs are not present
+    expect(html).not.toContain('type="password"');
+    expect(html).not.toContain('name="password"');
+    expect(html).not.toContain('name="email"');
     expect(mocks.routerPush).not.toHaveBeenCalled();
   });
 });

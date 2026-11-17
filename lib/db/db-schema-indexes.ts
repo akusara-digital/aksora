@@ -188,4 +188,6 @@ CREATE INDEX IF NOT EXISTS "idx_projectmember_user" ON "ProjectMember"("userId")
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_projectmember_uuid" ON "ProjectMember"("uuid");
 CREATE INDEX IF NOT EXISTS "idx_invite_project" ON "Invite"("projectId");
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_invite_uuid" ON "Invite"("uuid");
+CREATE INDEX IF NOT EXISTS "idx_extensiondeviceconnection_user" ON "ExtensionDeviceConnection"("userId");
+CREATE INDEX IF NOT EXISTS "idx_extensionpairingcode_user" ON "ExtensionPairingCode"("userId");
 `;

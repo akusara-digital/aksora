@@ -154,7 +154,7 @@ export function RunPlayModeFooter({
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
         <div className="hidden lg:flex items-center gap-3 text-slate-600 text-[10px] font-bold">
           <div className="flex items-center gap-1">
-            <kbd className="bg-white/10 px-1.5 py-0.5 rounded text-slate-400">P</kbd> Pass
+            <kbd className="bg-white/10 px-1.5 py-0.5 rounded text-slate-300">Space / P</kbd> Pass
           </div>
           <div className="flex items-center gap-1">
             <kbd className="bg-white/10 px-1.5 py-0.5 rounded text-slate-400">F</kbd> Fail

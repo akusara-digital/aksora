@@ -143,15 +143,29 @@ async function ensureKanbanSortOrderColumns(deps: DbBootstrapDeps) {
 
 const globalBootstrap = globalThis as unknown as { __schemaBootstrapDone?: boolean; __schemaVersion?: number };
 
-const CURRENT_MIGRATION_VERSION = 13;
+const CURRENT_MIGRATION_VERSION = 14;
 
 async function backfillUuids(deps: DbBootstrapDeps) {
   const pool = await deps.getPostgresPool();
+  try {
+    await pool.query(`ALTER TABLE "User" ALTER COLUMN "uuid" SET DEFAULT gen_random_uuid()::text`);
+  } catch { /* non-critical */ }
+  try {
+    await pool.query(`ALTER TABLE "Workspace" ALTER COLUMN "uuid" SET DEFAULT gen_random_uuid()::text`);
+  } catch { /* non-critical */ }
+
+  try {
+    await pool.query(`UPDATE "User" SET "uuid" = gen_random_uuid()::text WHERE "uuid" IS NULL OR "uuid" = ''`);
+  } catch { /* non-critical */ }
+  try {
+    await pool.query(`UPDATE "Workspace" SET "uuid" = gen_random_uuid()::text WHERE "uuid" IS NULL OR "uuid" = ''`);
+  } catch { /* non-critical */ }
+
   const tables = [
     "User", "Workspace", "Project", "Sprint", "Task", "Bug", "TestCase",
     "TestPlan", "TestSession", "TestSuite", "ActivityLog", "MeetingNote",
     "Deployment", "WorkLog", "Note", "VaultEntry", "ExploratorySession",
-    "ExecutionRun", "Assignee"
+    "ExecutionRun", "Assignee", "ProjectMember", "Invite"
   ];
   for (const table of tables) {
     try {

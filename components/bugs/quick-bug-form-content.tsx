@@ -29,6 +29,7 @@ interface QuickBugFormContentProps {
   setEvidenceImage?: (v: string) => void;
   handleAnalyzeImage: (file: File) => void;
   handleCheckDuplicates: () => void;
+  activeModel?: string;
 }
 
 export function QuickBugFormContent({
@@ -57,6 +58,7 @@ export function QuickBugFormContent({
   setEvidenceImage,
   handleAnalyzeImage,
   handleCheckDuplicates,
+  activeModel,
 }: QuickBugFormContentProps) {
   return (
     <div className="space-y-4 py-1 text-xs">
@@ -184,9 +186,17 @@ export function QuickBugFormContent({
       {hasPreview && (
         <div className="space-y-3 rounded-xl border border-blue-200/80 bg-blue-50/30 p-4">
           <div className="flex items-center justify-between border-b border-blue-200/60 pb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-900">
-              AI-Structured Preview
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-900">
+                AI-Structured Preview
+              </span>
+              {activeModel && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-blue-100/90 px-2 py-0.5 text-[10px] font-bold text-blue-700 border border-blue-200">
+                  <Sparkle size={10} weight="fill" className="text-blue-600" />
+                  {activeModel}
+                </span>
+              )}
+            </div>
             <span className="text-[10px] font-bold text-blue-600 bg-blue-100/70 px-2 py-0.5 rounded-full">
               Editable
             </span>

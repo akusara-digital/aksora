@@ -9,21 +9,12 @@ import { cn } from "@/lib/utils";
 import { QuickBugModal } from "@/components/bugs/quick-bug-modal";
 import { compressImageToWebp } from "@/lib/image-compress";
 import { RunPlayModeFooter } from "./run-play-mode-footer";
+import { RunPlayFailureBanner } from "./run-play-failure-banner";
 
 type CaseItem = {
-  verdictId: number;
-  testCaseId: number;
-  tcId: string;
-  caseName: string;
-  preCondition: string;
-  testStep: string;
-  expectedResult: string;
-  actualResult: string;
-  verdict: string;
-  evidence: string;
-  duration: number;
-  priority: string;
-  typeCase: string;
+  verdictId: number; testCaseId: number; tcId: string; caseName: string;
+  preCondition: string; testStep: string; expectedResult: string; actualResult: string;
+  verdict: string; evidence: string; duration: number; priority: string; typeCase: string;
 };
 
 export function RunPlayMode({
@@ -71,6 +62,19 @@ export function RunPlayMode({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const advanceToNext = useCallback(() => {
+    setItems(current => {
+      const nextPending = current.findIndex((it, i) => i > index && it.verdict === "Pending");
+      if (nextPending >= 0) {
+        setIndex(nextPending);
+      } else if (index < current.length - 1) {
+        setIndex(index + 1);
+      }
+      return current;
+    });
+    setCaseStart(Date.now());
+  }, [index]);
+
   const updateStatus = useCallback((status: string) => {
     const caseDuration = Math.floor((Date.now() - caseStart) / 1000);
     setItems(prev => {
@@ -79,19 +83,12 @@ export function RunPlayMode({
       onSaveVerdict(updated[index]);
       return updated;
     });
-    setTimeout(() => {
-      setItems(current => {
-        const nextPending = current.findIndex((it, i) => i > index && it.verdict === "Pending");
-        if (nextPending >= 0) {
-          setIndex(nextPending);
-        } else if (index < current.length - 1) {
-          setIndex(index + 1);
-        }
-        return current;
-      });
-      setCaseStart(Date.now());
-    }, 200);
-  }, [index, caseStart, onSaveVerdict]);
+    if (status !== "Failed") {
+      setTimeout(() => {
+        advanceToNext();
+      }, 200);
+    }
+  }, [index, caseStart, onSaveVerdict, advanceToNext]);
 
   const updateActual = useCallback((val: string) => {
     setItems(prev => {
@@ -127,7 +124,10 @@ export function RunPlayMode({
     const handleKeys = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
       const key = e.key.toLowerCase();
-      if (key === "p") updateStatus("Passed");
+      if (key === "p" || e.code === "Space") {
+        e.preventDefault();
+        updateStatus("Passed");
+      }
       if (key === "f") updateStatus("Failed");
       if (key === "b") updateStatus("Blocked");
       if (e.key === "ArrowRight" || key === "j") { setIndex(i => Math.min(items.length - 1, i + 1)); setCaseStart(Date.now()); }
@@ -264,6 +264,13 @@ export function RunPlayMode({
                 </div>
               </section>
 
+              {currentCase.verdict === "Failed" && (
+                <RunPlayFailureBanner
+                  onAutoDraftBug={() => setShowBugModal(true)}
+                  onContinue={advanceToNext}
+                />
+              )}
+
               <section>
                 <div className="flex items-center justify-between mb-2">
                   <h5 style={{ fontSize: "11px", fontWeight: 900, letterSpacing: "0.2em" }} className="uppercase text-slate-500">
@@ -357,14 +364,8 @@ export function RunPlayMode({
         index={index}
         totalItems={items.length}
         currentVerdict={currentCase.verdict}
-        onPrev={() => {
-          setIndex(Math.max(0, index - 1));
-          setCaseStart(Date.now());
-        }}
-        onNext={() => {
-          setIndex(Math.min(items.length - 1, index + 1));
-          setCaseStart(Date.now());
-        }}
+        onPrev={() => { setIndex(Math.max(0, index - 1)); setCaseStart(Date.now()); }}
+        onNext={() => { setIndex(Math.min(items.length - 1, index + 1)); setCaseStart(Date.now()); }}
         onStatus={updateStatus}
         onFinish={() => onClose(items)}
       />
@@ -379,6 +380,9 @@ export function RunPlayMode({
           initialExpected={currentCase.expectedResult}
           initialActual={currentCase.actualResult || "Test failed during focus mode execution"}
           initialEvidence={currentCase.evidence}
+          initialPreconditions={currentCase.preCondition || "-"}
+          initialRelatedItems={currentCase.tcId || ""}
+          autoAnalyze={true}
         />
       )}
     </div>

@@ -27,23 +27,27 @@ Next.js 16 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` · 
 
 1. Copy `.env.example` to `.env`
 2. Set `AUTH_SECRET`
-3. Set `DATABASE_URL` (Postgres). Leave empty only for SQLite-based local dev.
-4. Seed local data: `pnpm db:seed:local`
-5. Start: `pnpm dev`
+3. Set `DATABASE_URL` (PostgreSQL connection string for local Docker or Neon)
+4. Initialize or reset database if needed: `pnpm db:reset`
+5. Seed demo data (optional): `pnpm db:seed`
+6. Start dev server: `pnpm dev`
 
-## Quality Checks
+## Quality Checks & Knowledge Graph
 
 ```bash
-pnpm test        # vitest
-pnpm precheck    # eslint + tsc --noEmit + next build
-pnpm ci:check    # test + precheck (same as GitHub Actions)
+pnpm test            # vitest
+pnpm precheck        # eslint + tsc --noEmit + next build
+pnpm ci:check        # test + precheck (same as GitHub Actions)
+pnpm db:health       # verify DB schema integrity
+pnpm graphify:update # rebuild AST knowledge graph
+pnpm graphify:query  # query graph context
 ```
 
 Run these before any release.
 
 ## Local Login
 
-Use the email/password printed by the seed script (default admin: the seed output). Login is email + password only.
+Use the email/password configured in `.env` (`SEED_ADMIN_EMAIL` & `SEED_ADMIN_PASSWORD`) or register a new workspace owner on clean databases. Login is email + password only.
 
 ## Versioning
 
@@ -52,6 +56,7 @@ Use the email/password printed by the seed script (default admin: the seed outpu
 
 ## Notes
 
-- Prod uses Neon/Postgres. Local uses Postgres (Docker) unless `DATABASE_URL` is empty (undo SQLite).
+- Production uses Neon PostgreSQL (`@neondatabase/serverless`). Local dev uses PostgreSQL (`pg` or Docker).
+- Postgres only — no SQLite.
 - Maintenance routes (`sql-run`, `reset-db`) are disabled by default; explicit env flags required.
 - `AUTH_SECRET` must be non-empty.

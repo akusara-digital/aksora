@@ -119,7 +119,7 @@ describe("ModuleWorkspace splits", () => {
     );
 
     expect(parentCell).toContain('rowSpan="3"');
-    expect(parentCell).toContain("04 Nov 2026");
+    expect(parentCell).toContain("Nov 04, 2026");
 
     const siblingCell = renderToStaticMarkup(
       <table>

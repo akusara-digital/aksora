@@ -28,7 +28,14 @@ export async function ensureWorkspace(name: string, createdByUserId?: number | n
     'SELECT "id", "name", "slug", "uuid" FROM "Workspace" WHERE "name" = ?',
     [trimmed],
   );
-  if (existing) return existing;
+  if (existing) {
+    if (!existing.uuid) {
+      const { randomUUID } = await import("crypto");
+      existing.uuid = randomUUID();
+      await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [existing.uuid, existing.id]);
+    }
+    return existing;
+  }
 
   const { randomUUID } = await import("crypto");
   const wsUuid = randomUUID();
@@ -74,6 +81,10 @@ export async function ensurePersonalWorkspaceForUser(
       [userId],
     );
     if (wahyuWs) {
+      if (!wahyuWs.uuid) {
+        wahyuWs.uuid = randomUUID();
+        await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [wahyuWs.uuid, wahyuWs.id]);
+      }
       await db.run(
         'UPDATE "User" SET "workspaceId" = CAST(? AS INTEGER), "activeWorkspaceId" = CAST(? AS INTEGER), "company" = ? WHERE "id" = CAST(? AS INTEGER)',
         [wahyuWs.id, wahyuWs.id, wahyuWs.name, userId],
@@ -93,6 +104,10 @@ export async function ensurePersonalWorkspaceForUser(
   );
 
   if (ownedWs) {
+    if (!ownedWs.uuid) {
+      ownedWs.uuid = randomUUID();
+      await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [ownedWs.uuid, ownedWs.id]);
+    }
     await ensureWorkspaceMembership(ownedWs.id, userId, "admin");
     // Remove from default workspace 1 if accidentally joined
     try {
@@ -106,6 +121,28 @@ export async function ensurePersonalWorkspaceForUser(
       [ownedWs.id, ownedWs.id, ownedWs.name, userId],
     );
     return ownedWs;
+  }
+
+  // 2b. Check if this user already has active membership in another workspace (not workspace 1)
+  const joinedWs = await db.get<{ id: number; name: string; slug: string; uuid?: string }>(
+    `SELECT w."id", w."name", w."slug", w."uuid"
+     FROM "Workspace" w
+     INNER JOIN "WorkspaceMembership" wm ON wm."workspaceId" = w."id"
+     WHERE wm."userId" = CAST(? AS INTEGER) AND w."id" != 1
+     ORDER BY w."id" ASC
+     LIMIT 1`,
+    [userId],
+  );
+  if (joinedWs) {
+    if (!joinedWs.uuid) {
+      joinedWs.uuid = randomUUID();
+      await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [joinedWs.uuid, joinedWs.id]);
+    }
+    await db.run(
+      'UPDATE "User" SET "workspaceId" = CAST(? AS INTEGER), "activeWorkspaceId" = CAST(? AS INTEGER), "company" = ? WHERE "id" = CAST(? AS INTEGER)',
+      [joinedWs.id, joinedWs.id, joinedWs.name, userId],
+    );
+    return joinedWs;
   }
 
   // 3. User does not have their own workspace yet -> create a dedicated one with UUID
@@ -191,20 +228,38 @@ export async function ensureWorkspaceMembership(workspaceId: number, userId: num
   return row?.id ?? null;
 }
 
-export async function ensureWorkspaceForUser(company: string, userId: number, role: string) {
+export async function ensureWorkspaceForUser(
+  company: string,
+  userId: number,
+  role: string,
+  inviteToken?: string | null,
+) {
   const trimmed = String(company || "").trim();
-  if (!trimmed || trimmed === "Akusara Project") {
-    const user = await db.get<{ name: string | null; email: string | null }>('SELECT "name", "email" FROM "User" WHERE "id" = CAST(? AS INTEGER)', [userId]);
-    return ensurePersonalWorkspaceForUser(userId, user?.name, user?.email);
+
+  // Only if the user was invited (explicit invite token) should they be attached to an existing workspace
+  if (inviteToken) {
+    if (trimmed && trimmed !== "Akusara Project") {
+      const workspace = await ensureWorkspace(trimmed, userId);
+      if (workspace) {
+        await ensureWorkspaceMembership(workspace.id, userId, role);
+        return workspace;
+      }
+    }
   }
-  const workspace = await ensureWorkspace(trimmed, userId);
-  if (!workspace) return null;
-  await ensureWorkspaceMembership(workspace.id, userId, role);
-  return workspace;
+
+  // When a user registers without an invite, NEVER link them to an existing workspace
+  // just because the company name matches!
+  // Instead, ALWAYS call ensurePersonalWorkspaceForUser or generate a brand new dedicated Workspace
+  // with its own unique UUID and slug (${slug}-${uuid.slice(0, 8)}).
+  const user = await db.get<{ name: string | null; email: string | null }>(
+    'SELECT "name", "email" FROM "User" WHERE "id" = CAST(? AS INTEGER)',
+    [userId],
+  );
+  return ensurePersonalWorkspaceForUser(userId, user?.name, user?.email, trimmed);
 }
 
 export async function getWorkspaceMembershipsForUser(userId: number) {
-  return db.query<{
+  const memberships = await db.query<{
     id: number;
     workspaceId: number;
     role: string;
@@ -226,6 +281,18 @@ export async function getWorkspaceMembershipsForUser(userId: number) {
      ORDER BY w."name" ASC`,
     [userId],
   );
+
+  for (const m of memberships) {
+    if (!m.uuid) {
+      try {
+        const { randomUUID } = await import("crypto");
+        m.uuid = randomUUID();
+        await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [m.uuid, m.workspaceId]);
+      } catch { /* non-critical */ }
+    }
+  }
+
+  return memberships;
 }
 
 export async function updateWorkspaceSettings(workspaceId: number, data: { name: string; accentColor?: string; templateKey?: string; iconPath?: string; timezone?: string; sprintFormat?: string }) {

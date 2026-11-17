@@ -28,6 +28,7 @@ const allowedPublic = new Set([
   "app/api/webhooks/git/route.ts",
   "app/api/webhooks/lemonsqueezy/route.ts",
   "app/api/webhooks/resend/route.ts",
+  "app/api/public/run-signoff/[token]/route.ts",
 ]);
 
 const violations = [];
@@ -37,7 +38,7 @@ for (const file of files) {
   const mutating = /export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)/.test(text);
   if (!mutating) continue;
   if (allowedPublic.has(rel)) continue;
-  const hasAuth = /(getCurrentUser\(|validateApiSession\(|requireAuth|authenticateApiRequest\()/.test(text);
+  const hasAuth = /(getCurrentUser\(|validateApiSession\(|requireAuth|authenticateApiRequest\(|requireWorkspaceCapability\(|getSessionOrApiUser\(|getRunnerUser\(|verifyRunnerToken\(|requireWorkspaceAdmin\(|requireSuperAdmin\(|requireApiUser\()/.test(text);
   if (!hasAuth) violations.push(rel);
 }
 

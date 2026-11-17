@@ -78,6 +78,7 @@ describe("workspace-memberships", () => {
       // 1. Check if user already owns a workspace -> none
       mocks.db.get
         .mockResolvedValueOnce(undefined) // ownedWs -> none
+        .mockResolvedValueOnce(undefined) // joinedWs -> none
         .mockResolvedValueOnce(undefined) // nameExists -> none
         .mockResolvedValueOnce({
           id: 25,

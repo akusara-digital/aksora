@@ -1,5 +1,11 @@
-import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { timingSafeEqual } from "crypto";
 import { syncAssigneeFromUser } from "@/lib/user-assignee-sync";
+import {
+  hashPassword,
+  verifyPassword,
+  isLegacyPasswordHash,
+} from "@/lib/auth-passwords";
+export { hashPassword, verifyPassword, isLegacyPasswordHash };
 import {
   WORKSPACE_ROLES,
   INVITE_ROLES,
@@ -18,96 +24,16 @@ const COOKIE_NAME = PRIMARY_COOKIE_NAME;
 
 export { WORKSPACE_ROLES, INVITE_ROLES, normalizeRole, isPlatformSuperAdmin, isInviteRole, getRoleLabel, getInviteRoleOptions, getPublicRoleOptions };
 
-function getAuthConfig() {
-  const secret = (process.env.AUTH_SECRET || "").trim();
-  return { secret };
-}
-
-function toBase64UrlBytes(input: string) {
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(input, "utf8").toString("base64url");
-  }
-  return btoa(input).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-
-function fromBase64UrlBytes(input: string) {
-  const normalized = input.replace(/-/g, "+").replace(/_/g, "/");
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(normalized, "base64").toString("utf8");
-  }
-  return atob(normalized);
-}
-
-const PASSWORD_SCHEME = "scrypt";
-const SCRYPT_KEY_LENGTH = 64;
-const SCRYPT_SALT_BYTES = 16;
-
-function hashLegacyPassword(password: string) {
-  return createHash("sha256").update(password).digest("hex");
-}
-
-function isLegacyPasswordHash(value: string) {
-  return /^[a-f0-9]{64}$/i.test(String(value ?? ""));
-}
-
-export async function hashPassword(password: string) {
-  const salt = randomBytes(SCRYPT_SALT_BYTES).toString("hex");
-  const derived = scryptSync(password, salt, SCRYPT_KEY_LENGTH).toString("hex");
-  return `${PASSWORD_SCHEME}$${salt}$${derived}`;
-}
-
-export async function verifyPassword(password: string, storedHash: string | null | undefined) {
-  const normalizedHash = String(storedHash ?? "").trim();
-  if (!normalizedHash) return false;
-
-  if (isLegacyPasswordHash(normalizedHash)) {
-    return timingSafeEqual(
-      Buffer.from(hashLegacyPassword(password), "utf8"),
-      Buffer.from(normalizedHash, "utf8"),
-    );
-  }
-
-  const [scheme, salt, derivedHash] = normalizedHash.split("$");
-  if (scheme !== PASSWORD_SCHEME || !salt || !derivedHash) return false;
-
-  const expected = Buffer.from(derivedHash, "hex");
-  const actual = scryptSync(password, salt, expected.length);
-  if (expected.length !== actual.length) return false;
-  return timingSafeEqual(actual, expected);
-}
-
-// Constant-time string comparison for HMAC signatures. A plain `!==` leaks
-// timing information proportional to how many leading bytes match, which
-// (combined with enough requests) can let an attacker forge a valid
-// signature byte-by-byte. Mismatched lengths are rejected before reaching
-// timingSafeEqual (which throws on unequal-length buffers) — this itself
-// leaks only the length, which carries no information about the secret.
-function constantTimeEqual(a: string, b: string): boolean {
-  const bufA = Buffer.from(a, "utf8");
-  const bufB = Buffer.from(b, "utf8");
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
-
-async function sign(value: string, secret: string) {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
-  const bytes = new Uint8Array(signature);
-  let binary = "";
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-  return typeof Buffer !== "undefined"
-    ? Buffer.from(bytes).toString("base64url")
-    : btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
+import {
+  getAuthConfig,
+  toBase64UrlBytes,
+  fromBase64UrlBytes,
+  constantTimeEqual,
+  sign,
+  createTempMfaToken,
+  verifyTempMfaToken,
+} from "@/lib/auth-tokens";
+export { createTempMfaToken, verifyTempMfaToken };
 
 export function authEnabled() {
   const { secret } = getAuthConfig();
@@ -173,14 +99,28 @@ export async function validateCredentials(email: string, password: string) {
     }
 
     // Ensure dedicated workspace for user so users don't share workspace 1 / Wahyu's data
+    let workspaceUuid = "";
     try {
       const { ensurePersonalWorkspaceForUser } = await import("./workspace-memberships");
       const ws = await ensurePersonalWorkspaceForUser(user.id, user.name, user.email, user.company);
       if (ws) {
         user.activeWorkspaceId = ws.id;
         user.company = ws.name;
+        workspaceUuid = ws.uuid || "";
       }
     } catch { /* non-critical */ }
+
+    if (!workspaceUuid && user.activeWorkspaceId) {
+      try {
+        const wsRow = await db.get<{ uuid?: string }>('SELECT "uuid" FROM "Workspace" WHERE "id" = CAST(? AS INTEGER)', [user.activeWorkspaceId]);
+        if (wsRow?.uuid) {
+          workspaceUuid = wsRow.uuid;
+        } else {
+          workspaceUuid = randomUUID();
+          await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [workspaceUuid, user.activeWorkspaceId]);
+        }
+      } catch { /* non-critical */ }
+    }
 
     return {
       id: user.id,
@@ -190,6 +130,7 @@ export async function validateCredentials(email: string, password: string) {
       role: user.role,
       company: user.company,
       activeWorkspaceId: user.activeWorkspaceId ?? null,
+      workspaceUuid,
       mfaEnabled: Boolean(user.mfaEnabled),
       mfaSecret: user.mfaSecret || null,
       emailVerified: Boolean(user.emailVerified),
@@ -201,7 +142,11 @@ export async function validateCredentials(email: string, password: string) {
   }
 }
 
-export async function registerUser(email: string, password: string, name?: string, role: string = "qa", company: string = "") {
+export type RegisterUserResult =
+  | { success: true; uuid: string; workspaceUuid?: string; error?: never }
+  | { error: string; success?: never; uuid?: never; workspaceUuid?: never };
+
+export async function registerUser(email: string, password: string, name?: string, role: string = "qa", company: string = ""): Promise<RegisterUserResult> {
   try {
     const { db } = await import("./db");
     const { randomUUID } = await import("crypto");
@@ -224,10 +169,11 @@ export async function registerUser(email: string, password: string, name?: strin
       );
     }
 
-    const user = await db.get<{ id: number; uuid?: string; company: string; name: string | null; email: string | null; role: string | null }>(
-      'SELECT "id", "uuid", "company", "name", "email", "role" FROM "User" WHERE "email" = ?',
+    const user = await db.get<{ id: number; uuid?: string; company: string; name: string | null; email: string | null; role: string | null; workspaceId?: number | null; activeWorkspaceId?: number | null }>(
+      'SELECT "id", "uuid", "company", "name", "email", "role", "workspaceId", "activeWorkspaceId" FROM "User" WHERE "email" = ?',
       [email],
     );
+    let workspaceUuid = "";
     if (user) {
       if (!user.uuid) {
         try {
@@ -240,11 +186,30 @@ export async function registerUser(email: string, password: string, name?: strin
         const ws = await ensurePersonalWorkspaceForUser(user.id, user.name, user.email, company || user.company);
         if (ws) {
           user.company = ws.name;
+          workspaceUuid = ws.uuid || "";
         }
       } catch { /* non-critical */ }
+
+      if (!workspaceUuid && (user.activeWorkspaceId || user.workspaceId)) {
+        const wsId = user.activeWorkspaceId || user.workspaceId;
+        try {
+          const wsRow = await db.get<{ uuid?: string }>('SELECT "uuid" FROM "Workspace" WHERE "id" = CAST(? AS INTEGER)', [wsId]);
+          if (wsRow?.uuid) {
+            workspaceUuid = wsRow.uuid;
+          } else {
+            workspaceUuid = randomUUID();
+            await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [workspaceUuid, wsId]);
+          }
+        } catch { /* non-critical */ }
+      }
+
       await syncAssigneeFromUser(user);
     }
-    return { success: true };
+    return {
+      success: true,
+      uuid: user?.uuid || userUuid,
+      ...(workspaceUuid ? { workspaceUuid } : {}),
+    };
   } catch (err: unknown) {
     const error = err as { code?: unknown; message?: unknown } | null;
     if (error?.code === "23505" || String(error?.message ?? "").includes("UNIQUE constraint")) {
@@ -254,39 +219,9 @@ export async function registerUser(email: string, password: string, name?: strin
   }
 }
 
-export async function createTempMfaToken(userId: number) {
-  const { secret } = getAuthConfig();
-  if (!secret) throw new Error("AUTH_SECRET is required.");
-  
-  const payload = toBase64UrlBytes(JSON.stringify({
-    userId,
-    purpose: "mfa_pending",
-    expiresAt: Date.now() + 300000, // 5 minutes
-  }));
-  const signature = await sign(payload, secret);
-  return `${payload}.${signature}`;
-}
-
-export async function verifyTempMfaToken(token: string | undefined | null) {
-  const { secret } = getAuthConfig();
-  if (!token || !secret) return null;
-  const [payload, signature] = token.split(".");
-  if (!payload || !signature) return null;
-  if (!constantTimeEqual(await sign(payload, secret), signature)) return null;
-
-  try {
-    const data = JSON.parse(fromBase64UrlBytes(payload)) as { userId?: number; purpose?: string; expiresAt?: number };
-    if (data.purpose !== "mfa_pending" || !data.userId || !data.expiresAt) return null;
-    if (Date.now() > data.expiresAt) return null; // Token expired
-    return data.userId;
-  } catch {
-    return null;
-  }
-}
-
 export async function createSessionToken(
   email: string,
-  user?: { id: number; uuid?: string; name: string; role: string; company: string; activeWorkspaceId?: number | null; locale?: string },
+  user?: { id: number; uuid?: string; name: string; role: string; company: string; activeWorkspaceId?: number | null; workspaceUuid?: string; locale?: string },
   ttlMs?: number,
 ) {
   const { secret } = getAuthConfig();
@@ -307,6 +242,42 @@ export async function createSessionToken(
       }
     } catch { /* non-critical */ }
   }
+  let userUuid = user?.uuid;
+  let workspaceUuid = user?.workspaceUuid;
+
+  if (user && (!userUuid || !workspaceUuid)) {
+    try {
+      const { db } = await import("./db");
+      const row = await db.get<{ uuid?: string; workspaceId?: number | null; activeWorkspaceId?: number | null }>(
+        'SELECT "uuid", "workspaceId", "activeWorkspaceId" FROM "User" WHERE "id" = CAST(? AS INTEGER)',
+        [user.id],
+      );
+      if (row) {
+        if (!userUuid && row.uuid) {
+          userUuid = row.uuid;
+        } else if (!userUuid) {
+          const { randomUUID } = await import("crypto");
+          userUuid = randomUUID();
+          await db.run('UPDATE "User" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [userUuid, user.id]);
+        }
+
+        if (!workspaceUuid) {
+          const wsId = user.activeWorkspaceId ?? row.activeWorkspaceId ?? row.workspaceId;
+          if (wsId) {
+            const wsRow = await db.get<{ uuid?: string }>('SELECT "uuid" FROM "Workspace" WHERE "id" = CAST(? AS INTEGER)', [wsId]);
+            if (wsRow?.uuid) {
+              workspaceUuid = wsRow.uuid;
+            } else {
+              const { randomUUID } = await import("crypto");
+              workspaceUuid = randomUUID();
+              await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [workspaceUuid, wsId]);
+            }
+          }
+        }
+      }
+    } catch { /* non-critical */ }
+  }
+
   const payload = toBase64UrlBytes(JSON.stringify({
     email,
     ts: Date.now(),
@@ -314,11 +285,12 @@ export async function createSessionToken(
     ...(pv ? { pv } : {}),
     ...(user ? {
       id: user.id,
-      uuid: user.uuid,
+      uuid: userUuid || user.uuid,
       name: user.name,
       role: user.role,
       company: user.company,
       activeWorkspaceId: user.activeWorkspaceId ?? null,
+      workspaceUuid: workspaceUuid || user.workspaceUuid,
       locale: user.locale || "en",
     } : {}),
   }));
@@ -351,6 +323,7 @@ export async function getCurrentUser() {
       ...apiUser,
       role: normalizeRole(apiUser.role),
       activeWorkspaceId: apiUser.workspaceId ?? null,
+      workspaceUuid: (apiUser as { workspaceUuid?: string }).workspaceUuid || "",
     };
   }
 
@@ -379,7 +352,7 @@ export async function getCurrentUser() {
   try {
     const decoded = JSON.parse(fromBase64UrlBytes(payload)) as {
       email?: string; ts?: number; pv?: string;
-      id?: number; uuid?: string; name?: string; role?: string; company?: string; activeWorkspaceId?: number | null; locale?: string;
+      id?: number; uuid?: string; name?: string; role?: string; company?: string; activeWorkspaceId?: number | null; workspaceUuid?: string; locale?: string;
     };
     if (!decoded.email) return null;
     if (decoded.ts && Date.now() - decoded.ts > SESSION_DURATION) return null;
@@ -472,9 +445,12 @@ export async function getCurrentUser() {
           }
         } catch { /* non-critical */ }
       }
-      if (!activeWorkspaceId) {
+      const { isOwnerUser, ensurePersonalWorkspaceForUser } = await import("./workspace-memberships");
+      const isOwner = isOwnerUser(decoded.email) || validUserId === 9;
+
+      // Non-owners must NEVER accidentally default to shared Workspace 1
+      if (!isOwner && (activeWorkspaceId === 1 || !activeWorkspaceId)) {
         try {
-          const { ensurePersonalWorkspaceForUser } = await import("./workspace-memberships");
           const personalWs = await ensurePersonalWorkspaceForUser(validUserId, decoded.name, decoded.email, effectiveCompany);
           if (personalWs) {
             activeWorkspaceId = personalWs.id;
@@ -482,12 +458,26 @@ export async function getCurrentUser() {
           }
         } catch { /* non-critical */ }
       }
-      const { isOwnerUser } = await import("./workspace-memberships");
-      if (!activeWorkspaceId && (isOwnerUser(decoded.email) || validUserId === 9)) {
+      if (!activeWorkspaceId && isOwner) {
         activeWorkspaceId = 1;
       }
-      if (!effectiveCompany && (isOwnerUser(decoded.email) || validUserId === 9)) {
+      if (!effectiveCompany && isOwner) {
         effectiveCompany = "Akusara Project";
+      }
+
+      let workspaceUuid = decoded.workspaceUuid || "";
+      if (activeWorkspaceId) {
+        try {
+          const { db } = await import("./db");
+          const wsRow = await db.get<{ uuid?: string }>('SELECT "uuid" FROM "Workspace" WHERE "id" = CAST(? AS INTEGER)', [activeWorkspaceId]);
+          if (wsRow?.uuid) {
+            workspaceUuid = wsRow.uuid;
+          } else {
+            const { randomUUID } = await import("crypto");
+            workspaceUuid = randomUUID();
+            await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [workspaceUuid, activeWorkspaceId]);
+          }
+        } catch { /* non-critical */ }
       }
 
       return {
@@ -498,14 +488,16 @@ export async function getCurrentUser() {
         role: normalizeRole(userDbRow?.role || decoded.role),
         company: effectiveCompany,
         activeWorkspaceId,
+        workspaceId: activeWorkspaceId,
+        workspaceUuid,
         locale: decoded.locale || "en",
       };
     }
 
     // Fallback: old tokens without embedded user data - hit DB once
     const { db } = await import("./db");
-    const user = await db.get<{ id: number; uuid?: string; name: string; email: string; role: string; company: string; activeWorkspaceId: number | null; locale?: string }>(
-      `SELECT u.id, u.uuid, u.name, u.email, COALESCE(wm.role, u.role) AS "role", u.company, COALESCE(u."activeWorkspaceId", w.id) AS "activeWorkspaceId", u.locale
+    const user = await db.get<{ id: number; uuid?: string; name: string; email: string; role: string; company: string; activeWorkspaceId: number | null; workspaceUuid?: string; locale?: string }>(
+      `SELECT u.id, u.uuid, u.name, u.email, COALESCE(wm.role, u.role) AS "role", u.company, COALESCE(u."activeWorkspaceId", w.id) AS "activeWorkspaceId", w.uuid AS "workspaceUuid", u.locale
        FROM "User" u
        LEFT JOIN "Workspace" w ON w.name = u.company
        LEFT JOIN "WorkspaceMembership" wm ON wm."workspaceId" = COALESCE(u."activeWorkspaceId", w."id") AND wm."userId" = u."id"
@@ -515,19 +507,30 @@ export async function getCurrentUser() {
     if (!user) return null;
     let fallbackActiveWs = user.activeWorkspaceId;
     let fallbackCompany = user.company;
-    if (!fallbackActiveWs) {
+    let fallbackWsUuid = user.workspaceUuid || "";
+    const { isOwnerUser, ensurePersonalWorkspaceForUser } = await import("./workspace-memberships");
+    const isOwner = isOwnerUser(user.email) || user.id === 9;
+
+    if (!isOwner && (fallbackActiveWs === 1 || !fallbackActiveWs)) {
       try {
-        const { ensurePersonalWorkspaceForUser } = await import("./workspace-memberships");
         const ws = await ensurePersonalWorkspaceForUser(user.id, user.name, user.email, user.company);
         if (ws) {
           fallbackActiveWs = ws.id;
           fallbackCompany = ws.name;
+          fallbackWsUuid = ws.uuid || fallbackWsUuid;
         }
       } catch {}
     }
-    const { isOwnerUser } = await import("./workspace-memberships");
-    if (!fallbackActiveWs && isOwnerUser(user.email)) fallbackActiveWs = 1;
-    if (!fallbackCompany && isOwnerUser(user.email)) fallbackCompany = "Akusara Project";
+
+    if (!fallbackActiveWs && isOwner) fallbackActiveWs = 1;
+    if (!fallbackCompany && isOwner) fallbackCompany = "Akusara Project";
+
+    if (!fallbackWsUuid && fallbackActiveWs) {
+      try {
+        const wsRow = await db.get<{ uuid?: string }>('SELECT "uuid" FROM "Workspace" WHERE "id" = CAST(? AS INTEGER)', [fallbackActiveWs]);
+        fallbackWsUuid = wsRow?.uuid || "";
+      } catch {}
+    }
 
     return {
       ...user,
@@ -535,6 +538,8 @@ export async function getCurrentUser() {
       role: normalizeRole(user.role),
       company: fallbackCompany || "Personal Workspace",
       activeWorkspaceId: fallbackActiveWs ?? null,
+      workspaceId: fallbackActiveWs ?? null,
+      workspaceUuid: fallbackWsUuid,
       locale: user.locale || "en",
     };
   } catch {

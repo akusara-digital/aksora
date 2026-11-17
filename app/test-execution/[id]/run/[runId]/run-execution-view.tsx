@@ -748,6 +748,8 @@ export function RunExecutionView({
           initialExpected={selectedCase.expectedResult}
           initialActual={selectedCase.actualResult || "Test failed during execution"}
           initialEvidence={selectedCase.evidence}
+          initialPreconditions={selectedCase.preCondition || "-"}
+          initialRelatedItems={selectedCase.tcId || ""}
         />
       )}
     </div>

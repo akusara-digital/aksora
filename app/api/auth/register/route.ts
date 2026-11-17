@@ -100,13 +100,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
     const createdUser = await import("@/lib/db").then(({ db }) =>
-      db.get<{ id: number; role: string; company: string }>('SELECT "id", "role", "company" FROM "User" WHERE "email" = ?', [email]),
+      db.get<{ id: number; uuid?: string; role: string; company: string }>('SELECT "id", "uuid", "role", "company" FROM "User" WHERE "email" = ?', [email]),
     );
+    let workspaceUuid = "";
     if (createdUser) {
+      if (!createdUser.uuid) {
+        const { randomUUID } = await import("crypto");
+        const userUuid = result.uuid || randomUUID();
+        const { db } = await import("@/lib/db");
+        await db.run('UPDATE "User" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [userUuid, createdUser.id]);
+        createdUser.uuid = userUuid;
+      }
       if ((invite as { workspaceId?: number | null }).workspaceId) {
-        await ensureWorkspaceMembership((invite as { workspaceId?: number | null }).workspaceId as number, createdUser.id, normalizeRole(createdUser.role));
+        const wsId = Number((invite as { workspaceId: number }).workspaceId);
+        await ensureWorkspaceMembership(wsId, createdUser.id, normalizeRole(createdUser.role));
+        const { db } = await import("@/lib/db");
+        const wsRow = await db.get<{ uuid?: string }>('SELECT "uuid" FROM "Workspace" WHERE "id" = CAST(? AS INTEGER)', [wsId]);
+        workspaceUuid = wsRow?.uuid || "";
+        await db.run(
+          'UPDATE "User" SET "workspaceId" = CAST(? AS INTEGER), "activeWorkspaceId" = CAST(? AS INTEGER) WHERE "id" = CAST(? AS INTEGER)',
+          [wsId, wsId, createdUser.id],
+        );
       } else {
-        await ensureWorkspaceForUser(createdUser.company, createdUser.id, normalizeRole(createdUser.role));
+        const ws = await ensureWorkspaceForUser(createdUser.company, createdUser.id, normalizeRole(createdUser.role), inviteToken);
+        workspaceUuid = ws?.uuid || "";
       }
       if ((invite as { projectId?: number | null }).projectId) {
         const { addProjectMember } = await import("@/lib/project-members");
@@ -125,7 +142,11 @@ export async function POST(request: NextRequest) {
     sendWelcomeEmail(email, String(invite.company ?? "your workspace"), name || undefined);
     sendInviteAcceptedEmail(invite.createdBy, email, String(invite.company ?? "your workspace"));
     await clearRateLimit(limitKey);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      ...(workspaceUuid ? { workspaceUuid } : {}),
+      ...(createdUser?.uuid ? { userUuid: createdUser.uuid } : {}),
+    });
   }
 
   const workspaceName = body?.company?.trim() || `${name || email.split("@")[0]}'s Workspace`;
@@ -136,10 +157,30 @@ export async function POST(request: NextRequest) {
   }
 
   const createdUser = await import("@/lib/db").then(({ db }) =>
-    db.get<{ id: number; role: string; company: string }>('SELECT "id", "role", "company" FROM "User" WHERE "email" = ?', [email]),
+    db.get<{ id: number; uuid?: string; role: string; company: string; workspaceId?: number | null; activeWorkspaceId?: number | null }>(
+      'SELECT "id", "uuid", "role", "company", "workspaceId", "activeWorkspaceId" FROM "User" WHERE "email" = ?',
+      [email],
+    ),
   );
+  let workspaceUuid = "";
   if (createdUser) {
-    await ensureWorkspaceForUser(createdUser.company, createdUser.id, normalizeRole(createdUser.role));
+    if (!createdUser.uuid) {
+      const { randomUUID } = await import("crypto");
+      const userUuid = result.uuid || randomUUID();
+      const { db } = await import("@/lib/db");
+      await db.run('UPDATE "User" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [userUuid, createdUser.id]);
+      createdUser.uuid = userUuid;
+    }
+    const ws = await ensureWorkspaceForUser(createdUser.company, createdUser.id, normalizeRole(createdUser.role));
+    workspaceUuid = ws?.uuid || result.workspaceUuid || "";
+    if (!workspaceUuid && (createdUser.activeWorkspaceId || createdUser.workspaceId)) {
+      const wsId = createdUser.activeWorkspaceId || createdUser.workspaceId;
+      const { db } = await import("@/lib/db");
+      const wsRow = await db.get<{ uuid?: string }>('SELECT "uuid" FROM "Workspace" WHERE "id" = CAST(? AS INTEGER)', [wsId]);
+      if (wsRow?.uuid) {
+        workspaceUuid = wsRow.uuid;
+      }
+    }
   }
 
   // Public signups need OTP verification to prove there's a real inbox behind the address.
@@ -147,10 +188,19 @@ export async function POST(request: NextRequest) {
   if (createdUser && emailEnabled()) {
     await issueOtp(createdUser.id, email, name || undefined);
     await clearRateLimit(limitKey);
-    return NextResponse.json({ ok: true, requiresVerification: true });
+    return NextResponse.json({
+      ok: true,
+      requiresVerification: true,
+      ...(workspaceUuid ? { workspaceUuid } : {}),
+      ...(createdUser?.uuid ? { userUuid: createdUser.uuid } : {}),
+    });
   }
 
   sendWelcomeEmail(email, workspaceName, name || undefined);
   await clearRateLimit(limitKey);
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    ...(workspaceUuid ? { workspaceUuid } : {}),
+    ...(createdUser?.uuid ? { userUuid: createdUser.uuid } : {}),
+  });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { CaretLeft, CaretRight, Camera, Robot, ArrowSquareOut } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
@@ -56,9 +56,9 @@ function SidebarActionButton({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className={cn(
-        "flex h-9 w-full items-center text-[13px] font-medium transition-colors duration-100",
+        "flex h-9 items-center text-[13px] font-medium transition-colors duration-100 rounded-md",
         tone,
-        collapsed ? "justify-center px-0" : "gap-2.5 px-3",
+        collapsed ? "w-8 mx-auto justify-center px-0" : "w-[calc(100%-1rem)] mx-2 gap-2.5 px-2.5",
       )}
     >
       {icon}
@@ -80,10 +80,18 @@ export function Sidebar({
   userRole?: string;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const ws = searchParams?.get("ws") || "";
   const { dict: t } = useTranslation();
   const [tooltip, setTooltip] = useState<TooltipState>(null);
   const role = normalizeRole(userRole);
   const visibleGroups = filterGroups(role, t.sidebar);
+
+  const bugsnapBase = process.env.NEXT_PUBLIC_BUGSNAP_URL || "https://bugsnap.akusaraproject.my.id";
+  const bugsnapHref = ws ? `${bugsnapBase.replace(/\/+$/, "")}/captures?ws=${encodeURIComponent(ws)}` : bugsnapBase;
+
+  const snaptestBase = process.env.NEXT_PUBLIC_SNAPTEST_URL || "https://snaptest.akusaraproject.my.id";
+  const snaptestHref = ws ? `${snaptestBase.replace(/\/+$/, "")}?ws=${encodeURIComponent(ws)}` : snaptestBase;
 
   function showTooltip(e: React.MouseEvent<HTMLElement>, label: string) {
     if (!collapsed) return;
@@ -136,19 +144,24 @@ export function Sidebar({
           </div>
 
           {/* Bottom actions */}
-          <div className={cn("mt-auto border-t border-slate-200 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]", collapsed ? "px-1" : "px-0")}>
+          <div className="mt-auto border-t border-slate-200 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {/* Sister Apps (BugSnap & SnapTest) */}
             {/* ponytail: external links default to # if env vars are unset */}
             <div className="space-y-0.5 pb-2 mb-2 border-b border-slate-200">
+              {!collapsed && (
+                <div className="px-3 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400 select-none">
+                  {t.sidebar.sisterApps || "Sister Apps"}
+                </div>
+              )}
               <a
-                href={process.env.NEXT_PUBLIC_BUGSNAP_URL || "#"}
+                href={bugsnapHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 onMouseEnter={(e) => showTooltip(e, t.sidebar.bugsnap)}
                 onMouseLeave={hideTooltip}
                 className={cn(
-                  "flex h-8 w-full items-center text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors group",
-                  collapsed ? "justify-center px-0" : "justify-between px-3"
+                  "flex h-8 items-center text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors rounded-md group",
+                  collapsed ? "w-8 mx-auto justify-center px-0" : "w-[calc(100%-1rem)] mx-2 justify-between px-2.5"
                 )}
               >
                 <span className="flex items-center gap-2">
@@ -160,14 +173,14 @@ export function Sidebar({
                 {!collapsed && <ArrowSquareOut size={12} className="text-slate-400 group-hover:text-slate-700" />}
               </a>
               <a
-                href={process.env.NEXT_PUBLIC_SNAPTEST_URL || "#"}
+                href={snaptestHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 onMouseEnter={(e) => showTooltip(e, t.sidebar.snaptest)}
                 onMouseLeave={hideTooltip}
                 className={cn(
-                  "flex h-8 w-full items-center text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors group",
-                  collapsed ? "justify-center px-0" : "justify-between px-3"
+                  "flex h-8 items-center text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors rounded-md group",
+                  collapsed ? "w-8 mx-auto justify-center px-0" : "w-[calc(100%-1rem)] mx-2 justify-between px-2.5"
                 )}
               >
                 <span className="flex items-center gap-2">
@@ -181,7 +194,8 @@ export function Sidebar({
             </div>
 
             {!collapsed && (
-              <div className="px-3 pb-2">
+              <div className="flex items-center justify-between px-3 pb-2.5 pt-0.5">
+                <span className="text-[11px] font-medium text-slate-400">{t.switcher?.language || "Language"}</span>
                 <LanguageSwitcher />
               </div>
             )}

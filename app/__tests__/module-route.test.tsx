@@ -349,7 +349,7 @@ describe("module route", () => {
     expect(props.rows[0].dateRowSpan).toBe(2);
     expect(props.rows[1].dateRowSpan).toBe(0);
     expect(props.rows[2].dateRowSpan).toBe(1);
-    expect(props.rows[0].date).toBe("29 Apr 2026");
+    expect(props.rows[0].date).toBe("Apr 29, 2026");
   });
 
   it("sets dateRowSpan to 1 when tasks are sorted by non-date columns", async () => {

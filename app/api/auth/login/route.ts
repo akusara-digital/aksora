@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
       company: user.company,
       uuid: user.uuid,
       workspaceId: user.activeWorkspaceId,
+      workspaceUuid: user.workspaceUuid,
     });
     response.cookies.set(sessionCookieName(), token, {
       httpOnly: true,

@@ -118,11 +118,15 @@ export function ExecutionMatrixView({
         <QuickBugModal
           isOpen={Boolean(bugModalCase)}
           onClose={() => setBugModalCase(null)}
-          initialTitle={`[Compatibility] ${bugModalCase.caseName}`}
+          defaultProject="Execution Run"
+          initialTitle={`[${bugModalCase.tcId}] Failure in ${bugModalCase.caseName}`}
           initialSteps={bugModalCase.testStep}
           initialExpected={bugModalCase.expectedResult}
-          initialActual={bugModalCase.actualResult || "Compatibility failure"}
+          initialActual={bugModalCase.actualResult || "Test failed during matrix execution"}
           initialEvidence={bugModalCase.evidence}
+          initialPreconditions={bugModalCase.preCondition || "-"}
+          initialRelatedItems={bugModalCase.tcId || ""}
+          autoAnalyze={true}
         />
       )}
 

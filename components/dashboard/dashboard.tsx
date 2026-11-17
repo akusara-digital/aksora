@@ -130,8 +130,10 @@ export function Dashboard(props: DashboardProps) {
     },
   };
 
-  // Real Execution trend from database
-  const executionTrend: ExecutionTrendPoint[] = props.overview?.executionTrend ?? [];
+  // Real Execution trend from database (filtered by 7D / 30D window)
+  const rawTrend: ExecutionTrendPoint[] = props.overview?.executionTrend ?? [];
+  const executionTrend: ExecutionTrendPoint[] =
+    dateRangePreset === "7d" ? rawTrend.slice(-7) : rawTrend;
 
   // Real Result breakdown from database
   const resultBreakdown: ResultBreakdownData = props.overview?.resultBreakdown ?? {
@@ -167,51 +169,50 @@ export function Dashboard(props: DashboardProps) {
     <div className="space-y-6 pb-12">
       <Breadcrumb crumbs={[{ label: "Dashboard" }]} />
 
-      {/* Top Header matching Group 659: Title "Dashboard" in blue + Two Date Selector Dropdowns */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Top Header: Clean, uncluttered layout with quick 7D/30D filter and primary actions */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
             Dashboard
           </h1>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            Live workspace quality metrics and execution trends from your database
+            Real-time quality health, test execution trends, and defect lifecycle
           </p>
         </div>
 
-        {/* Date Selector Buttons matching Group 659 (Two date buttons with carets) + Quick Actions */}
+        {/* Action controls: 7D / 30D toggle + Standup + New Run */}
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-            {/* Start Date Button */}
+          {/* Quick Date Range Pill: 7D vs 30D */}
+          <div className="inline-flex items-center rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-0.5 shadow-2xs">
             <button
               type="button"
-              onClick={() => setDateRangePreset((prev) => (prev === "7d" ? "30d" : "7d"))}
-              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 transition"
-              title="Click to switch date window (7 days / 30 days)"
+              onClick={() => setDateRangePreset("7d")}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                dateRangePreset === "7d"
+                  ? "bg-white text-blue-600 shadow-xs dark:bg-slate-800 dark:text-blue-400 font-bold"
+                  : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              }`}
             >
-              <CalendarBlank size={14} className="text-slate-400" />
-              <span className="font-mono text-[11px]">{startDateStr}</span>
-              <CaretDown size={11} className="text-slate-400" />
+              7D
             </button>
-
-            <span className="text-xs text-slate-300 dark:text-slate-600 font-bold">&ndash;</span>
-
-            {/* End Date Button */}
             <button
               type="button"
-              onClick={() => setDateRangePreset((prev) => (prev === "7d" ? "30d" : "7d"))}
-              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 transition"
-              title="Click to switch date window (7 days / 30 days)"
+              onClick={() => setDateRangePreset("30d")}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                dateRangePreset === "30d"
+                  ? "bg-white text-blue-600 shadow-xs dark:bg-slate-800 dark:text-blue-400 font-bold"
+                  : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              }`}
             >
-              <span className="font-mono text-[11px]">{endDateStr}</span>
-              <CaretDown size={11} className="text-slate-400" />
+              30D
             </button>
           </div>
 
-          {/* Quick Actions */}
+          {/* Standup Button */}
           <button
             type="button"
             onClick={() => setShowStandup(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <Note size={14} weight="bold" />
             <span>Standup</span>

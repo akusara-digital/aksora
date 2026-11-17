@@ -1,4 +1,4 @@
-# Backup Notes
+# Backup & Reset Notes
 
 ## Production
 
@@ -7,17 +7,18 @@ Production database backups rely on Neon Postgres point-in-time recovery (PITR).
 - Check the retention window in the Neon dashboard at `console.neon.tech`.
 - Open your project, then go to **Project settings > Backup/Restore** to verify PITR retention and restore options.
 
-## Local Development
+## Automated Backup on Reset (`pnpm db:reset`)
 
-`scripts/backup.mjs` is only for local development.
+When executing `node --experimental-strip-types scripts/reset-db.mjs` or `pnpm db:reset`, the script automatically exports a full snapshot of all existing tables into the `/backups` directory (e.g. `backups/aksora_backup_neon_<timestamp>.json`) before wiping the schema.
 
-- It expects a running Docker container named `aksora-db`.
-- It is not a production backup path and does not apply to Neon.
+## Local Development (Docker)
+
+`scripts/backup.mjs` (`pnpm db:backup`) is for dev environments running a local Docker container named `aksora-db`.
+
+- Dumps SQL via `docker exec aksora-db pg_dump`.
+- Saved into the `backups/` directory (gitignored).
 
 ## Restore
 
-If you need to restore production data, use Neon’s PITR or branching restore flow from the dashboard.
-
-- Start from the backup/restore controls in the Neon project dashboard.
-- Choose a point in time or branch restore target.
-- Verify the exact steps in the Neon dashboard before running a restore, since the UI flow can change.
+- For Neon production: Use Neon's PITR or branch restore flow in the dashboard.
+- For local Docker: Restore from `backups/*.sql` using `docker exec -i aksora-db psql -U admin aksora < backups/<file>.sql`.

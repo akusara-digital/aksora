@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useEffect } from "react";
 import {
   Bug,
@@ -29,7 +29,7 @@ export type SidebarGroup = { title: string; items: SidebarItem[] };
 export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
   return [
     {
-      title: "",
+      title: t.groupOverview || "",
       items: [
         { href: "/dashboard", label: t.dashboard, icon: SquaresFour },
         { href: "/projects", label: t.projects || "Projects", icon: FolderSimple },
@@ -38,16 +38,16 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
     {
       title: t.groupTestManagement,
       items: [
-        { href: "/test-cases", label: t.testCases || "Test Repository", icon: Checks },
-        { href: "/test-execution", label: t.testSessions || "Test Execution", icon: PlayCircle },
+        { href: "/test-cases", label: t.testRepository || t.testCases || "Test Repository", icon: Checks },
+        { href: "/test-execution", label: t.testExecution || t.testSessions || "Test Execution", icon: PlayCircle },
       ],
     },
     {
       title: t.groupWorkTracking,
       items: [
-        { href: "/tasks", label: t.tasks || "Tasks & Sprints", icon: Kanban },
-        { href: "/bugs", label: t.bugs || "Bugs", icon: Bug },
-        { href: "/work-logs", label: t.workLog || "Team & Logs", icon: ClockCountdown },
+        { href: "/tasks", label: t.tasksAndSprints || t.tasks || "Tasks & Sprints", icon: Kanban },
+        { href: "/bugs", label: t.bugsAndIssues || t.bugs || "Bugs & Issues", icon: Bug },
+        { href: "/work-logs", label: t.teamAndLogs || t.workLog || "Team & Work Logs", icon: ClockCountdown },
       ],
     },
     {
@@ -59,7 +59,7 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
     {
       title: t.groupPersonalTools || t.groupPersonal,
       items: [
-        { href: "/notes", label: t.notes || "Personal Notes", icon: NotePencil },
+        { href: "/notes", label: t.notesAndVault || t.notes || "Notes & Vault", icon: NotePencil },
       ],
     },
     {
@@ -286,10 +286,18 @@ export function SidebarNavItem({
     return () => window.clearTimeout(timer);
   }, [active, pathname]);
 
+  const searchParams = useSearchParams();
+  const ws = searchParams?.get("ws");
+  const targetHref = ws
+    ? (item.href.includes("?")
+        ? `${item.href}&ws=${encodeURIComponent(ws)}`
+        : `${item.href}?ws=${encodeURIComponent(ws)}`)
+    : item.href;
+
   const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
     showTooltip(e, item.label);
     try {
-      router.prefetch(item.href);
+      router.prefetch(targetHref);
     } catch {
       // noop
     }
@@ -297,7 +305,7 @@ export function SidebarNavItem({
 
   const handleFocus = () => {
     try {
-      router.prefetch(item.href);
+      router.prefetch(targetHref);
     } catch {
       // noop
     }
@@ -306,19 +314,21 @@ export function SidebarNavItem({
   return (
     <Link
       ref={linkRef}
-      href={item.href}
+      href={targetHref}
       onMouseEnter={handleMouseEnter}
       onFocus={handleFocus}
       onMouseLeave={hideTooltip}
       className={cn(
-        "group relative flex h-10 items-center text-[13px] font-medium transition-colors duration-100 outline-none",
-        collapsed ? "justify-center px-0" : "gap-2.5 px-3",
+        "group relative flex h-9.5 items-center text-[13px] font-medium transition-colors duration-100 outline-none rounded-md",
+        collapsed ? "justify-center px-0 mx-1.5" : "gap-2.5 px-3 mx-2",
         active
           ? "bg-sky-50 text-sky-700 font-semibold"
           : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
       )}
     >
-      {active && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-sky-600" />}
+      {active && (
+        <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-sky-600" />
+      )}
       <Icon
         size={16}
         weight="bold"
@@ -355,14 +365,14 @@ export function SidebarSection({
       {group.title && (
         <div
           className={cn(
-            "px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400 transition-all duration-150 whitespace-nowrap overflow-hidden",
-            collapsed ? "opacity-0 h-0" : "opacity-100 h-auto mt-4",
+            "px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400 transition-all duration-150 whitespace-nowrap overflow-hidden select-none",
+            collapsed ? "opacity-0 h-0 my-0" : "opacity-100 h-auto mt-4 first:mt-1",
           )}
         >
           {group.title}
         </div>
       )}
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {group.items.map((item) => (
           <SidebarNavItem
             key={item.href}

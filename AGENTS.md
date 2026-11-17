@@ -21,8 +21,16 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 | **NEVER** put files flat in `components/` root | |
 
 ## Knowledge Graph / Graphify (MANDATORY)
-- **MANDATORY**: Before fixing bugs, refactoring, or building new features, always consult `graphify-out/graph.json` or use `graphify query "<target>"` / `graphify-out/GRAPH_REPORT.md` first.
+- **MANDATORY**: Before fixing bugs, refactoring, or building new features, always consult `graphify-out/graph.json` or run `pnpm graphify:query "<target>"` (`python -m graphify query "<target>"`) / `graphify-out/GRAPH_REPORT.md` first.
+- **Graph Rebuilding / Refresh**: Whenever file exports, dependencies, or architectural boundaries change, re-index via `pnpm graphify:update` (`python -m graphify update . --force`).
+- **Subagent Rule (STRICT)**: Always run `graphify query "<target>"` YOURSELF before spawning any subagent. Extract the caller hierarchy, exact file paths, and line locations (`src=... loc=L...`) from the graph query and paste them directly into the subagent's prompt.
+- **Strict Ban on Sweep-Reading**: NEVER spawn a subagent with broad/open-ended instructions that cause it to blindly grep, scan random directories, or sweep-read large files. Go straight to the pinpointed nodes using the knowledge graph.
 - Pinpoint the exact files, caller hierarchies, and dependencies to touch. Do NOT waste context tokens scanning random files — go straight to the point using the knowledge graph.
+
+## Markdown File Hygiene & Documentation (STRICT)
+- **Zero-Spec Policy**: NEVER generate loose `.md` spec files, plan files, or scratch notes in repository folders (`.zcode/`, `docs/plans/`, root, etc.) — implement features directly in code. Temporary agent planning belongs only to brain artifacts outside the repo.
+- **Prune Stale Markdown**: Delete obsolete `.md` files immediately (e.g. stale session plans, outdated architecture references like Prisma/SQLite). Keep all documentation lean, truthful, and reflective of the latest codebase state.
+- **UI & In-App Copy in English**: All text and copy displayed to users in the UI, error messages, placeholders, labels, and in-app documentation must be strictly in English.
 
 ## Agent File Lookup
 
@@ -35,25 +43,34 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 | Test management | `lib/test-management-data.ts` → `components/test-management/` |
 | Search | `lib/search-index.ts` → `components/shared/search/` |
 | Schema migration | `lib/db-schema.ts` → `lib/db-bootstrap.ts` |
+| DB Reset & Health | `scripts/reset-db.mjs` (`pnpm db:reset`) → `scripts/db-schema-health.mjs` (`pnpm db:health`) |
 
-## SQL (CRITICAL)
+## SQL & Database (CRITICAL)
 - Postgres only — no SQLite, no branching.
 - Double-quote camelCase columns: `"createdAt"` `"updatedAt"` `"deletedAt"` `"startDate"` `"endDate"` `"sprintId"` `"testPlanId"` `"testSuiteId"` `"publicToken"` `"suggestedDev"` `"totalCases"` `"bugType"` `"relatedItems"` `"relatedFeature"` `"lastRunAt"` `"automationResult"` `"typeCase"` `"preCondition"` `"caseName"` `"testStep"` `"expectedResult"` `"actualResult"` `"actionItems"` `"entityType"` `"entityId"`
 - Parameterized queries only. `toPostgresQuery()` converts `?`→`$n`.
 - Guard empty dates: `COALESCE(col, '') != ''`. Return early on empty `IN (...)`.
 - Schema changes: create tables → add columns → create indexes.
+- Database clean reset: use `pnpm db:reset` (automatically creates pre-wipe snapshot in `backups/`). Verify with `pnpm db:health`.
 
-## Rules
-1. Filter by `workspaceId` (unless superadmin). Log all CRUD via `logActivity()`.
-2. Validate session on mutating routes. Zod validation from `lib/modules.ts`.
-3. API: `{ data }` on success, `{ error: string }` + status on failure.
-4. Navigation: `router.refresh()`, never `window.location.reload()`.
-5. UI: Tailwind only, `@phosphor-icons/react` bold. Charts: `responsive-container.tsx`.
-6. Dates: ISO 8601 stored, `date-fns` display, server UTC.
-7. DB → client: `JSON.parse(JSON.stringify(data))`.
-8. Max 400 lines/component, 600 lines/lib — split if larger.
-9. New components MUST go in a domain folder. Create new folder for new features.
-10. Code & comments in English.
+## Worker & Code Hygiene Rules
+1. **Strict Scope**: Modify ONLY the files and logic requested. Do not perform drive-by refactorings, UI restyling, or touching unrequested files.
+2. **Preserve Character Encoding**: Dilarang merusak karakter non-ASCII (©, ·, —, é) atau menyisipkan BOM. Selalu gunakan internal edit tools atau `-Encoding utf8NoBOM`. Pastikan tidak ada mojibake setelah edit.
+3. **No Hallucinated Constraints or Features**: Jangan pernah mengarang allowlist email, blocklist, approval gate, atau klaim restriksi akses di kode maupun copy UI tanpa instruksi eksplisit dan verifikasi kode sumber.
+4. **Test Integrity**: Jangan mengubah test agar cocok dengan klaim/teks buatan sendiri. Dilarang menyembunyikan elemen dengan `hidden`, `sr-only`, atau `display: none` semata-mata untuk memanipulasi test agar lulus.
+5. **Pre-Completion Verification**: Selalu verifikasi sebelum melapor selesai:
+   - `npx tsc --noEmit` — pastikan 0 error TypeScript baru.
+   - `pnpm db:health` — pastikan 56 tabel sinkron jika ada perubahan skema DB.
+   - `npx vitest run <file>` — jika menyentuh modul yang memiliki test.
+6. **Filter by workspaceId**: Pastikan selalu filter berdasarkan `workspaceId` (kecuali superadmin). Log semua CRUD via `logActivity()`.
+7. **Validate Session**: Validasi session pada setiap mutating route. Gunakan validasi Zod dari `lib/modules.ts`.
+8. **API Standard**: `{ data }` untuk success, `{ error: string }` + status code untuk failure.
+9. **Navigation**: Gunakan `router.refresh()`, jangan pernah `window.location.reload()`.
+10. **UI Standard**: Tailwind v4 only, `@phosphor-icons/react` bold. Charts: `responsive-container.tsx`.
+11. **Dates**: ISO 8601 tersimpan, `date-fns` untuk display, server UTC.
+12. **DB → Client Serialization**: `JSON.parse(JSON.stringify(data))`.
+13. **File Size Limit**: Max 400 lines/component, 600 lines/lib — split bila lebih besar.
+14. **New Components**: WAJIB masuk folder domain dalam `components/[domain]/`.
 
 ## Do NOT (CRITICAL - STRICTLY ENFORCED)
 - **NEVER git push or git commit unless explicitly and unambiguously requested with the exact words "commit" or "push". Slang, affirmations, or casual phrases (e.g., "gas", "gas semua", "lanjut", "oke", "mantap", "sip") MUST NEVER be interpreted as permission to push/commit.**
@@ -62,7 +79,7 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 - Add SQLite or `isPostgres` branching.
 - Use `/test-case-management` — it's `/test-cases`.
 - Generate `.md` spec files — implement directly.
-- Run tests unless asked.
+- Run full test suites unless asked.
 - Put files flat in `components/` root.
 - Duplicate logic from `lib/data-helpers.ts` or `lib/utils.ts`.
 

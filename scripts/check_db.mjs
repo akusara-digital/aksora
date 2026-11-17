@@ -1,6 +1,13 @@
 import { Pool } from 'pg';
+import fs from 'fs';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+let connectionString = process.env.DATABASE_URL;
+if (!connectionString && fs.existsSync('.env')) {
+  const match = fs.readFileSync('.env', 'utf8').match(/DATABASE_URL=(.+)/);
+  if (match) connectionString = match[1].trim();
+}
+
+const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
 async function run() {
   await pool.query(`DELETE FROM "WorkLog" WHERE description = 'Automated Edit Verification Test'`);

@@ -165,5 +165,48 @@ describe("Sidebar", () => {
     expect(allHrefs.length).toBe(uniqueHrefs.size);
     expect(allHrefs.length).toBe(10);
   });
+
+  it("uses updated refined copy and labels when provided", () => {
+    const groups = getGroups({
+      groupOverview: "Overview",
+      dashboard: "Dashboard",
+      projects: "Projects",
+      groupTestManagement: "Test Management",
+      testRepository: "Test Repository",
+      testExecution: "Test Execution",
+      groupWorkTracking: "Work Tracking",
+      tasksAndSprints: "Tasks & Sprints",
+      bugsAndIssues: "Bugs & Issues",
+      teamAndLogs: "Team & Work Logs",
+      groupReportsAnalytics: "Reports & Analytics",
+      groupReports: "Reports & Analytics",
+      groupPersonalTools: "Personal Tools",
+      notesAndVault: "Notes & Vault",
+      groupSystemSettings: "System Settings",
+      settings: "Settings",
+    } as unknown as Parameters<typeof getGroups>[0]);
+
+    expect(groups[0].title).toBe("Overview");
+    expect(groups[0].items[0].label).toBe("Dashboard");
+    expect(groups[0].items[1].label).toBe("Projects");
+
+    expect(groups[1].title).toBe("Test Management");
+    expect(groups[1].items[0].label).toBe("Test Repository");
+    expect(groups[1].items[1].label).toBe("Test Execution");
+
+    expect(groups[2].title).toBe("Work Tracking");
+    expect(groups[2].items[0].label).toBe("Tasks & Sprints");
+    expect(groups[2].items[1].label).toBe("Bugs & Issues");
+    expect(groups[2].items[2].label).toBe("Team & Work Logs");
+
+    expect(groups[3].title).toBe("Reports & Analytics");
+    expect(groups[3].items[0].label).toBe("Reports & Analytics");
+
+    expect(groups[4].title).toBe("Personal Tools");
+    expect(groups[4].items[0].label).toBe("Notes & Vault");
+
+    expect(groups[5].title).toBe("System Settings");
+    expect(groups[5].items[0].label).toBe("Settings");
+  });
 });
 
