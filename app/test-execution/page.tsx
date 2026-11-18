@@ -92,28 +92,43 @@ export default async function TestExecutionPage({
     };
   });
 
-  // Filter by search
-  const filtered = enrichedSuites.filter(s => {
-    if (!initialSearch) return true;
-    const term = initialSearch.toLowerCase();
-    return [s.title, s.project, s.planName, s.assignee].some(v => v.toLowerCase().includes(term));
-  });
+  // Calculate overview metrics
+  const activeRunsCount = enrichedSuites.filter(s => s.lastRun?.status === "in-progress").length;
+  const readyCount = enrichedSuites.filter(s => !s.lastRun || s.lastRun.status !== "in-progress").length;
+  const completedCount = enrichedSuites.filter(s => s.lastRun?.status === "completed").length;
+  const totalCases = enrichedSuites.reduce((acc, s) => acc + s.caseCount, 0);
 
-  // Group by status: in-progress runs first, then ready, then completed
-  const inProgress = filtered.filter(s => s.lastRun?.status === "in-progress");
-  const ready = filtered.filter(s => !s.lastRun || s.lastRun.status !== "in-progress");
+  let totalEvaluated = 0;
+  let totalPassed = 0;
+  for (const s of enrichedSuites) {
+    if (s.lastRun && s.lastRun.totalCases > 0) {
+      totalEvaluated += s.lastRun.passed + s.lastRun.failed + s.lastRun.blocked;
+      totalPassed += s.lastRun.passed;
+    }
+  }
+  const overallPassRate = totalEvaluated > 0 ? Math.round((totalPassed / totalEvaluated) * 100) : null;
+  const projects = Array.from(new Set(enrichedSuites.map(s => s.project).filter(Boolean))).sort();
 
   return (
     <PageShell
       icon={<Play size={22} weight="bold" />}
-      title="Execution Center"
-      description="Start new runs, continue in-progress executions, or review past results."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Test Sessions" }]}
+      title="Test Runs"
+      description="Plan, execute, and monitor test runs in real time with live metrics, environment targeting, and QA sign-off."
+      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Test Runs" }]}
       actions={<SuitesHeaderActions initialSearch={initialSearch} placeholder="Search suites..." exportModule="test-suites" importModule="test-suites" />}
     >
-      <ExecutionSuiteCards inProgress={inProgress} ready={ready} />
+      <ExecutionSuiteCards
+        suites={enrichedSuites}
+        projects={projects}
+        metrics={{
+          activeRuns: activeRunsCount,
+          readySuites: readyCount,
+          completedRuns: completedCount,
+          totalCases,
+          passRate: overallPassRate,
+        }}
+        initialSearch={initialSearch}
+      />
     </PageShell>
   );
 }
-
-

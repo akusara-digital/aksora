@@ -1,13 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { Play, ArrowRight, CheckCircle, XCircle, Warning, Clock, User, Lightning } from "@phosphor-icons/react";
+import {
+  Play,
+  Lightning,
+  Checks,
+  ChartLineUp,
+  MagnifyingGlass,
+  X,
+  Funnel,
+} from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
+import { InProgressCard, ReadyCard } from "./execution-run-card-items";
 
-type SuiteWithRun = {
+export type SuiteWithRun = {
   id: number;
   title: string;
   status: string;
@@ -32,15 +41,42 @@ type SuiteWithRun = {
   } | null;
 };
 
+export interface ExecutionSuiteCardsProps {
+  suites?: SuiteWithRun[];
+  projects?: string[];
+  metrics?: {
+    activeRuns: number;
+    readySuites: number;
+    completedRuns: number;
+    totalCases: number;
+    passRate: number | null;
+  };
+  initialSearch?: string;
+  inProgress?: SuiteWithRun[];
+  ready?: SuiteWithRun[];
+}
+
 export function ExecutionSuiteCards({
-  inProgress,
-  ready,
-}: {
-  inProgress: SuiteWithRun[];
-  ready: SuiteWithRun[];
-}) {
+  suites: rawSuites,
+  projects = [],
+  metrics,
+  initialSearch = "",
+  inProgress: legacyInProgress,
+  ready: legacyReady,
+}: ExecutionSuiteCardsProps) {
   const router = useRouter();
   const [creating, setCreating] = useState<number | null>(null);
+  const [search, setSearch] = useState(initialSearch);
+  const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [statusTab, setStatusTab] = useState<"all" | "in-progress" | "ready" | "completed">("all");
+
+  const allSuites = useMemo(() => {
+    if (rawSuites && rawSuites.length > 0) return rawSuites;
+    const combined: SuiteWithRun[] = [];
+    if (legacyInProgress) combined.push(...legacyInProgress);
+    if (legacyReady) combined.push(...legacyReady);
+    return combined;
+  }, [rawSuites, legacyInProgress, legacyReady]);
 
   const startNewRun = async (suite: SuiteWithRun) => {
     if (creating) return;
@@ -64,227 +100,296 @@ export function ExecutionSuiteCards({
     }
   };
 
-  const hasContent = inProgress.length > 0 || ready.length > 0;
+  const filteredSuites = useMemo(() => {
+    return allSuites.filter((suite) => {
+      if (selectedProject !== "all" && suite.project !== selectedProject) return false;
+      if (search.trim()) {
+        const term = search.toLowerCase();
+        const matches = [
+          suite.title,
+          suite.project,
+          suite.planName,
+          suite.assignee,
+          suite.lastRun?.tester || "",
+        ].some((v) => v.toLowerCase().includes(term));
+        if (!matches) return false;
+      }
+      if (statusTab === "in-progress") return suite.lastRun?.status === "in-progress";
+      if (statusTab === "ready") return !suite.lastRun || suite.lastRun.status !== "in-progress";
+      if (statusTab === "completed") return suite.lastRun?.status === "completed";
+      return true;
+    });
+  }, [allSuites, selectedProject, search, statusTab]);
 
-  if (!hasContent) {
+  const inProgressList = useMemo(
+    () => filteredSuites.filter((s) => s.lastRun?.status === "in-progress"),
+    [filteredSuites],
+  );
+  const readyList = useMemo(
+    () => filteredSuites.filter((s) => !s.lastRun || s.lastRun.status !== "in-progress"),
+    [filteredSuites],
+  );
+
+  const counts = useMemo(() => {
+    return {
+      all: allSuites.length,
+      inProgress: allSuites.filter((s) => s.lastRun?.status === "in-progress").length,
+      ready: allSuites.filter((s) => !s.lastRun || s.lastRun.status !== "in-progress").length,
+      completed: allSuites.filter((s) => s.lastRun?.status === "completed").length,
+    };
+  }, [allSuites]);
+
+  if (allSuites.length === 0) {
     return (
-      <div className=" border border-dashed border-gray-200 bg-gray-50/50 p-20 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center  bg-gray-100 text-gray-400">
+      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-16 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
           <Play size={32} weight="bold" />
         </div>
-        <h3 className="text-xl font-bold text-gray-900">No active suites found</h3>
-        <p className="mt-2 text-sm text-gray-500 max-w-sm mx-auto">
-          Create a test suite and set its status to Active or Draft to start execution.
+        <h3 className="text-xl font-bold text-slate-900">No active test suites</h3>
+        <p className="mt-2 text-sm text-slate-500 max-w-sm mx-auto">
+          Create a test suite in Test Cases and set its status to Active or Draft to begin executing test runs.
         </p>
         <Link
-          href="/test-suites"
-          className="mt-6 inline-flex items-center gap-2  bg-blue-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 shadow-lg shadow-blue-500/20"
+          href="/test-cases"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 shadow-md shadow-blue-500/15"
         >
-          Manage Test Suites
+          Manage Test Cases
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* In Progress Section */}
-      {inProgress.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-2 w-2  bg-blue-500 animate-pulse" />
-            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600">
-              In Progress ({inProgress.length})
+    <div className="space-y-6">
+      {/* 1. KPI Metric Overview Cards */}
+      {metrics && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+          <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50/60 to-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-700">Active Runs</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white">
+                <Lightning size={15} weight="fill" />
+              </span>
+            </div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-2xl font-black text-slate-900">{metrics.activeRuns}</span>
+              {metrics.activeRuns > 0 ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+                </span>
+              ) : (
+                <span className="text-xs text-slate-400">idle</span>
+              )}
+            </div>
+            <p className="mt-1 text-[11px] font-medium text-slate-500">Currently executing suites</p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Ready Suites</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                <Play size={15} weight="bold" />
+              </span>
+            </div>
+            <div className="mt-2 text-2xl font-black text-slate-900">{metrics.readySuites}</div>
+            <p className="mt-1 text-[11px] font-medium text-slate-500">Awaiting new execution</p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Total Cases</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <Checks size={15} weight="bold" />
+              </span>
+            </div>
+            <div className="mt-2 text-2xl font-black text-slate-900">{metrics.totalCases}</div>
+            <p className="mt-1 text-[11px] font-medium text-slate-500">Mapped in test library</p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Pass Rate</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                <ChartLineUp size={15} weight="bold" />
+              </span>
+            </div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span
+                className={cn(
+                  "text-2xl font-black",
+                  metrics.passRate !== null && metrics.passRate >= 80
+                    ? "text-emerald-600"
+                    : metrics.passRate !== null && metrics.passRate >= 50
+                    ? "text-amber-600"
+                    : metrics.passRate !== null
+                    ? "text-rose-600"
+                    : "text-slate-400",
+                )}
+              >
+                {metrics.passRate !== null ? `${metrics.passRate}%` : "—"}
+              </span>
+              <span className="text-xs text-slate-400">avg</span>
+            </div>
+            <p className="mt-1 text-[11px] font-medium text-slate-500">From latest run outcomes</p>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Control & Filtering Bar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
+        {/* Status Tabs */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setStatusTab("all")}
+            className={cn(
+              "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition",
+              statusTab === "all"
+                ? "bg-slate-900 text-white shadow-sm"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+            )}
+          >
+            All <span className="opacity-75">({counts.all})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusTab("in-progress")}
+            className={cn(
+              "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition",
+              statusTab === "in-progress"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "border border-slate-200 bg-white text-blue-700 hover:bg-blue-50/50",
+            )}
+          >
+            <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+            In Progress <span className="opacity-75">({counts.inProgress})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusTab("ready")}
+            className={cn(
+              "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition",
+              statusTab === "ready"
+                ? "bg-slate-900 text-white shadow-sm"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+            )}
+          >
+            Ready <span className="opacity-75">({counts.ready})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusTab("completed")}
+            className={cn(
+              "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition",
+              statusTab === "completed"
+                ? "bg-slate-900 text-white shadow-sm"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+            )}
+          >
+            Completed <span className="opacity-75">({counts.completed})</span>
+          </button>
+        </div>
+
+        {/* Project Selector & Search */}
+        <div className="flex items-center gap-2">
+          {projects.length > 0 && (
+            <div className="relative">
+              <select
+                aria-label="Filter by project"
+                value={selectedProject}
+                onChange={(e) => setSelectedProject(e.target.value)}
+                className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 pr-7 text-xs font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+              >
+                <option value="all">All Projects</option>
+                {projects.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="relative flex items-center">
+            <MagnifyingGlass size={13} weight="bold" className="absolute left-2.5 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search runs..."
+              className="h-8 w-44 sm:w-56 rounded-lg border border-slate-200 bg-white pl-8 pr-7 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2 text-slate-400 hover:text-slate-600"
+                aria-label="Clear search"
+              >
+                <X size={12} weight="bold" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Filter Result Empty State */}
+      {filteredSuites.length === 0 && (
+        <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
+          <Funnel size={28} weight="bold" className="mx-auto text-slate-300" />
+          <p className="mt-2 text-sm font-bold text-slate-700">No test suites match your filters</p>
+          <p className="mt-1 text-xs text-slate-500">Try adjusting the project, status tab, or search query.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setSearch("");
+              setSelectedProject("all");
+              setStatusTab("all");
+            }}
+            className="mt-4 inline-flex h-8 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100"
+          >
+            Reset Filters
+          </button>
+        </div>
+      )}
+
+      {/* 4. In Progress Section */}
+      {inProgressList.length > 0 && statusTab !== "ready" && statusTab !== "completed" && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-blue-700">
+              In Progress ({inProgressList.length})
             </h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {inProgress.map(suite => (
+            {inProgressList.map((suite) => (
               <InProgressCard key={suite.id} suite={suite} />
             ))}
           </div>
         </section>
       )}
 
-      {/* Ready to Execute */}
-      {ready.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500">
-              Ready ({ready.length})
+      {/* 5. Ready to Execute Section */}
+      {readyList.length > 0 && statusTab !== "in-progress" && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              {statusTab === "completed" ? `Completed Runs (${readyList.length})` : `Ready to Run (${readyList.length})`}
             </h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {ready.map(suite => (
-              <ReadyCard key={suite.id} suite={suite} onStartRun={startNewRun} creating={creating === suite.id} />
+            {readyList.map((suite) => (
+              <ReadyCard
+                key={suite.id}
+                suite={suite}
+                onStartRun={startNewRun}
+                creating={creating === suite.id}
+              />
             ))}
           </div>
         </section>
       )}
-    </div>
-  );
-}
-
-function InProgressCard({ suite }: { suite: SuiteWithRun }) {
-  const run = suite.lastRun!;
-  const total = run.totalCases || suite.caseCount;
-  const completed = run.passed + run.failed + run.blocked;
-  const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-  return (
-    <Link
-      href={`/test-execution/${suite.publicToken}/run/${run.id}`}
-      className="group relative flex flex-col  border-2 border-blue-200 bg-white p-5 transition-all hover:border-blue-400 hover:shadow-lg "
-    >
-      {/* Status badge */}
-      <div className="absolute top-4 right-4">
-        <span className="inline-flex items-center gap-1  bg-blue-100 px-2.5 py-1 text-[10px] font-bold text-blue-700">
-          <Lightning size={10} weight="fill" /> Run #{run.runNumber}
-        </span>
-      </div>
-
-      <div className="mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{suite.project}</p>
-        <h3 className="text-base font-bold text-gray-900 pr-20 line-clamp-1">{suite.title}</h3>
-      </div>
-
-      {/* Progress ring */}
-      <div className="flex items-center gap-4 mb-4">
-        <ProgressRing progress={progress} size={48} />
-        <div className="flex-1 grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p className="text-sm font-bold text-emerald-600">{run.passed}</p>
-            <p className="text-[11px] font-bold text-gray-400">Pass</p>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-rose-500">{run.failed}</p>
-            <p className="text-[11px] font-bold text-gray-400">Fail</p>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-amber-500">{run.blocked}</p>
-            <p className="text-[11px] font-bold text-gray-400">Block</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-          <User size={12} weight="bold" />
-          <span className="font-semibold">{run.tester || "-"}</span>
-        </div>
-        <span className="text-[11px] font-bold text-blue-600 group-hover:text-blue-700 flex items-center gap-1">
-          Continue <ArrowRight size={12} weight="bold" />
-        </span>
-      </div>
-    </Link>
-  );
-}
-
-function ReadyCard({
-  suite,
-  onStartRun,
-  creating,
-}: {
-  suite: SuiteWithRun;
-  onStartRun: (s: SuiteWithRun) => void;
-  creating: boolean;
-}) {
-  const lastRun = suite.lastRun;
-  const hasHistory = lastRun && lastRun.status === "completed";
-  const passRate = hasHistory && lastRun.totalCases > 0
-    ? Math.round((lastRun.passed / lastRun.totalCases) * 100)
-    : null;
-
-  return (
-    <div className="group flex flex-col  border border-gray-200 bg-white p-5 transition-all hover:border-gray-300 hover:shadow-md">
-      <div className="mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{suite.project}</p>
-        <h3 className="text-base font-bold text-gray-900 line-clamp-1">{suite.title}</h3>
-        <p className="text-xs text-gray-400 mt-0.5">{suite.planName}</p>
-      </div>
-
-      {/* Stats row */}
-      <div className="flex items-center gap-3 mb-4 text-xs text-gray-500">
-        <span className="font-semibold">{suite.caseCount} cases</span>
-        {suite.assignee && (
-          <>
-            <span className="text-gray-300">·</span>
-            <span className="flex items-center gap-1">
-              <User size={11} weight="bold" /> {suite.assignee}
-            </span>
-          </>
-        )}
-        {hasHistory && (
-          <>
-            <span className="text-gray-300">·</span>
-            <span className={cn(
-              "font-bold",
-              passRate !== null && passRate >= 80 ? "text-emerald-600" : passRate !== null && passRate >= 50 ? "text-amber-600" : "text-rose-500"
-            )}>
-              Last: {passRate}%
-            </span>
-          </>
-        )}
-      </div>
-
-      {/* Last run mini summary */}
-      {hasHistory && (
-        <div className="flex items-center gap-3 mb-4 text-[11px]">
-          <span className="flex items-center gap-1 text-emerald-600"><CheckCircle size={12} weight="bold" />{lastRun.passed}</span>
-          <span className="flex items-center gap-1 text-rose-500"><XCircle size={12} weight="bold" />{lastRun.failed}</span>
-          <span className="flex items-center gap-1 text-amber-500"><Warning size={12} weight="bold" />{lastRun.blocked}</span>
-          <span className="text-gray-400 ml-auto">Run #{lastRun.runNumber}</span>
-        </div>
-      )}
-
-      {/* Actions */}
-      <div className="mt-auto flex items-center gap-2 pt-3 border-t border-gray-100">
-        <button
-          onClick={() => onStartRun(suite)}
-          disabled={creating || suite.caseCount === 0}
-          className="flex-1 inline-flex h-9 items-center justify-center gap-2  bg-blue-600 text-xs font-bold text-white transition hover:bg-blue-700  disabled:opacity-40 shadow-sm shadow-blue-500/20"
-        >
-          <Play size={14} weight="fill" />
-          {creating ? "Starting..." : "New Run"}
-        </button>
-        <Link
-          href={`/test-execution/${suite.publicToken}`}
-          className="inline-flex h-9 items-center justify-center gap-1.5  border border-gray-200 px-3 text-xs font-bold text-gray-600 transition hover:bg-gray-50 hover:border-gray-300"
-        >
-          <Clock size={13} weight="bold" /> History
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function ProgressRing({ progress, size = 48 }: { progress: number; size?: number }) {
-  const strokeWidth = 4;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (progress / 100) * circumference;
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle
-          cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke="#f1f5f9" strokeWidth={strokeWidth}
-        />
-        <circle
-          cx={size / 2} cy={size / 2} r={radius}
-          fill="none"
-          stroke={progress >= 100 ? "#10b981" : "#3b82f6"}
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className="transition-all duration-700"
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs font-bold text-gray-700">{progress}%</span>
-      </div>
     </div>
   );
 }
