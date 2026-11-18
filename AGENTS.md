@@ -5,10 +5,17 @@
 ## Multi-Agent Git Safety & Local Commit Rule (MANDATORY)
 1. **Commit Locally Often (Safety Net)**:
    - Setiap kali sebuah task/perbaikan selesai dan lulus verifikasi (`typecheck` & `test`), agen WAJIB langsung membuat local commit dengan conventional message (`fix: ...`, `feat: ...`, `refactor: ...`).
+   - Stage **hanya file yang Anda ubah** (`git add <file1> <file2>`), hindari `git add -A` agar tidak tidak sengaja men-stage file setengah jadi milik agen lain.
    - JANGAN membiarkan file kotor mengendap di uncommitted working tree agar hasil kerja tidak tertimpa (*clobbered*) oleh agen lain yang bekerja di repo ini.
-2. **No Auto-Push Remains Strict**:
+2. **No Auto-Push Remains Strict (Enforced by Git Hook)**:
    - Local commit bebas dan sangat dianjurkan setelah verifikasi lulus.
    - `git push` ke remote origin tetap DILARANG OTOMATIS tanpa instruksi eksplisit di turn tersebut (kata kunci "push"). Slang/afirmasi kasual ("gas", "lanjut", "sip") bukan izin untuk push.
+   - Secara teknis, `.githooks/pre-push` memblokir semua `git push` kecuali dengan `AK_ALLOW_PUSH=1` (`$env:AK_ALLOW_PUSH="1"; git push`), versi `package.json` sudah di-bump, working tree bersih, dan `graphify-out/graph.json` terbaru tanpa folder snapshot lama.
+3. **Hard Enforcement via `.githooks/`**:
+   - `pre-commit`: memblokir file `.md` spec liar, file flat di `components/` root, file `.env`, UTF-8 BOM, dan TypeScript error (`tsc --noEmit`).
+   - `commit-msg`: memblokir trailer `Co-Authored-By:` dan mewajibkan Conventional Commits.
+   - `pre-push`: memblokir auto-push tanpa `AK_ALLOW_PUSH=1`, version bump, dan refresh graphify.
+4. **Parallel Agents**: Jika menjalankan >1 agen bersamaan, gunakan worktree terpisah via `pnpm worktree:add <name>` (`pnpm worktree:list`, `pnpm worktree:remove <name>`).
 
 ## Versioning & Pre-Push (REQUIRED)
 - **Every push to aksora project MUST bump `version` in `package.json`** (semver `MAJOR.MINOR.PATCH`). Include the version change in the same commit, then push.

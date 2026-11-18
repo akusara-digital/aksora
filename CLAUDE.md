@@ -21,10 +21,15 @@
 ## Multi-Agent Git Safety & Local Commit Rule (MANDATORY)
 1. **Commit Locally Often (Safety Net)**:
    - Setiap kali sebuah task/perbaikan selesai dan lulus verifikasi (`typecheck` & `test`), agen WAJIB langsung membuat local commit dengan conventional message (`fix: ...`, `feat: ...`, `refactor: ...`).
+   - Stage **hanya file yang Anda ubah** (`git add <file1> <file2>`), hindari `git add -A`.
    - JANGAN membiarkan file kotor mengendap di uncommitted working tree agar hasil kerja tidak tertimpa (*clobbered*) oleh agen lain yang bekerja di repo ini.
-2. **No Auto-Push Remains Strict**:
+2. **No Auto-Push Remains Strict (Enforced by Git Hook)**:
    - Local commit bebas dan sangat dianjurkan setelah verifikasi lulus.
    - `git push` ke remote origin tetap DILARANG OTOMATIS tanpa instruksi eksplisit di turn tersebut (kata kunci "push").
+   - `.githooks/pre-push` secara teknis memblokir `git push` tanpa `AK_ALLOW_PUSH=1`, version bump, clean working tree, dan fresh `graphify-out/graph.json`.
+3. **Hard Enforcement via `.githooks/`**:
+   - `pre-commit` (block loose `.md`, flat `components/*`, `.env`, BOM, `tsc --noEmit`), `commit-msg` (block `Co-Authored-By`, enforce Conventional Commits), `pre-push` (block unauthorized push).
+   - Untuk agen paralel bersamaan, gunakan `pnpm worktree:add <name>`.
 
 ## Git & Pre-Push Rules (CRITICAL)
 - **Mandatory Pre-Push Routine**: Selalu jalankan `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`) untuk menyegarkan knowledge graph (hapus history snapshot lama) dan bump `version` di `package.json` sebelum push.

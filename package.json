@@ -32,7 +32,12 @@
     "sicmundus:fill": "node scripts/sicmundus-agent.mjs --fill-gaps",
     "sicmundus:cron": "node scripts/sicmundus-cron.mjs",
     "runner:start": "node scripts/ai-runner.mjs",
-    "mcp": "node scripts/aksora-mcp.mjs"
+    "mcp": "node scripts/aksora-mcp.mjs",
+    "prepare": "node scripts/git-hooks/install.mjs",
+    "hooks:install": "node scripts/git-hooks/install.mjs",
+    "worktree:add": "node scripts/worktree.mjs add",
+    "worktree:list": "node scripts/worktree.mjs list",
+    "worktree:remove": "node scripts/worktree.mjs remove"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
