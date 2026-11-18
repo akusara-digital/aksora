@@ -34,6 +34,10 @@ vi.mock("@phosphor-icons/react", () => ({
   Funnel: (props: Record<string, unknown>) => <svg data-testid="funnel" {...props} />,
   X: (props: Record<string, unknown>) => <svg data-testid="x" {...props} />,
   Sparkle: (props: Record<string, unknown>) => <svg data-testid="sparkle" {...props} />,
+  Plus: (props: Record<string, unknown>) => <svg data-testid="plus" {...props} />,
+  Play: (props: Record<string, unknown>) => <svg data-testid="play" {...props} />,
+  FolderSimple: (props: Record<string, unknown>) => <svg data-testid="folder" {...props} />,
+  FolderPlus: (props: Record<string, unknown>) => <svg data-testid="folder-plus" {...props} />,
 }));
 
 import { TestCaseLibrary } from "@/app/test-cases/test-case-library";
@@ -139,5 +143,27 @@ describe("TestCaseLibrary menu", () => {
     const clearButton = screen.getByRole("button", { name: /clear/i });
     fireEvent.click(clearButton);
     expect(screen.getAllByText("Checkout").length).toBeGreaterThan(0);
+  });
+
+  it("displays empty suites in the left pane with direct Add First Test Case CTA", () => {
+    render(
+      <TestCaseLibrary
+        cases={[]}
+        suites={[
+          {
+            id: 42,
+            title: "Onboarding Smoke Suite",
+            publicToken: "suite-42",
+            status: "active",
+            planTitle: "Release 1.0",
+            planProject: "VANAPP",
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText("Onboarding Smoke Suite").length).toBeGreaterThan(0);
+    expect(screen.getByText("No test cases in this suite yet")).not.toBeNull();
+    expect(screen.getByRole("button", { name: /add first test case/i })).not.toBeNull();
   });
 });

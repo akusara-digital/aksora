@@ -25,15 +25,14 @@ vi.mock("next/link", () => ({
 import { SectionSubNav } from "@/components/layout/section-sub-nav";
 
 describe("SectionSubNav", () => {
-  it("renders Test Cases (Repository & Planning) tabs when on /test-cases", () => {
+  it("renders Cases & Suites + Test Plans tabs when on /test-cases or /test-suites", () => {
     currentPathname = "/test-cases";
     const html = renderToStaticMarkup(<SectionSubNav />);
     expect(html).toContain('href="/test-cases"');
-    expect(html).toContain('href="/test-suites"');
     expect(html).toContain('href="/test-plans"');
     expect(html).not.toContain('href="/exploratory"');
-    expect(html).toContain("Test Cases");
-    expect(html).toContain("Test Suites");
+    expect(html).toContain("Cases &amp; Suites");
+    expect(html).toContain("Test Plans");
   });
 
   it("renders Test Runs execution tabs including Exploratory when on /test-execution or /exploratory", () => {

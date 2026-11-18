@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   Checks,
-  Table,
   ClipboardText,
   Compass,
   PlayCircle,
@@ -42,7 +41,7 @@ type SubNavGroup = {
 };
 
 const SUB_NAV_GROUPS: SubNavGroup[] = [
-  // 1. Test Cases (Repository & Planning)
+  // 1. Test Cases & Suites (Repository) + Test Plans (Release Planning)
   {
     match: (p) =>
       p === "/test-cases" ||
@@ -50,9 +49,18 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       p.startsWith("/test-suites") ||
       (p.startsWith("/test-plans") && !p.startsWith("/test-plans/projects/")),
     tabs: [
-      { href: "/test-cases", label: "Test Cases", icon: Checks },
-      { href: "/test-suites", label: "Test Suites", icon: Table },
-      { href: "/test-plans", label: "Test Plans", icon: ClipboardText },
+      {
+        href: "/test-cases",
+        label: "Cases & Suites",
+        icon: Checks,
+        matchPaths: ["/test-cases", "/test-suites"],
+      },
+      {
+        href: "/test-plans",
+        label: "Test Plans",
+        icon: ClipboardText,
+        matchPaths: ["/test-plans"],
+      },
     ],
   },
   // 2. Test Runs (Execution, Exploratory, Schedules & Recordings)

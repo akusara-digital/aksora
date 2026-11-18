@@ -1,4 +1,8 @@
-import { getAllTestCasesWithSuite } from "@/lib/data";
+import {
+  getAllTestCasesWithSuite,
+  getAllTestSuitesWithPlan,
+  getTestPlansSummary,
+} from "@/lib/data";
 import { PageShell } from "@/components/layout/page-shell";
 import { TestCaseLibrary } from "./test-case-library";
 import { SuitesHeaderActions } from "@/components/test-management/suites-header-actions";
@@ -11,8 +15,14 @@ export default async function TestCasesPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const rawCases = await getAllTestCasesWithSuite();
+  const [rawCases, rawSuites, rawPlans] = await Promise.all([
+    getAllTestCasesWithSuite(),
+    typeof getAllTestSuitesWithPlan === "function" ? getAllTestSuitesWithPlan() : Promise.resolve([]),
+    typeof getTestPlansSummary === "function" ? getTestPlansSummary() : Promise.resolve([]),
+  ]);
   const cases = JSON.parse(JSON.stringify(rawCases));
+  const suites = JSON.parse(JSON.stringify(rawSuites));
+  const plans = JSON.parse(JSON.stringify(rawPlans));
   const query = searchParams ? await searchParams : {};
   const initialSearch = typeof query.q === "string" ? query.q : Array.isArray(query.q) ? query.q[0] : "";
 
@@ -20,13 +30,24 @@ export default async function TestCasesPage({
     <PageShell
       icon={<Checks size={22} weight="bold" />}
       title="Test Case Library"
-      description="All test cases across every suite. Filter by status, review assignee ownership, and jump directly to execution."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Test Cases" }]}
-      actions={<SuitesHeaderActions initialSearch={initialSearch} placeholder="Search suites..." exportModule="test-suites" importModule="test-suites" />}
+      description="Organize test suites on the left and author or execute test cases on the right."
+      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cases & Suites" }]}
+      actions={
+        <SuitesHeaderActions
+          initialSearch={initialSearch}
+          placeholder="Search suites or test cases..."
+          exportModule="test-cases"
+          importModule="test-cases"
+        />
+      }
     >
-      <TestCaseLibrary key={initialSearch} cases={cases} initialSearch={initialSearch} />
+      <TestCaseLibrary
+        key={initialSearch}
+        cases={cases}
+        suites={suites}
+        plans={plans}
+        initialSearch={initialSearch}
+      />
     </PageShell>
   );
 }
-
-

@@ -78,5 +78,7 @@ export {
   getTestCasesByScenario,
   getTestCasesByScenarioIds,
   getAllTestCasesWithSuite,
+  getAllTestSuitesWithPlan,
+  getTestPlansSummary,
   getPublicReportData,
 } from "@/lib/test-management-data";

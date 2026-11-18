@@ -125,10 +125,10 @@ export function ModuleWorkspaceHeader({
                   <button
                     type="button"
                     onClick={onToggleForm}
-                    className="inline-flex h-8 items-center gap-1.5 bg-blue-600 px-3 text-[13px] font-medium text-white transition hover:bg-blue-700"
+                    className="inline-flex h-8 cursor-pointer items-center gap-1.5 bg-blue-600 px-3 text-[13px] font-medium text-white transition hover:bg-blue-700"
                   >
                     <Plus size={14} weight="bold" className="shrink-0" />
-                    Add {shortTitle}
+                    New {shortTitle.replace(/s$/i, "")}
                   </button>
                 </>
               )}

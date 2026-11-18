@@ -144,7 +144,7 @@ export function ModuleWorkspaceForm({
 "bg-emerald-600 hover:bg-emerald-500",
  )}
  >
- {pending ?"Processing..." : editingRow ?`Save ${shortTitle}` :`Add ${shortTitle}`}
+ {pending ?"Processing..." : editingRow ?`Save ${shortTitle.replace(/s$/i, "")}` :`Add ${shortTitle.replace(/s$/i, "")}`}
  </button>
  <button
  type="button"

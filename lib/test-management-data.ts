@@ -414,3 +414,55 @@ export async function getAllTestCasesWithSuite() {
     planProject: String(r.planProject ?? ""),
   })));
 }
+
+export async function getAllTestSuitesWithPlan() {
+  const scope = await getReadScope();
+  const cached = getCached<Array<Record<string, string | number | null>>>(cacheKey("all-test-suites", scope, "plan"));
+  if (cached !== null) return cached;
+  const tsWhere = scope.andWhere.replace(/\"company\"/g, 'ts."company"').replace(/\"workspaceId\"/g, 'ts."workspaceId"');
+
+  const rows = await selectAll(
+    `SELECT ts.id, ts.title, ts."publicToken", ts.status, ts.assignee, ts."testPlanId",
+            tp.title AS "planTitle", tp.project AS "planProject"
+     FROM "TestSuite" ts
+      LEFT JOIN "TestPlan" tp ON tp.id = CAST(ts."testPlanId" AS INTEGER) AND tp."deletedAt" IS NULL
+     WHERE ts."deletedAt" IS NULL${tsWhere}
+     ORDER BY ts.id DESC`,
+    scope.params,
+  );
+
+  return setCached(cacheKey("all-test-suites", scope, "plan"), rows.map((r) => ({
+    id: Number(r.id),
+    title: String(r.title ?? ""),
+    publicToken: String(r.publicToken ?? ""),
+    status: String(r.status ?? "active"),
+    assignee: String(r.assignee ?? ""),
+    testPlanId: r.testPlanId != null ? String(r.testPlanId) : "",
+    planTitle: String(r.planTitle ?? ""),
+    planProject: String(r.planProject ?? ""),
+  })));
+}
+
+export async function getTestPlansSummary() {
+  const scope = await getReadScope();
+  const cached = getCached<Array<{ id: number; title: string; project: string }>>(cacheKey("test-plans-summary", scope, "select"));
+  if (cached !== null) return cached;
+  const tpWhere = scope.andWhere.replace(/\"company\"/g, 'tp."company"').replace(/\"workspaceId\"/g, 'tp."workspaceId"');
+
+  const rows = await selectAll(
+    `SELECT tp.id, tp.title, tp.project
+     FROM "TestPlan" tp
+     WHERE tp."deletedAt" IS NULL${tpWhere}
+     ORDER BY tp.id DESC`,
+    scope.params,
+  );
+
+  return setCached(
+    cacheKey("test-plans-summary", scope, "select"),
+    rows.map((r) => ({
+      id: Number(r.id),
+      title: String(r.title ?? ""),
+      project: String(r.project ?? ""),
+    })),
+  );
+}

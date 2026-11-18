@@ -5,6 +5,8 @@ const mocks = vi.hoisted(() => ({
   pageShell: vi.fn(({ children }: { children: React.ReactNode }) => <div>{children}</div>),
   testCaseLibrary: vi.fn(() => <div data-testid="test-case-library" />),
   getAllTestCasesWithSuite: vi.fn(),
+  getAllTestSuitesWithPlan: vi.fn(),
+  getTestPlansSummary: vi.fn(),
 }));
 
 vi.mock("@/components/layout/page-shell", () => ({
@@ -13,6 +15,8 @@ vi.mock("@/components/layout/page-shell", () => ({
 
 vi.mock("@/lib/data", () => ({
   getAllTestCasesWithSuite: mocks.getAllTestCasesWithSuite,
+  getAllTestSuitesWithPlan: mocks.getAllTestSuitesWithPlan,
+  getTestPlansSummary: mocks.getTestPlansSummary,
 }));
 
 vi.mock("@/app/test-cases/test-case-library", () => ({
@@ -31,6 +35,8 @@ describe("test cases page", () => {
         status: "Passed",
       },
     ]);
+    mocks.getAllTestSuitesWithPlan.mockResolvedValueOnce([]);
+    mocks.getTestPlansSummary.mockResolvedValueOnce([]);
 
     const element = await (TestCasesPage as unknown as (args: {
       searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -42,9 +48,12 @@ describe("test cases page", () => {
 
     expect(html).toContain("test-case-library");
     expect(mocks.getAllTestCasesWithSuite).toHaveBeenCalled();
+    expect(mocks.getAllTestSuitesWithPlan).toHaveBeenCalled();
     expect(mocks.testCaseLibrary).toHaveBeenCalledWith(
       expect.objectContaining({
         initialSearch: "login",
+        suites: [],
+        plans: [],
         cases: [
           {
             id: 1,
@@ -59,7 +68,7 @@ describe("test cases page", () => {
     expect(mocks.pageShell).toHaveBeenCalledWith(
       expect.objectContaining({
         title: "Test Case Library",
-        description: "All test cases across every suite. Filter by status, review assignee ownership, and jump directly to execution.",
+        description: "Organize test suites on the left and author or execute test cases on the right.",
       }),
       undefined,
     );

@@ -233,7 +233,7 @@ export const moduleConfigs: Record<ModuleKey, ModuleConfig> = {
       { key: "sprint", label: "Sprint" },
       { key: "startDate", label: "Start" },
       { key: "endDate", label: "End" },
-      { key: "scope", label: "Testing Suite", multiline: true },
+      { key: "scope", label: "Testing Scope", multiline: true },
       { key: "notes", label: "Notes / Exclusions", multiline: true },
       { key: "status", label: "Status", tone: "status" },
     ],
