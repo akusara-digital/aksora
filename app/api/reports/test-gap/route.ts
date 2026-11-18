@@ -34,8 +34,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { isAdmin, params } = getAccessScope(user);
-  const companyFilter = isAdmin ? "" : ' AND "company" = ?';
+  const { isAdmin, params, andWhere, getScopedAndClause } = getAccessScope(user);
+  const companyFilter = andWhere;
+  const tcCompanyFilter = getScopedAndClause("tc");
 
   try {
     // Get all active tasks (features/enhancements that should have test coverage)
@@ -86,9 +87,9 @@ export async function GET() {
               COALESCE(ts."title", '') as "suiteTitle",
               COALESCE(tp."project", '') as "project"
        FROM "TestCase" tc
-       LEFT JOIN "TestSuite" ts ON CAST(tc."testSuiteId" AS TEXT) = CAST(ts."id" AS TEXT) AND ts."deletedAt" IS NULL
-       LEFT JOIN "TestPlan" tp ON CAST(ts."testPlanId" AS TEXT) = CAST(tp."id" AS TEXT) AND tp."deletedAt" IS NULL
-       WHERE tc."deletedAt" IS NULL ${companyFilter}`,
+       LEFT JOIN "TestSuite" ts ON (CAST(tc."testSuiteId" AS TEXT) = CAST(ts."id" AS TEXT) OR tc."testSuiteId" = ts."publicToken") AND ts."deletedAt" IS NULL
+       LEFT JOIN "TestPlan" tp ON (CAST(ts."testPlanId" AS TEXT) = CAST(tp."id" AS TEXT) OR ts."testPlanId" = tp."publicToken") AND tp."deletedAt" IS NULL
+       WHERE tc."deletedAt" IS NULL ${tcCompanyFilter}`,
       params,
     );
 

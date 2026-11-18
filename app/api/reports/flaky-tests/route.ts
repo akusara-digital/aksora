@@ -26,12 +26,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { isAdmin, params } = getAccessScope(user);
+  const { isAdmin, params, getScopedAndClause } = getAccessScope(user);
   const threshold = Number(request.nextUrl.searchParams.get("threshold") ?? 20);
   const minRuns = Number(request.nextUrl.searchParams.get("minRuns") ?? 3);
 
   try {
-    const companyFilter = isAdmin ? "" : 'AND cv."company" = ?';
+    const companyFilter = getScopedAndClause("cv");
 
     // Find test cases with inconsistent results across execution runs
     const flakyQuery = `
@@ -42,14 +42,14 @@ export async function GET(request: NextRequest) {
         COALESCE(ts."title", 'No Suite') as "suiteTitle",
         COALESCE(tp."project", 'Unknown') as "project",
         COUNT(*) as "totalRuns",
-        SUM(CASE WHEN cv."verdict" = 'Passed' THEN 1 ELSE 0 END) as "passCount",
-        SUM(CASE WHEN cv."verdict" = 'Failed' THEN 1 ELSE 0 END) as "failCount",
-        SUM(CASE WHEN cv."verdict" = 'Blocked' THEN 1 ELSE 0 END) as "blockedCount"
+        SUM(CASE WHEN LOWER(COALESCE(cv."verdict", '')) = 'passed' THEN 1 ELSE 0 END) as "passCount",
+        SUM(CASE WHEN LOWER(COALESCE(cv."verdict", '')) = 'failed' THEN 1 ELSE 0 END) as "failCount",
+        SUM(CASE WHEN LOWER(COALESCE(cv."verdict", '')) = 'blocked' THEN 1 ELSE 0 END) as "blockedCount"
       FROM "CaseVerdict" cv
       JOIN "TestCase" tc ON cv."testCaseId" = tc."id" AND tc."deletedAt" IS NULL
-      LEFT JOIN "TestSuite" ts ON CAST(tc."testSuiteId" AS TEXT) = CAST(ts."id" AS TEXT) AND ts."deletedAt" IS NULL
-      LEFT JOIN "TestPlan" tp ON CAST(ts."testPlanId" AS TEXT) = CAST(tp."id" AS TEXT) AND tp."deletedAt" IS NULL
-      WHERE cv."verdict" != 'Pending' ${companyFilter}
+      LEFT JOIN "TestSuite" ts ON (CAST(tc."testSuiteId" AS TEXT) = CAST(ts."id" AS TEXT) OR tc."testSuiteId" = ts."publicToken") AND ts."deletedAt" IS NULL
+      LEFT JOIN "TestPlan" tp ON (CAST(ts."testPlanId" AS TEXT) = CAST(tp."id" AS TEXT) OR ts."testPlanId" = tp."publicToken") AND tp."deletedAt" IS NULL
+      WHERE LOWER(COALESCE(cv."verdict", '')) != 'pending' ${companyFilter}
       GROUP BY cv."testCaseId", tc."tcId", tc."caseName", COALESCE(ts."title", 'No Suite'), COALESCE(tp."project", 'Unknown')
       HAVING COUNT(*) >= ?
       ORDER BY COUNT(*) DESC

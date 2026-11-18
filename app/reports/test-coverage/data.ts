@@ -177,25 +177,28 @@ export async function getTestCoverageData(): Promise<CoverageData | null> {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const { isAdmin, params } = getAccessScope(user);
+  const { isAdmin, params, andWhere, getScopedAndClause, getScopedWhereClause } = getAccessScope(user);
 
   try {
-    const companyFilter = isAdmin ? "" : 'AND tc."company" = ?';
+    const tcFilter = getScopedAndClause("tc");
+    const erFilter = getScopedWhereClause("er");
+    const tcStatsFilter = andWhere;
+
     const coverageQuery = `
       SELECT 
-        COALESCE(tp."project", 'Unlinked') as "project",
-        COALESCE(ts."title", 'No Suite') as "suiteTitle",
-        CAST(ts."id" AS TEXT) as "suiteId",
+        COALESCE(NULLIF(tp."project", ''), 'General') as "project",
+        COALESCE(NULLIF(ts."title", ''), 'Unassigned Suite') as "suiteTitle",
+        CAST(COALESCE(ts."id", 0) AS TEXT) as "suiteId",
         COUNT(*) as "total",
-        SUM(CASE WHEN tc."status" = 'Passed' THEN 1 ELSE 0 END) as "passed",
-        SUM(CASE WHEN tc."status" = 'Failed' THEN 1 ELSE 0 END) as "failed",
-        SUM(CASE WHEN tc."status" = 'Blocked' THEN 1 ELSE 0 END) as "blocked",
-        SUM(CASE WHEN tc."status" = 'Pending' THEN 1 ELSE 0 END) as "pending"
+        SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) = 'passed' THEN 1 ELSE 0 END) as "passed",
+        SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) = 'failed' THEN 1 ELSE 0 END) as "failed",
+        SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) = 'blocked' THEN 1 ELSE 0 END) as "blocked",
+        SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) IN ('pending', 'untested', '') OR tc."status" IS NULL THEN 1 ELSE 0 END) as "pending"
       FROM "TestCase" tc
-      LEFT JOIN "TestSuite" ts ON CAST(tc."testSuiteId" AS TEXT) = CAST(ts."id" AS TEXT) AND ts."deletedAt" IS NULL
-      LEFT JOIN "TestPlan" tp ON CAST(ts."testPlanId" AS TEXT) = CAST(tp."id" AS TEXT) AND tp."deletedAt" IS NULL
-      WHERE tc."deletedAt" IS NULL ${companyFilter}
-      GROUP BY COALESCE(tp."project", 'Unlinked'), COALESCE(ts."title", 'No Suite'), CAST(ts."id" AS TEXT)
+      LEFT JOIN "TestSuite" ts ON (CAST(tc."testSuiteId" AS TEXT) = CAST(ts."id" AS TEXT) OR tc."testSuiteId" = ts."publicToken") AND ts."deletedAt" IS NULL
+      LEFT JOIN "TestPlan" tp ON (CAST(ts."testPlanId" AS TEXT) = CAST(tp."id" AS TEXT) OR ts."testPlanId" = tp."publicToken") AND tp."deletedAt" IS NULL
+      WHERE tc."deletedAt" IS NULL ${tcFilter}
+      GROUP BY COALESCE(NULLIF(tp."project", ''), 'General'), COALESCE(NULLIF(ts."title", ''), 'Unassigned Suite'), CAST(COALESCE(ts."id", 0) AS TEXT)
       ORDER BY "project", "suiteTitle"
     `;
 
@@ -204,18 +207,17 @@ export async function getTestCoverageData(): Promise<CoverageData | null> {
     const statsQuery = `
       SELECT 
         COUNT(*) as "total",
-        SUM(CASE WHEN "status" = 'Passed' THEN 1 ELSE 0 END) as "passed",
-        SUM(CASE WHEN "status" = 'Failed' THEN 1 ELSE 0 END) as "failed",
-        SUM(CASE WHEN "status" = 'Blocked' THEN 1 ELSE 0 END) as "blocked",
-        SUM(CASE WHEN "status" = 'Pending' THEN 1 ELSE 0 END) as "pending"
+        SUM(CASE WHEN LOWER(COALESCE("status", '')) = 'passed' THEN 1 ELSE 0 END) as "passed",
+        SUM(CASE WHEN LOWER(COALESCE("status", '')) = 'failed' THEN 1 ELSE 0 END) as "failed",
+        SUM(CASE WHEN LOWER(COALESCE("status", '')) = 'blocked' THEN 1 ELSE 0 END) as "blocked",
+        SUM(CASE WHEN LOWER(COALESCE("status", '')) IN ('pending', 'untested', '') OR "status" IS NULL THEN 1 ELSE 0 END) as "pending"
       FROM "TestCase"
-      WHERE "deletedAt" IS NULL ${isAdmin ? "" : 'AND "company" = ?'}
+      WHERE "deletedAt" IS NULL ${tcStatsFilter}
     `;
 
     const statsRows = await db.query<{ total: number; passed: number; failed: number; blocked: number; pending: number }>(statsQuery, params);
     const rawStats = statsRows[0] || { total: 0, passed: 0, failed: 0, blocked: 0, pending: 0 };
 
-    const trendCompanyFilter = isAdmin ? "" : 'WHERE er."company" = ?';
     const trendQuery = `
         SELECT 
           TO_CHAR(er."startedAt", 'YYYY-MM-DD') as "period",
@@ -223,7 +225,7 @@ export async function getTestCoverageData(): Promise<CoverageData | null> {
           SUM(er."passed") as "passed",
           SUM(er."failed") as "failed"
         FROM "ExecutionRun" er
-        ${trendCompanyFilter}
+        ${erFilter}
         GROUP BY TO_CHAR(er."startedAt", 'YYYY-MM-DD')
         ORDER BY "period" DESC
         LIMIT 30

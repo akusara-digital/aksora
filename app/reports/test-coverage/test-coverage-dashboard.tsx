@@ -14,6 +14,8 @@ import {
   Bell,
   ArrowDown,
   FileArrowDown,
+  PlayCircle,
+  Plus,
 } from "@phosphor-icons/react";
 import {
   BarChart,
@@ -126,41 +128,83 @@ export function TestCoverageDashboard({ initialData }: { initialData: CoverageDa
       }
     >
       <div className="space-y-6">
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <StatCard
-            icon={<ChartPieSlice size={18} weight="bold" />}
-            label="Total Cases"
-            value={data.stats.total}
-            color="bg-blue-50 text-blue-600 border-blue-100"
-          />
-          <StatCard
-            icon={<CheckCircle size={18} weight="bold" />}
-            label="Passed"
-            value={data.stats.passed}
-            sub={`${data.stats.passRate}%`}
-            color="bg-emerald-50 text-emerald-600 border-emerald-100"
-          />
-          <StatCard
-            icon={<XCircle size={18} weight="bold" />}
-            label="Failed"
-            value={data.stats.failed}
-            color="bg-rose-50 text-rose-600 border-rose-100"
-          />
-          <StatCard
-            icon={<WarningCircle size={18} weight="bold" />}
-            label="Blocked"
-            value={data.stats.blocked}
-            color="bg-amber-50 text-amber-600 border-amber-100"
-          />
-          <StatCard
-            icon={<Clock size={18} weight="bold" />}
-            label="Pending"
-            value={data.stats.pending}
-            sub="Not executed"
-            color="bg-gray-50 text-gray-600 border-gray-200"
-          />
+        {/* Executive Quality Summary Banner */}
+        <div className="border border-gray-200 bg-white p-5 shadow-xs">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Quality Health &amp; Coverage</p>
+              <div className="mt-1 flex items-baseline gap-3">
+                <span className="text-3xl font-extrabold tracking-tight text-gray-900">{data.stats.passRate}%</span>
+                <span className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold",
+                  data.stats.total === 0
+                    ? "bg-gray-100 text-gray-600 border border-gray-200"
+                    : data.stats.passRate >= 80
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : data.stats.passRate >= 60
+                    ? "bg-amber-50 text-amber-700 border border-amber-200"
+                    : "bg-rose-50 text-rose-700 border border-rose-200"
+                )}>
+                  {data.stats.total === 0 ? "No Cases Yet" : data.stats.passRate >= 80 ? "Healthy" : data.stats.passRate >= 60 ? "Needs Review" : "Critical"}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                {data.stats.passed} of {data.stats.total} cases passed · {data.stats.coverageRate}% evaluated
+              </p>
+            </div>
+
+            {/* Metric Boxes */}
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="rounded-lg border border-gray-100 bg-gray-50/60 p-3 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Cases</p>
+                <p className="mt-0.5 text-lg font-bold text-gray-900">{data.stats.total}</p>
+              </div>
+              <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-3 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Passed</p>
+                <p className="mt-0.5 text-lg font-bold text-emerald-700">{data.stats.passed}</p>
+              </div>
+              <div className="rounded-lg border border-rose-100 bg-rose-50/40 p-3 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-rose-700">Failed</p>
+                <p className="mt-0.5 text-lg font-bold text-rose-700">{data.stats.failed}</p>
+              </div>
+              <div className="rounded-lg border border-amber-100 bg-amber-50/40 p-3 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Blocked / Pending</p>
+                <p className="mt-0.5 text-lg font-bold text-amber-700">{data.stats.blocked + data.stats.pending}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Segmented Progress Bar */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <CoverageBar {...data.stats} />
+          </div>
         </div>
+
+        {/* Actionable Empty State if no cases exist */}
+        {data.stats.total === 0 && (
+          <div className="border border-blue-100 bg-blue-50/40 p-6 text-center">
+            <h4 className="text-sm font-bold text-slate-800">No test coverage data recorded yet</h4>
+            <p className="mt-1 text-xs text-slate-500 max-w-md mx-auto">
+              Start by creating test suites and logging execution runs. Coverage rate and pass trends will populate automatically.
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <Link
+                href="/test-cases"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700"
+              >
+                <Plus size={14} weight="bold" />
+                <span>Create Test Cases</span>
+              </Link>
+              <Link
+                href="/test-execution"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                <PlayCircle size={14} weight="bold" />
+                <span>Run Test Execution</span>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Coverage Trend Alerts */}
         {data.alerts && data.alerts.length > 0 && (

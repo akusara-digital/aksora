@@ -16,9 +16,9 @@ export async function GET(req: Request) {
   // Get available sprints for the dropdown
   const sprints = await db.query<{ id: number; name: string; startDate: string; endDate: string; status: string }>(
     `SELECT "id", "name", "startDate", "endDate", "status" FROM "Sprint"
-     WHERE ("company" = ? OR "company" = '') AND "deletedAt" IS NULL
+     WHERE "deletedAt" IS NULL${scope.andWhere}
      ORDER BY "createdAt" DESC LIMIT 20`,
-    [scope.company]
+    scope.params
   );
 
   const selectedSprintId = sprintId ? parseInt(sprintId, 10) : sprints[0]?.id;
@@ -40,8 +40,8 @@ export async function GET(req: Request) {
   }>(
     `SELECT "id", "title", "status", "priority", "createdAt", "updatedAt", "assignee"
      FROM "Task"
-     WHERE "sprintId" = ? AND ("company" = ? OR "company" = '') AND "deletedAt" IS NULL`,
-    [selectedSprintId, scope.company]
+     WHERE "sprintId" = ? AND "deletedAt" IS NULL${scope.andWhere}`,
+    [selectedSprintId, ...scope.params]
   );
 
   const totalTasks = tasks.length;

@@ -91,7 +91,7 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       { href: "/gantt", label: "Gantt Timeline", icon: Rows },
     ],
   },
-  // 4. Reports (3 thematic hubs with contextual sub-views)
+  // 4. Reports (Single-row clean analytics hub)
   {
     match: (p) =>
       p.startsWith("/reports") ||
@@ -100,25 +100,21 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
     tabs: [
       {
         href: "/reports/test-coverage",
-        label: "Quality Analytics",
+        label: "Quality & Coverage",
         icon: ChartPieSlice,
-        matchPaths: ["/reports/test-coverage", "/reports/flaky-tests", "/reports/test-gap", "/reports/quality"],
-        children: [
-          { href: "/reports/test-coverage", label: "Test Coverage", icon: ChartPieSlice },
-          { href: "/reports/flaky-tests", label: "Flaky Tests", icon: ShuffleAngular },
-          { href: "/reports/test-gap", label: "Test Gap", icon: MagnifyingGlass },
-        ],
+        matchPaths: ["/reports", "/reports/test-coverage", "/reports/test-gap", "/reports/quality"],
+      },
+      {
+        href: "/reports/flaky-tests",
+        label: "Flaky Tests",
+        icon: ShuffleAngular,
+        matchPaths: ["/reports/flaky-tests"],
       },
       {
         href: "/reports/sprint-burndown",
-        label: "Delivery Analytics",
+        label: "Delivery & Sprints",
         icon: ChartLineUp,
         matchPaths: ["/reports/sprint-burndown", "/reports/workload", "/deployments", "/reports/delivery"],
-        children: [
-          { href: "/reports/sprint-burndown", label: "Sprint Burndown", icon: ChartLineUp },
-          { href: "/reports/workload", label: "Workload Heatmap", icon: Users },
-          { href: "/deployments", label: "Deployments", icon: RocketLaunch },
-        ],
       },
       {
         href: "/weekly-report",

@@ -20,10 +20,8 @@ export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { company, isAdmin } = getAccessScope(user);
-  
-  const companyFilter = isAdmin ? "" : ` AND "company" = ?`;
-  const params = isAdmin ? [] : [company];
+  const { andWhere, params } = getAccessScope(user);
+  const companyFilter = andWhere;
 
   try {
     // 1. Get all assignees (from User table)
