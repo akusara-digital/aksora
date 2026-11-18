@@ -121,8 +121,8 @@ export function ModuleWorkspaceFormField({
  </span>
  {isLocked ? (
  <div className={cn(
-"w-full  border border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-400 cursor-not-allowed select-none",
- field.kind ==="textarea" ?"min-h-28 items-start whitespace-pre-wrap" :"flex min-h-10 items-center",
+"w-full rounded-lg border border-blue-200/80 bg-blue-50/60 px-4 py-2.5 text-sm font-medium text-blue-900 cursor-not-allowed select-none transition dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300",
+ field.kind ==="textarea" ?"min-h-24 items-start whitespace-pre-wrap" :"flex min-h-10 items-center",
  )}>
  <div className={field.kind ==="textarea" ?"whitespace-pre-wrap break-words" :""}>
  {field.kind ==="textarea" && field.name ==="notes"

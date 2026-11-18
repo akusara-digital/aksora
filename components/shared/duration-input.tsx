@@ -101,8 +101,8 @@ export function DurationInput({
               value={hoursDraft}
               onChange={(e) => handleHoursChange(e.target.value)}
               className={cn(
-                "w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-xs text-gray-900 pr-10 transition focus:border-sky-300 focus:bg-white focus:outline-none focus:shadow-[0_0_0_4px_rgba(56,189,248,0.1)] disabled:bg-gray-100 disabled:cursor-not-allowed",
-                error && "border-rose-400 focus:border-rose-400 focus:shadow-[0_0_0_4px_rgba(244,63,94,0.1)]"
+                "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900 pr-10 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:outline-none disabled:border-blue-200/80 disabled:bg-blue-50/60 disabled:text-blue-900 disabled:cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100 dark:disabled:border-blue-900/50 dark:disabled:bg-blue-950/30 dark:disabled:text-blue-300",
+                error && "border-rose-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-500/15"
               )}
             />
             <span className="pointer-events-none absolute right-3 text-[11px] font-semibold text-gray-400">
@@ -126,8 +126,8 @@ export function DurationInput({
               value={minutesDraft}
               onChange={(e) => handleMinutesChange(e.target.value)}
               className={cn(
-                "w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-xs text-gray-900 pr-12 transition focus:border-sky-300 focus:bg-white focus:outline-none focus:shadow-[0_0_0_4px_rgba(56,189,248,0.1)] disabled:bg-gray-100 disabled:cursor-not-allowed",
-                error && "border-rose-400 focus:border-rose-400 focus:shadow-[0_0_0_4px_rgba(244,63,94,0.1)]"
+                "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900 pr-12 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:outline-none disabled:border-blue-200/80 disabled:bg-blue-50/60 disabled:text-blue-900 disabled:cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100 dark:disabled:border-blue-900/50 dark:disabled:bg-blue-950/30 dark:disabled:text-blue-300",
+                error && "border-rose-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-500/15"
               )}
             />
             <span className="pointer-events-none absolute right-3 text-[11px] font-semibold text-gray-400">

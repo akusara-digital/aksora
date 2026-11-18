@@ -107,7 +107,7 @@ export function ModuleWorkspaceForm({
 "md:col-span-1";
 
  return (
-  <label key={field.name} className={cn("flex self-start flex-col gap-0", spanClass)}>
+  <label key={field.name} className={cn("flex self-start flex-col gap-1.5", spanClass)}>
  <ModuleWorkspaceFormField
  module={module}
  field={field}

@@ -143,7 +143,12 @@ export function ModernDatePicker({
  {/* Hidden native input so forms continue to work without changing module-workspace logic significantly */}
  <input type="hidden" name={name} value={selectedDate ? selectedDate.toISOString().split('T')[0] :""} />
 
- <div ref={triggerRef} className="group relative flex h-12 w-full items-center rounded-lg border border-gray-200 bg-gray-50 transition focus-within:border-blue-300 focus-within:bg-white hover:bg-white">
+ <div ref={triggerRef} className={cn(
+  "group relative flex h-10 w-full items-center rounded-lg border transition",
+  disabled
+    ? "border-blue-200/80 bg-blue-50/60 text-blue-900 cursor-not-allowed dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300"
+    : "border-gray-200 bg-white hover:border-gray-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15 dark:border-zinc-800 dark:bg-zinc-900",
+ )}>
  <button
  type="button"
  onClick={() => setIsOpen(!isOpen)}

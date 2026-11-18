@@ -37,10 +37,10 @@ export const AutoResizeTextarea = forwardRef<
 
   const calculateMinHeight = (): number => {
     if (minHeight !== undefined) return minHeight;
-    if (rows === 1) return 38;
-    if (rows === 2) return 58;
-    if (rows >= 3) return Math.min(rows * 24 + 16, 120);
-    return 76;
+    if (rows === 1) return 40;
+    if (rows === 2) return 60;
+    if (rows >= 3) return Math.min(rows * 22 + 18, 120);
+    return 40;
   };
 
   const syncHeight = () => {
@@ -57,7 +57,7 @@ export const AutoResizeTextarea = forwardRef<
     if (scrollH > maxH) {
       el.style.height = `${maxH}px`;
       el.style.overflowY = "auto";
-    } else if (scrollH < minH) {
+    } else if (scrollH <= minH) {
       el.style.height = `${minH}px`;
       el.style.overflowY = "hidden";
     } else {
@@ -83,10 +83,12 @@ export const AutoResizeTextarea = forwardRef<
       ref={innerRef}
       rows={rows}
       className={cn(
-        "w-full resize-none rounded-lg border bg-white px-3.5 py-2.5 text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 outline-none transition-[border-color,box-shadow,background-color] dark:bg-zinc-900/60 dark:text-zinc-100 dark:placeholder:text-zinc-500",
+        "w-full resize-none rounded-lg border bg-white px-3.5 py-2.5 text-sm leading-5 text-slate-800 placeholder:text-slate-400 outline-none transition-[border-color,box-shadow,background-color] dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500",
         error
           ? "border-rose-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/15"
           : "border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 dark:border-zinc-800 dark:hover:border-zinc-700 dark:focus:border-blue-400 dark:focus:ring-blue-400/20",
+        props.disabled &&
+          "border-blue-200/80 bg-blue-50/60 text-blue-900 cursor-not-allowed placeholder:text-blue-400 select-none dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300",
         className,
       )}
       style={{

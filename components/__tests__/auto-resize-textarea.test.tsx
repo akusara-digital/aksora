@@ -11,14 +11,14 @@ describe("AutoResizeTextarea", () => {
     render(<AutoResizeTextarea placeholder="Type something..." />);
     const textarea = screen.getByPlaceholderText("Type something...");
     expect(textarea).toBeTruthy();
-    expect(textarea.style.minHeight).toBe("88px");
+    expect(textarea.style.minHeight).toBe("84px");
     expect(textarea.style.maxHeight).toBe("240px");
   });
 
   it("calculates minHeight appropriately when rows is 1", () => {
     render(<AutoResizeTextarea rows={1} placeholder="Single line" />);
     const textarea = screen.getByPlaceholderText("Single line");
-    expect(textarea.style.minHeight).toBe("38px");
+    expect(textarea.style.minHeight).toBe("40px");
   });
 
   it("respects explicit minHeight and maxHeight overrides", () => {

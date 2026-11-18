@@ -164,7 +164,7 @@ export function ModuleWorkspaceFormText({
 
  if (isLocked) {
  return (
- <div className="flex min-h-10 w-full items-center rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-400 cursor-not-allowed select-none">
+ <div className="flex min-h-10 w-full items-center rounded-lg border border-blue-200/80 bg-blue-50/60 px-4 py-2.5 text-sm font-medium text-blue-900 cursor-not-allowed select-none transition dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300">
  {value || "-"}
  <input type="hidden" name={field.name} value={value} />
  </div>
@@ -185,10 +185,37 @@ export function ModuleWorkspaceFormText({
    );
  }
 
+ if (field.kind === "textarea") {
+   return (
+     <div className="space-y-0">
+       <div className="relative">
+         <AutoResizeTextarea
+           name={field.name}
+           defaultValue={initialValue}
+           rows={1}
+           minHeight={40}
+           maxHeight={260}
+           required={field.required}
+           placeholder={field.placeholder ?? `Enter ${field.label}`}
+           disabled={module === "test-plans" && field.name === "scope"}
+           error={!!fieldError}
+           className={cn(
+             module === "test-plans" &&
+               field.name === "scope" &&
+               "border-blue-200/80 bg-blue-50/60 text-blue-900 cursor-not-allowed select-none",
+           )}
+         />
+       </div>
+       <FormFieldError message={fieldError} />
+     </div>
+   );
+ }
+
  return (
  <div className="space-y-0">
- <div className="relative">
- <AutoResizeTextarea
+ <div className="relative flex items-center">
+ <input
+ type="text"
  name={field.name}
  value={
    field.helperKind === "version-sequence"
@@ -200,12 +227,9 @@ export function ModuleWorkspaceFormText({
      ? undefined
      : initialValue
  }
- rows={field.kind === "textarea" ? 3 : 1}
- maxHeight={field.kind === "textarea" ? 260 : 120}
  required={field.required}
  placeholder={field.placeholder ?? `Enter ${field.label}`}
  disabled={module === "test-plans" && field.name === "scope"}
- error={!!fieldError}
  onChange={(e) => {
  if (field.helperKind === "version-sequence") {
  setVersionDraft(e.target.value);
@@ -218,8 +242,12 @@ export function ModuleWorkspaceFormText({
  }
  }}
  className={cn(
- field.helperKind === "version-sequence" && "pr-10",
- field.name === "scope" && module === "test-plans" && "bg-gray-100 text-gray-500 cursor-not-allowed",
+   "h-10 w-full rounded-lg border border-slate-200 bg-white px-3.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 disabled:border-blue-200/80 disabled:bg-blue-50/60 disabled:text-blue-900 disabled:cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100",
+   field.helperKind === "version-sequence" && "pr-10",
+   module === "test-plans" &&
+     field.name === "scope" &&
+     "border-blue-200/80 bg-blue-50/60 text-blue-900 cursor-not-allowed select-none",
+   fieldError && "border-rose-400 focus:border-rose-500 focus:ring-rose-500/15",
  )}
  />
  {field.helperKind ==="version-sequence" && (
