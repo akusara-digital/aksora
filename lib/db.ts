@@ -48,10 +48,10 @@ async function getPostgresPool() {
         connectionString,
         max: isNeon ? 5 : 10,
         min: isNeon ? 0 : 1,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 3000,
+        idleTimeoutMillis: 60000,
+        connectionTimeoutMillis: isNeon ? 15000 : 10000,
         allowExitOnIdle: true,
-        statement_timeout: 5000,
+        statement_timeout: isNeon ? 15000 : 10000,
       };
       let pool;
       if (isNeon) {
@@ -98,7 +98,10 @@ function isTransientError(err: unknown): boolean {
     message.includes("ECONNRESET") ||
     message.includes("ETIMEDOUT") ||
     message.includes("timeout exceeded") ||
-    message.includes("pool timeout")
+    message.includes("pool timeout") ||
+    message.includes("connection timeout") ||
+    message.includes("terminated due to connection timeout") ||
+    message.includes("Connection terminated")
   );
 }
 
@@ -122,8 +125,8 @@ async function queryRaw<T>(queryStr: string, params: unknown[] = []): Promise<T[
       return rows as T[];
     } catch (err) {
       attempts++;
-      if (attempts <= 2 && isTransientError(err)) {
-        const backoff = Math.min(150, 50 * Math.pow(2, attempts - 1) + Math.random() * 50);
+      if (attempts <= 3 && isTransientError(err)) {
+        const backoff = Math.min(300, 100 * Math.pow(2, attempts - 1) + Math.random() * 50);
         await sleep(backoff);
         continue;
       }
@@ -148,8 +151,8 @@ async function runRaw(queryStr: string, params: unknown[] = []): Promise<void> {
       return;
     } catch (err) {
       attempts++;
-      if (attempts <= 2 && isTransientError(err)) {
-        const backoff = Math.min(150, 50 * Math.pow(2, attempts - 1) + Math.random() * 50);
+      if (attempts <= 3 && isTransientError(err)) {
+        const backoff = Math.min(300, 100 * Math.pow(2, attempts - 1) + Math.random() * 50);
         await sleep(backoff);
         continue;
       }

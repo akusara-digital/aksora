@@ -142,9 +142,9 @@ export function GoogleSignInButton({
       }
       const next = new URLSearchParams(window.location.search).get("next") || "/dashboard";
       const isPlatformSuperAdmin = data.role === "superadmin" && !String(data.company || "").trim();
-      router.push(isPlatformSuperAdmin ? "/admin/overview" : next);
-      router.refresh();
+      const targetUrl = isPlatformSuperAdmin ? "/admin/overview" : next;
       toast(`Signed in as ${inputEmail}`, "success");
+      window.location.assign(targetUrl);
     } catch {
       updateError("Network error. Please try again.");
       setPending(false);
@@ -192,9 +192,9 @@ export function GoogleSignInButton({
               return;
             }
             const isPlatformSuperAdmin = data.role === "superadmin" && !String(data.company || "").trim();
-            router.push(isPlatformSuperAdmin ? "/admin/overview" : next);
-            router.refresh();
+            const targetUrl = isPlatformSuperAdmin ? "/admin/overview" : next;
             toast("Signed in with Google", "success");
+            window.location.assign(targetUrl);
           } catch {
             updateError("Network error. Please try again.");
             setPending(false);
@@ -308,15 +308,15 @@ export function GoogleSignInButton({
         </button>
       )}
 
-      {/* Dev helper for localhost:3001 if Google OAuth origin is restricted */}
+      {/* Dev helper for localhost if Google OAuth origin is restricted */}
       {process.env.NODE_ENV !== "production" && (
         <div className="pt-2 text-center">
           <button
             type="button"
             onClick={() => handleDevSignIn()}
-            className="text-[11px] font-semibold text-slate-400 hover:text-blue-600 transition underline underline-offset-2"
+            className="text-[11px] font-semibold text-slate-400 hover:text-blue-600 transition underline underline-offset-2 cursor-pointer"
           >
-            Sign in with Gmail (Dev 3001)
+            Sign in with Gmail (Local Dev)
           </button>
         </div>
       )}

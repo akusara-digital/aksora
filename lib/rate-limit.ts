@@ -96,25 +96,30 @@ export function rateLimitKey(ip: string, email: string): string {
 
 export async function isRateLimited(key: string, options?: RateLimitOptions): Promise<{ limited: boolean; retryAfterSeconds?: number }> {
   const { windowMs } = getRateLimitOptions(options);
-  const rows = await db.query<RateLimitRow>(`${cleanupSql(windowMs)} SELECT "attempts", "firstAttempt", "lockedUntil" FROM "RateLimitAttempt" WHERE "key" = ? LIMIT 1`, [key]);
-  const entry = rows[0];
-  if (!entry) return { limited: false };
+  try {
+    const rows = await db.query<RateLimitRow>(`${cleanupSql(windowMs)} SELECT "attempts", "firstAttempt", "lockedUntil" FROM "RateLimitAttempt" WHERE "key" = ? LIMIT 1`, [key]);
+    const entry = rows[0];
+    if (!entry) return { limited: false };
 
-  const now = Date.now();
-  const lockedUntilMs = toMs(entry.lockedUntil);
-  if (lockedUntilMs > now) {
-    return {
-      limited: true,
-      retryAfterSeconds: Math.ceil((lockedUntilMs - now) / 1000),
-    };
+    const now = Date.now();
+    const lockedUntilMs = toMs(entry.lockedUntil);
+    if (lockedUntilMs > now) {
+      return {
+        limited: true,
+        retryAfterSeconds: Math.ceil((lockedUntilMs - now) / 1000),
+      };
+    }
+
+    const firstAttemptMs = toMs(entry.firstAttempt);
+    if (firstAttemptMs && now - firstAttemptMs > windowMs) {
+      await db.run('DELETE FROM "RateLimitAttempt" WHERE "key" = ?', [key]);
+    }
+
+    return { limited: false };
+  } catch (err) {
+    console.warn("[RateLimit] Transient error checking rate limit, allowing request:", err instanceof Error ? err.message : String(err));
+    return { limited: false };
   }
-
-  const firstAttemptMs = toMs(entry.firstAttempt);
-  if (firstAttemptMs && now - firstAttemptMs > windowMs) {
-    await db.run('DELETE FROM "RateLimitAttempt" WHERE "key" = ?', [key]);
-  }
-
-  return { limited: false };
 }
 
 export async function recordFailedAttempt(key: string, options?: RateLimitOptions): Promise<void> {
