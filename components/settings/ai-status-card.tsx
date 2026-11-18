@@ -2,7 +2,7 @@
 
 import { Robot } from "@phosphor-icons/react";
 import {
-  SUPPORTED_PROVIDERS,
+  CONFIGURABLE_PROVIDERS,
   AI_PROVIDER_LABELS,
   type SupportedProvider,
 } from "@/lib/ai-types";
@@ -94,7 +94,7 @@ export function AIStatusCard({
               onChange={(e) => onSetActive(e.target.value)}
               className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             >
-              {SUPPORTED_PROVIDERS.filter(
+              {CONFIGURABLE_PROVIDERS.filter(
                 (p) => providerStates[p]?.status === "connected" || providerStates[p]?.status === "saved"
               ).map((p) => (
                 <option key={p} value={p}>

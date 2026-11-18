@@ -14,7 +14,7 @@ import {
   setStoredProviderModels,
 } from "@/lib/ai-keys";
 import {
-  SUPPORTED_PROVIDERS,
+  CONFIGURABLE_PROVIDERS,
   DEFAULT_AI_MODELS,
   AI_PROVIDER_LABELS,
   type SupportedProvider,
@@ -31,7 +31,7 @@ export function useAISettings() {
 
   const [providerStates, setProviderStates] = useState<Record<string, ProviderCardState>>(() => {
     const initial: Record<string, ProviderCardState> = {};
-    for (const p of SUPPORTED_PROVIDERS) {
+    for (const p of CONFIGURABLE_PROVIDERS) {
       initial[p] = {
         status: "disconnected",
         keyInput: "",
@@ -57,21 +57,17 @@ export function useAISettings() {
         const res = await fetch("/api/ai/models");
         const json = await res.json();
         const catalogModels = json?.data?.providers || DEFAULT_AI_MODELS;
-        const localStatus = json?.data?.status?.["9router"];
 
-        let resolvedActive = activeCfg.provider;
-        let resolvedModel = activeCfg.model;
+        let resolvedActive = activeCfg.provider === "9router" ? "" : activeCfg.provider;
+        let resolvedModel = activeCfg.provider === "9router" ? "" : activeCfg.model;
 
         const activeHasKey =
-          resolvedActive === "9router"
-            ? localStatus === "connected"
-            : resolvedActive === "9router-public"
+          resolvedActive === "9router-public"
             ? Boolean(public9r.url)
-            : Boolean(savedKeys[resolvedActive]);
+            : Boolean(resolvedActive && savedKeys[resolvedActive]);
 
         if (!activeHasKey) {
-          const firstConfigured = SUPPORTED_PROVIDERS.find((p) => {
-            if (p === "9router") return localStatus === "connected";
+          const firstConfigured = CONFIGURABLE_PROVIDERS.find((p) => {
             if (p === "9router-public") return Boolean(public9r.url);
             return Boolean(savedKeys[p]);
           });
@@ -80,10 +76,9 @@ export function useAISettings() {
 
         setProviderStates((prev) => {
           const next = { ...prev };
-          for (const p of SUPPORTED_PROVIDERS) {
+          for (const p of CONFIGURABLE_PROVIDERS) {
             const savedKey = p === "9router-public" ? public9r.key : savedKeys[p] || "";
-            const isConnected = p === "9router" && localStatus === "connected";
-            const hasKey = isConnected || Boolean(savedKey);
+            const hasKey = p === "9router-public" ? Boolean(public9r.url) : Boolean(savedKey);
             // Only use cached/catalog models when the provider has a key — no hardcoded defaults for keyless providers
             const modelsList =
               storedCachedModels[p]?.length
@@ -100,7 +95,7 @@ export function useAISettings() {
                 : modelsList[0] || "";
 
             next[p] = {
-              status: isConnected ? "connected" : savedKey ? "saved" : "disconnected",
+              status: hasKey ? "saved" : "disconnected",
               keyInput: savedKey,
               urlInput: p === "9router-public" ? public9r.url : undefined,
               validating: false,
@@ -124,12 +119,14 @@ export function useAISettings() {
       } catch {
         setProviderStates((prev) => {
           const next = { ...prev };
-          for (const p of SUPPORTED_PROVIDERS) {
-            const savedKey = savedKeys[p] || "";
+          for (const p of CONFIGURABLE_PROVIDERS) {
+            const savedKey = p === "9router-public" ? public9r.key : savedKeys[p] || "";
+            const hasKey = p === "9router-public" ? Boolean(public9r.url) : Boolean(savedKey);
             next[p] = {
               ...next[p],
-              status: savedKey ? "saved" : "disconnected",
+              status: hasKey ? "saved" : "disconnected",
               keyInput: savedKey,
+              urlInput: p === "9router-public" ? public9r.url : undefined,
             };
           }
           return next;

@@ -1,7 +1,7 @@
 "use client";
 
 import { InlineAlert } from "@/components/ui/inline-alert";
-import { SUPPORTED_PROVIDERS } from "@/lib/ai-types";
+import { CONFIGURABLE_PROVIDERS } from "@/lib/ai-types";
 import { AIProviderCard } from "./ai-provider-card";
 import { AIStatusCard } from "./ai-status-card";
 import { useAISettings } from "./use-ai-settings";
@@ -54,7 +54,7 @@ export function AISettingsClient() {
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Available Providers</h3>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {SUPPORTED_PROVIDERS.map((provider) => {
+          {CONFIGURABLE_PROVIDERS.map((provider) => {
             const state = providerStates[provider];
             const isConfigured = state.status === "connected" || state.status === "saved";
             const isCardActive = activeProvider === provider && isConfigured;

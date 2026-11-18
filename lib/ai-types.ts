@@ -12,6 +12,15 @@ export const SUPPORTED_PROVIDERS = [
   "9router-public",
 ] as const;
 
+export const CONFIGURABLE_PROVIDERS = [
+  "google",
+  "openai",
+  "anthropic",
+  "groq",
+  "deepseek",
+  "9router-public",
+] as const;
+
 export type SupportedProvider = (typeof SUPPORTED_PROVIDERS)[number];
 
 export const DEFAULT_AI_MODELS: Record<SupportedProvider, string[]> = {
@@ -86,8 +95,8 @@ export const AI_PROVIDER_LABELS: Record<
     color: "bg-indigo-600 text-white",
   },
   "9router-public": {
-    label: "9Router (Public)",
-    placeholder: "https://your-domain.com/v1 sk-9router-...",
+    label: "9Router",
+    placeholder: "sk-9router-...",
     docUrl: "https://developers.cloudflare.com/cloudflare-one/",
     color: "bg-slate-700 text-white",
   },
