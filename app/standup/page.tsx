@@ -10,9 +10,9 @@ export default function StandupPage() {
   return (
     <PageShell
       icon={<MicrophoneStage size={22} weight="bold" />}
-      title="Standup"
-      description="Log your daily standup — yesterday, today, and blockers. Saved to Meeting Notes."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Standup" }]}
+      title="Daily Standup"
+      description="Track daily team progress — yesterday, today, and blockers linked directly to active tasks."
+      crumbs={[{ label: "Tasks", href: "/tasks" }, { label: "Daily Standup" }]}
     >
       <Suspense fallback={<Skeleton className="h-72 w-full" />}>
         <StandupClient />

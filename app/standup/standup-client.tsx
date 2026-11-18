@@ -212,8 +212,7 @@ export function StandupClient() {
 
       if (!res.ok) throw new Error("Failed to save");
 
-      toast("Standup logged successfully to Meeting Notes!", "success");
-      router.push("/meeting-notes");
+      toast("Daily standup logged successfully!", "success");
       router.refresh();
     } catch {
       toast("Failed to log standup", "error");
@@ -334,7 +333,7 @@ export function StandupClient() {
               className="flex h-10 w-full items-center justify-center gap-2 bg-blue-600 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
             >
               <FloppyDiskBack size={16} weight="bold" />
-              {submitting ? "Saving..." : "Log Standup to Notes"}
+              {submitting ? "Saving..." : "Log Daily Standup"}
             </button>
           </form>
         </div>

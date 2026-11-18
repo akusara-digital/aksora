@@ -96,11 +96,11 @@ export function TimesheetWidget() {
             />
           </button>
           <Link
-            href="/work-logs"
+            href="/tasks"
             className="inline-flex h-7 items-center gap-1 rounded-lg bg-blue-600 px-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700"
           >
             <Plus size={12} weight="bold" />
-            <span>Log Work</span>
+            <span>Manage Tasks</span>
           </Link>
         </div>
       </div>

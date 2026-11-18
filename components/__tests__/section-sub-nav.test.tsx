@@ -46,24 +46,34 @@ describe("SectionSubNav", () => {
     expect(html).toContain("Exploratory (SBTM)");
   });
 
-  it("renders Tasks & Sprints tabs when on /tasks", () => {
+  it("renders Tasks & Flow tabs when on /tasks or /standup", () => {
     currentPathname = "/tasks";
-    const html = renderToStaticMarkup(<SectionSubNav />);
+    let html = renderToStaticMarkup(<SectionSubNav />);
     expect(html).toContain('href="/tasks"');
+    expect(html).toContain('href="/standup"');
     expect(html).toContain('href="/sprints"');
     expect(html).toContain('href="/gantt"');
     expect(html).toContain("Tasks Board");
+    expect(html).toContain("Daily Standup");
     expect(html).toContain("Sprints Backlog");
     expect(html).toContain("Gantt Timeline");
+
+    currentPathname = "/standup";
+    html = renderToStaticMarkup(<SectionSubNav />);
+    expect(html).toContain('href="/tasks"');
+    expect(html).toContain('href="/standup"');
+    expect(html).toContain("Daily Standup");
   });
 
-  it("renders Team & Logs tabs when on /work-logs", () => {
-    currentPathname = "/work-logs";
+  it("renders Notes & Vault tabs including Meeting Notes when on /notes or /meeting-notes", () => {
+    currentPathname = "/meeting-notes";
     const html = renderToStaticMarkup(<SectionSubNav />);
-    expect(html).toContain('href="/work-logs"');
-    expect(html).toContain('href="/standup"');
+    expect(html).toContain('href="/notes"');
     expect(html).toContain('href="/meeting-notes"');
-    expect(html).toContain('href="/activity-log"');
+    expect(html).toContain('href="/vault"');
+    expect(html).toContain("Personal Notes");
+    expect(html).toContain("Meeting Notes");
+    expect(html).toContain("Password Vault");
   });
 
   it("renders 3 thematic Reports hubs and Quality sub-views when on /reports/test-coverage", () => {

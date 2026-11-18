@@ -14,6 +14,7 @@ import {
   Gear,
   ClockCountdown,
   ChartLineUp,
+  FileText,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
@@ -50,10 +51,10 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
       ],
     },
     {
-      title: t.groupTeamAndReports || t.groupReportsAnalytics || "Team & Reports",
+      title: t.groupReportsAnalytics || t.groupReports || "Reports & Analytics",
       items: [
-        { href: "/standup", label: t.teamPulse || t.teamAndLogs || t.dailyStandup || "Team Pulse", icon: ClockCountdown },
-        { href: "/reports", label: t.reports || t.groupReports || "Reports", icon: ChartLineUp },
+        { href: "/reports", label: t.reports || "Reports", icon: ChartLineUp },
+        { href: "/weekly-report", label: t.report || "Weekly Report", icon: FileText },
       ],
     },
   ];
@@ -110,11 +111,11 @@ function canSeeHref(role: string, href: string) {
   if (role === "superadmin" || role === "admin") return true;
   const allowed = ROLE_MENU[role] || ROLE_MENU.qa;
   if (allowed.includes(href)) return true;
-  if (href === "/reports") {
+  if (href === "/reports" || href === "/weekly-report") {
     return allowed.some((r) => r.startsWith("/reports") || r === "/weekly-report" || r === "/deployments");
   }
   if (href === "/tasks") {
-    return allowed.includes("/tasks") || allowed.includes("/sprints") || allowed.includes("/gantt");
+    return allowed.includes("/tasks") || allowed.includes("/sprints") || allowed.includes("/gantt") || allowed.includes("/standup");
   }
   if (href === "/test-cases") {
     return allowed.includes("/test-cases") || allowed.includes("/test-suites") || allowed.includes("/test-plans");

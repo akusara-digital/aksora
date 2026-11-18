@@ -96,9 +96,9 @@ describe("Sidebar", () => {
       groupWorkAndDefects: "Work & Defects",
       tasks: "Tasks",
       bugs: "Bugs",
-      groupTeamAndReports: "Team & Reports",
-      teamPulse: "Team Pulse",
+      groupReportsAnalytics: "Reports & Analytics",
       reports: "Reports",
+      report: "Weekly Report",
       notesAndVault: "Notes & Vault",
       settings: "Settings",
     } as unknown as Parameters<typeof getGroups>[0];
@@ -124,11 +124,11 @@ describe("Sidebar", () => {
       "/bugs",
     ]);
 
-    // Group 3: Team & Reports
-    expect(groups[3].title).toBe("Team & Reports");
+    // Group 3: Reports & Analytics
+    expect(groups[3].title).toBe("Reports & Analytics");
     expect(groups[3].items.map((i) => i.href)).toEqual([
-      "/standup",
       "/reports",
+      "/weekly-report",
     ]);
 
     expect(groups).toHaveLength(4);

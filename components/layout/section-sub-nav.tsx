@@ -77,33 +77,21 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       { href: "/recordings", label: "Recordings", icon: VideoCamera },
     ],
   },
-  // 3. Tasks & Sprints
+  // 3. Tasks & Flow
   {
     match: (p) =>
       p.startsWith("/tasks") ||
+      p.startsWith("/standup") ||
       p.startsWith("/sprints") ||
       p.startsWith("/gantt"),
     tabs: [
       { href: "/tasks", label: "Tasks Board", icon: Kanban },
+      { href: "/standup", label: "Daily Standup", icon: MicrophoneStage },
       { href: "/sprints", label: "Sprints Backlog", icon: Kanban },
       { href: "/gantt", label: "Gantt Timeline", icon: Rows },
     ],
   },
-  // 4. Team Pulse
-  {
-    match: (p) =>
-      p.startsWith("/standup") ||
-      p.startsWith("/work-logs") ||
-      p.startsWith("/meeting-notes") ||
-      p.startsWith("/activity-log"),
-    tabs: [
-      { href: "/standup", label: "Daily Standup", icon: MicrophoneStage },
-      { href: "/work-logs", label: "Work Logs", icon: ClockCountdown },
-      { href: "/meeting-notes", label: "Meeting Notes", icon: Note },
-      { href: "/activity-log", label: "Activity Log", icon: ClockCounterClockwise },
-    ],
-  },
-  // 5. Reports (3 thematic hubs with contextual sub-views)
+  // 4. Reports (3 thematic hubs with contextual sub-views)
   {
     match: (p) =>
       p.startsWith("/reports") ||
@@ -140,11 +128,12 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       },
     ],
   },
-  // 6. Notes & Vault
+  // 5. Notes & Vault
   {
-    match: (p) => p.startsWith("/notes") || p.startsWith("/vault"),
+    match: (p) => p.startsWith("/notes") || p.startsWith("/vault") || p.startsWith("/meeting-notes"),
     tabs: [
       { href: "/notes", label: "Personal Notes", icon: NotePencil },
+      { href: "/meeting-notes", label: "Meeting Notes", icon: Note },
       { href: "/vault", label: "Password Vault", icon: LockKey },
     ],
   },
