@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   getTestPlanByToken: vi.fn(),
   getTestSuitesByPlanId: vi.fn(),
   getTestCasesByScenarioIds: vi.fn(),
+  getAllTestSuitesWithPlan: vi.fn(),
   detail: vi.fn(() => <div data-testid="test-plan-detail" />),
 }));
 
@@ -19,6 +20,7 @@ vi.mock("@/lib/data", () => ({
   getTestPlanByToken: mocks.getTestPlanByToken,
   getTestSuitesByPlanId: mocks.getTestSuitesByPlanId,
   getTestCasesByScenarioIds: mocks.getTestCasesByScenarioIds,
+  getAllTestSuitesWithPlan: mocks.getAllTestSuitesWithPlan,
 }));
 
 vi.mock("@/app/test-plans/[token]/test-plan-detail", () => ({
@@ -53,6 +55,7 @@ describe("test plan route", () => {
       s1: [{ id: 1, tcId: "TC-1" }],
       s2: [{ id: 2, tcId: "TC-2" }],
     });
+    mocks.getAllTestSuitesWithPlan.mockResolvedValueOnce([]);
 
     const element = await TestPlanDetailPage({
       params: Promise.resolve({ token: "plan-token" }),

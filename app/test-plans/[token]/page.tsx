@@ -25,10 +25,11 @@ export default async function TestPlanDetailPage({ params }: { params: Promise<{
     cases: casesBySuiteId[String(suite.id)] ?? [],
   }));
 
-  const allSuitesRaw = typeof getAllTestSuitesWithPlan === "function" ? await getAllTestSuitesWithPlan() : [];
+  const allSuitesRaw = typeof getAllTestSuitesWithPlan === "function" ? (await getAllTestSuitesWithPlan()) ?? [] : [];
   const allSuites = JSON.parse(JSON.stringify(allSuitesRaw));
-  const allCasesBySuiteRaw = await getTestCasesByScenarioIds(allSuites.map((suite: Record<string, unknown>) => String(suite.id)));
-  const allCasesBySuite = JSON.parse(JSON.stringify(allCasesBySuiteRaw));
+  const suiteIds = allSuites.map((suite: Record<string, unknown>) => String(suite.id));
+  const allCasesBySuiteRaw = suiteIds.length > 0 ? await getTestCasesByScenarioIds(suiteIds) : {};
+  const allCasesBySuite = JSON.parse(JSON.stringify(allCasesBySuiteRaw ?? {}));
   const allSuitesWithCases = allSuites.map((suite: Record<string, unknown>) => ({
     ...suite,
     cases: allCasesBySuite[String(suite.id)] ?? [],
