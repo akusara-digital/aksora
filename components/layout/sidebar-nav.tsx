@@ -51,10 +51,9 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
       ],
     },
     {
-      title: t.groupReportsAnalytics || t.groupReports || "Reports & Analytics",
+      title: t.groupReportsAnalytics || t.groupReports || "Reports",
       items: [
         { href: "/reports", label: t.reports || "Reports", icon: ChartLineUp },
-        { href: "/weekly-report", label: t.report || "Weekly Report", icon: FileText },
       ],
     },
   ];
@@ -187,17 +186,9 @@ export function SidebarNavItem({
     item.href === "/tasks" &&
     (pathname === "/tasks" ||
       pathname.startsWith("/tasks/") ||
+      pathname.startsWith("/standup") ||
       pathname.startsWith("/sprints") ||
       pathname.startsWith("/gantt"));
-
-  const isTeamGroup =
-    (item.href === "/standup" || item.href === "/work-logs") &&
-    (pathname === "/standup" ||
-      pathname.startsWith("/standup/") ||
-      pathname === "/work-logs" ||
-      pathname.startsWith("/work-logs/") ||
-      pathname.startsWith("/meeting-notes") ||
-      pathname.startsWith("/activity-log"));
 
   const isReportsGroup =
     item.href === "/reports" &&
@@ -210,6 +201,7 @@ export function SidebarNavItem({
     item.href === "/notes" &&
     (pathname === "/notes" ||
       pathname.startsWith("/notes/") ||
+      pathname.startsWith("/meeting-notes") ||
       pathname.startsWith("/vault"));
 
   const isSettingsGroup =
@@ -225,7 +217,6 @@ export function SidebarNavItem({
     isTestCasesGroup ||
     isTestExecutionGroup ||
     isTasksGroup ||
-    isTeamGroup ||
     isReportsGroup ||
     isNotesGroup ||
     isSettingsGroup ||
@@ -234,8 +225,6 @@ export function SidebarNavItem({
       item.href !== "/test-cases" &&
       item.href !== "/test-execution" &&
       item.href !== "/tasks" &&
-      item.href !== "/standup" &&
-      item.href !== "/work-logs" &&
       item.href !== "/reports" &&
       item.href !== "/notes" &&
       pathname.startsWith(`${item.href}/`));

@@ -96,9 +96,8 @@ describe("Sidebar", () => {
       groupWorkAndDefects: "Work & Defects",
       tasks: "Tasks",
       bugs: "Bugs",
-      groupReportsAnalytics: "Reports & Analytics",
+      groupReports: "Reports",
       reports: "Reports",
-      report: "Weekly Report",
       notesAndVault: "Notes & Vault",
       settings: "Settings",
     } as unknown as Parameters<typeof getGroups>[0];
@@ -124,11 +123,10 @@ describe("Sidebar", () => {
       "/bugs",
     ]);
 
-    // Group 3: Reports & Analytics
-    expect(groups[3].title).toBe("Reports & Analytics");
+    // Group 3: Reports
+    expect(groups[3].title).toBe("Reports");
     expect(groups[3].items.map((i) => i.href)).toEqual([
       "/reports",
-      "/weekly-report",
     ]);
 
     expect(groups).toHaveLength(4);
@@ -140,7 +138,7 @@ describe("Sidebar", () => {
       ...footerItems.map((i) => i.href),
     ];
     expect(allHrefs.length).toBe(new Set(allHrefs).size);
-    expect(allHrefs.length).toBe(10);
+    expect(allHrefs.length).toBe(9);
   });
 
   it("exposes Settings footer utility to all roles (including non-admin QA/FE)", () => {
