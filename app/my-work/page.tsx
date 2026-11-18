@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Briefcase, Bug, Kanban } from "@phosphor-icons/react/dist/ssr";
 import { redirect } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
+import { DashboardViewToggle } from "@/components/dashboard/dashboard-view-toggle";
 import { getCurrentUser } from "@/lib/auth";
 import { getMyWorkItems, type MyWorkItem } from "@/lib/my-work";
 
@@ -18,6 +19,7 @@ export default async function MyWorkPage() {
       icon={<Briefcase size={22} weight="bold" />}
       title="My Work"
       description="Open tasks and bugs assigned to you across all your workspaces."
+      actions={<DashboardViewToggle activeView="my-work" />}
       crumbs={[
         { label: "Dashboard", href: "/dashboard" },
         { label: "My Work" },

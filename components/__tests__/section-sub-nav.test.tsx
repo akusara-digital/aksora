@@ -67,16 +67,38 @@ describe("SectionSubNav", () => {
     expect(html).toContain('href="/activity-log"');
   });
 
-  it("renders Reports tabs when on /reports/test-coverage", () => {
+  it("renders 3 thematic Reports hubs and Quality sub-views when on /reports/test-coverage", () => {
     currentPathname = "/reports/test-coverage";
     const html = renderToStaticMarkup(<SectionSubNav />);
+    // Primary thematic hubs
+    expect(html).toContain("Quality Analytics");
+    expect(html).toContain("Delivery Analytics");
+    expect(html).toContain("Weekly Report");
+    // Quality sub-views visible
     expect(html).toContain('href="/reports/test-coverage"');
-    expect(html).toContain('href="/reports/sprint-burndown"');
     expect(html).toContain('href="/reports/flaky-tests"');
     expect(html).toContain('href="/reports/test-gap"');
+    // Delivery-only sub-views hidden when viewing Quality
+    expect(html).not.toContain('href="/reports/workload"');
+    expect(html).not.toContain('href="/deployments"');
+  });
+
+  it("renders Delivery sub-views when on /reports/workload or /deployments", () => {
+    currentPathname = "/reports/workload";
+    const html = renderToStaticMarkup(<SectionSubNav />);
+    expect(html).toContain("Delivery Analytics");
+    expect(html).toContain('href="/reports/sprint-burndown"');
     expect(html).toContain('href="/reports/workload"');
     expect(html).toContain('href="/deployments"');
-    expect(html).toContain('href="/weekly-report"');
+    expect(html).not.toContain('href="/reports/flaky-tests"');
+  });
+
+  it("renders no secondary sub-row on /weekly-report", () => {
+    currentPathname = "/weekly-report";
+    const html = renderToStaticMarkup(<SectionSubNav />);
+    expect(html).toContain("Weekly Report");
+    expect(html).not.toContain('href="/reports/flaky-tests"');
+    expect(html).not.toContain('href="/deployments"');
   });
 
   it("returns null on standalone pages like /dashboard or /projects", () => {

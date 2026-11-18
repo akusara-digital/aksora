@@ -25,6 +25,7 @@ import {
 import { CanaryHealthWidget } from "@/components/dashboard/canary-health-widget";
 import { TimesheetWidget } from "@/components/dashboard/timesheet-widget";
 import { ResolutionRateMetric } from "@/components/dashboard/dashboard-stat-cards";
+import { DashboardViewToggle } from "@/components/dashboard/dashboard-view-toggle";
 import type {
   OverviewDashboardData,
   OverviewBugItem,
@@ -192,8 +193,10 @@ export function Dashboard(props: DashboardProps) {
           </p>
         </div>
 
-        {/* Action controls: 7D / 30D toggle + Standup + New Run */}
+        {/* Action controls: View Toggle + 7D / 30D + Standup + New Run */}
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <DashboardViewToggle activeView="overview" />
+
           {/* Quick Date Range Pill: 7D vs 30D */}
           <div className="inline-flex items-center rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-0.5 shadow-2xs">
             <button
