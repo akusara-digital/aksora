@@ -61,7 +61,7 @@ export function RecordingsClient({ suites }: { suites: { id: number; title: stri
         <div className="border-b border-slate-100 px-6 py-4">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Recordings</h3>
           <p className="mt-1 text-xs text-slate-500">
-            Install the recorder from <code className="bg-slate-100 px-1 font-mono">extensions/recorder</code>, set your Aksora URL and an API key, then press Start on any page.
+            Connect your BugSnap browser recorder extension with your Aksora URL and API key, then press Start on any page.
           </p>
         </div>
         {loading ? (
