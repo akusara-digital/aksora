@@ -16,6 +16,7 @@ import { AiBugToCaseButton } from "@/components/bugs/ai-bug-to-case-button";
 import { AiRootCauseButton } from "@/components/bugs/ai-root-cause-button";
 import { BugTriageButton } from "@/components/bugs/bug-triage-button";
 import { BugTicketButton } from "@/components/bugs/bug-ticket-button";
+import { AiTaskToCasesButton } from "@/components/tasks/ai-task-to-cases-button";
 import { AiExportAutomationButton } from "@/components/test-management/ai-export-automation-button";
 import { AiSessionSummaryButton } from "@/components/test-sessions/ai-session-summary-button";
 import type { TableRow } from "@/components/module/module-workspace-table-row";
@@ -340,6 +341,9 @@ export function ViewModal({ row, config, fieldIcons, onClose, onEdit, canEdit, m
               testStep={String(row.testStep || "")}
               expectedResult={String(row.expectedResult || "")}
             />
+          )}
+          {module === "tasks" && (
+            <AiTaskToCasesButton task={row} />
           )}
           {module === "test-sessions" && (
             <AiSessionSummaryButton
