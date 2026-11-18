@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { cn, formatDisplayText } from "@/lib/utils";
 import { MaturityBadge } from "@/components/test-management/maturity-badge";
+import { toast } from "@/components/ui/toast";
+import { TestCaseBulkBar } from "@/components/test-management/test-case-bulk-bar";
+import { TestCaseDrawer } from "@/components/test-management/test-case-drawer";
 import {
   CheckCircle,
   XCircle,
@@ -40,7 +43,7 @@ export type TestCase = {
   actualResult: string;
   status: string;
   priority: string;
-  evidence: string;
+  evidence?: string;
   maturity?: string;
   category?: string;
   suiteTitle: string | null;
@@ -120,11 +123,17 @@ export function SortableTestCaseRow({
   testCase,
   index,
   suiteAssignee,
+  isSelected = false,
+  onToggleSelect,
+  onOpenDetail,
   isDragOverlay = false,
 }: {
   testCase: TestCase;
   index: number;
   suiteAssignee: string | null;
+  isSelected?: boolean;
+  onToggleSelect?: (id: number) => void;
+  onOpenDetail?: (testCase: TestCase) => void;
   isDragOverlay?: boolean;
 }) {
   const {
@@ -148,14 +157,26 @@ export function SortableTestCaseRow({
       {...attributes}
       className={cn(
         "group/row transition-shadow duration-200 hover:bg-gray-50/70",
+        isSelected && "bg-blue-50/40 hover:bg-blue-50/60",
         isDragging && "opacity-30 bg-gray-100",
         isDragOverlay && "shadow-md bg-white opacity-100 ring-2 ring-sky-400/50",
       )}
     >
-      <td className="px-2 py-3.5 align-top w-[36px]">
-        <span {...listeners} className="inline-flex cursor-grab active:cursor-grabbing touch-none text-gray-300 hover:text-gray-500 transition">
-          <DotsSixVertical size={14} weight="bold" />
-        </span>
+      <td className="px-2 py-3.5 align-middle w-[68px]">
+        <div className="flex items-center gap-1.5">
+          <span {...listeners} className="inline-flex cursor-grab active:cursor-grabbing touch-none text-gray-300 hover:text-gray-500 transition">
+            <DotsSixVertical size={14} weight="bold" />
+          </span>
+          {onToggleSelect && (
+            <input
+              type="checkbox"
+              aria-label={`Select test case ${testCase.caseName}`}
+              checked={isSelected}
+              onChange={() => onToggleSelect(testCase.id)}
+              className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            />
+          )}
+        </div>
       </td>
       <td className="px-3 py-3.5 align-top">
         <span className="font-mono text-xs font-bold text-gray-400">{index + 1}</span>
@@ -163,7 +184,13 @@ export function SortableTestCaseRow({
       <td className="max-w-[360px] px-3 py-3.5 align-top">
         <div className="space-y-1">
           <div className="flex min-w-0 items-center gap-2">
-            <p className="truncate font-semibold text-gray-800">{testCase.caseName}</p>
+            <button
+              type="button"
+              onClick={() => onOpenDetail?.(testCase)}
+              className="truncate text-left font-semibold text-gray-900 hover:text-blue-600 transition cursor-pointer"
+            >
+              {testCase.caseName}
+            </button>
             <MaturityBadge maturity={testCase.maturity} className="shrink-0" />
           </div>
           {testCase.actualResult && (
@@ -203,6 +230,8 @@ export function TestCaseTable({
   const [localCases, setLocalCases] = useState(displayCases);
   const [activeCase, setActiveCase] = useState<TestCase | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [drawerCase, setDrawerCase] = useState<TestCase | null>(null);
 
   useEffect(() => {
     setLocalCases(displayCases);
@@ -214,6 +243,85 @@ export function TestCaseTable({
   );
 
   const sortableIds = useMemo(() => localCases.map((c) => `tc-${c.id}`), [localCases]);
+
+  const allSelected = localCases.length > 0 && selectedIds.size === localCases.length;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(localCases.map((c) => c.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkStatus = async (status: string) => {
+    const ids = Array.from(selectedIds);
+    try {
+      const res = await fetch("/api/items/test-cases", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, status }),
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      setLocalCases((prev) =>
+        prev.map((c) => (selectedIds.has(c.id) ? { ...c, status } : c)),
+      );
+      toast(`Updated status to "${status}" for ${ids.length} cases`, "success");
+      setSelectedIds(new Set());
+    } catch {
+      toast("Bulk status update failed", "error");
+    }
+  };
+
+  const handleBulkPriority = async (priority: string) => {
+    const ids = Array.from(selectedIds);
+    try {
+      const res = await fetch("/api/items/test-cases", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, field: "priority", value: priority }),
+      });
+      if (!res.ok) throw new Error("Failed to update priority");
+      setLocalCases((prev) =>
+        prev.map((c) => (selectedIds.has(c.id) ? { ...c, priority } : c)),
+      );
+      toast(`Updated priority to "${priority}" for ${ids.length} cases`, "success");
+      setSelectedIds(new Set());
+    } catch {
+      toast("Bulk priority update failed", "error");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    try {
+      const res = await fetch(`/api/items/test-cases?ids=${ids.join(",")}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete cases");
+      setLocalCases((prev) => prev.filter((c) => !selectedIds.has(c.id)));
+      toast(`Deleted ${ids.length} test cases`, "success");
+      setSelectedIds(new Set());
+    } catch {
+      toast("Bulk delete failed", "error");
+    }
+  };
+
+  const handleCaseUpdated = (updatedCase: TestCase) => {
+    setLocalCases((prev) =>
+      prev.map((c) => (c.id === updatedCase.id ? updatedCase : c)),
+    );
+    if (drawerCase?.id === updatedCase.id) setDrawerCase(updatedCase);
+  };
 
   function handleDragStart(event: DragStartEvent) {
     const id = Number(String(event.active.id).replace("tc-", ""));
@@ -243,7 +351,6 @@ export function TestCaseTable({
       return next;
     });
 
-    // Persist reorder
     fetch("/api/items/test-cases", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -252,37 +359,76 @@ export function TestCaseTable({
   }
 
   return (
-    <DndContext id="tc-dnd" sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <table className="w-full text-sm">
-        <thead className="sticky top-0 z-10">
-          <tr className="border-b border-gray-100 bg-gray-200">
-            <th className="w-[36px] px-2 py-3" />
-            <th className="w-[52px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400">#</th>
-            <th className="px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400">Test Case Name</th>
-            <th className="hidden w-[160px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400 md:table-cell">Assignee</th>
-            <th className="hidden w-[120px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400 md:table-cell">Type</th>
-            <th className="hidden w-[90px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400 lg:table-cell">Priority</th>
-            <th className="w-[110px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400">Status</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-            {localCases.map((testCase, index) => (
-              <SortableTestCaseRow key={testCase.id} testCase={testCase} index={index} suiteAssignee={suiteAssignee} />
-            ))}
-          </SortableContext>
-        </tbody>
-      </table>
-      <DragOverlay dropAnimation={{ duration: 250, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }}>
-        {activeCase ? (
-          <table className="w-full text-sm">
-            <tbody>
-              <SortableTestCaseRow testCase={activeCase} index={activeIndex} suiteAssignee={suiteAssignee} isDragOverlay />
-            </tbody>
-          </table>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+    <>
+      <DndContext id="tc-dnd" sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 z-10">
+            <tr className="border-b border-gray-100 bg-gray-200">
+              <th className="w-[68px] px-2 py-3 text-center align-middle">
+                <input
+                  type="checkbox"
+                  aria-label="Select all test cases"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+              </th>
+              <th className="w-[52px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400">#</th>
+              <th className="px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400">Test Case Name</th>
+              <th className="hidden w-[160px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400 md:table-cell">Assignee</th>
+              <th className="hidden w-[120px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400 md:table-cell">Type</th>
+              <th className="hidden w-[90px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400 lg:table-cell">Priority</th>
+              <th className="w-[110px] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-gray-400">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+              {localCases.map((testCase, index) => (
+                <SortableTestCaseRow
+                  key={testCase.id}
+                  testCase={testCase}
+                  index={index}
+                  suiteAssignee={suiteAssignee}
+                  isSelected={selectedIds.has(testCase.id)}
+                  onToggleSelect={toggleSelectOne}
+                  onOpenDetail={(tc) => setDrawerCase(tc)}
+                />
+              ))}
+            </SortableContext>
+          </tbody>
+        </table>
+        <DragOverlay dropAnimation={{ duration: 250, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }}>
+          {activeCase ? (
+            <table className="w-full text-sm">
+              <tbody>
+                <SortableTestCaseRow
+                  testCase={activeCase}
+                  index={activeIndex}
+                  suiteAssignee={suiteAssignee}
+                  isDragOverlay
+                />
+              </tbody>
+            </table>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      {/* Floating bulk action bar */}
+      <TestCaseBulkBar
+        selectedCount={selectedIds.size}
+        onBulkStatus={handleBulkStatus}
+        onBulkPriority={handleBulkPriority}
+        onBulkDelete={handleBulkDelete}
+        onClearSelection={() => setSelectedIds(new Set())}
+      />
+
+      {/* Side Drawer for Test Case Detail & Edit */}
+      <TestCaseDrawer
+        testCase={drawerCase}
+        onClose={() => setDrawerCase(null)}
+        onCaseUpdated={handleCaseUpdated}
+      />
+    </>
   );
 }
 
@@ -290,14 +436,20 @@ export function TestCaseTable({
 export function TestCaseMobileCards({
   displayCases,
   suiteAssignee,
+  onOpenDetail,
 }: {
   displayCases: TestCase[];
   suiteAssignee: string | null;
+  onOpenDetail?: (testCase: TestCase) => void;
 }) {
   return (
     <div className="grid gap-3 px-4 py-4 md:hidden">
       {displayCases.map((testCase) => (
-        <div key={testCase.id} className="border border-gray-200 bg-white p-4 shadow-sm">
+        <div
+          key={testCase.id}
+          onClick={() => onOpenDetail?.(testCase)}
+          className="border border-gray-200 bg-white p-4 shadow-sm rounded-lg hover:border-blue-300 transition cursor-pointer"
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="mt-1 truncate text-sm font-bold text-gray-900">{testCase.caseName}</h3>
