@@ -23,22 +23,31 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { getCurrentUser } from "@/lib/auth";
 import { isManagementAdmin, normalizeRole } from "@/lib/roles";
+import { getSettingsGroups, type SettingsIconKey } from "@/lib/settings-nav";
 import packageJson from "@/package.json";
 
 export const dynamic = "force-dynamic";
 
-type SettingsItem = {
-  title: string;
-  description: string;
-  href: string;
-  icon: React.ComponentType<{ size?: number; weight?: "bold"; className?: string }>;
-};
-
-type SettingsGroup = {
-  id: string;
-  title: string;
-  description: string;
-  items: SettingsItem[];
+const ICONS: Record<
+  SettingsIconKey,
+  React.ComponentType<{ size?: number; weight?: "bold"; className?: string }>
+> = {
+  "user-circle": UserCircle,
+  moon: Moon,
+  bell: Bell,
+  key: Key,
+  lifebuoy: Lifebuoy,
+  "list-checks": ListChecks,
+  globe: Globe,
+  lightning: Lightning,
+  buildings: Buildings,
+  "users-three": UsersThree,
+  "shield-check": ShieldCheck,
+  users: Users,
+  robot: Robot,
+  "chart-bar": ChartBar,
+  "plugs-connected": PlugsConnected,
+  webhooks: WebhooksLogo,
 };
 
 export default async function SettingsPage() {
@@ -48,141 +57,7 @@ export default async function SettingsPage() {
   const role = normalizeRole(user.role);
   const isAdmin = isManagementAdmin(user.role, user.company);
   const canConfigureQa = isAdmin || role === "qa" || role === "fullstack" || role === "ai";
-
-  const settingsGroups: SettingsGroup[] = [
-    {
-      id: "personal",
-      title: "Personal",
-      description: "Your account profile, theme preferences, alerts, and personal tokens.",
-      items: [
-        {
-          title: "Profile & Security",
-          description: "Update your name, avatar, password, and multi-factor authentication.",
-          href: "/settings/profile",
-          icon: UserCircle,
-        },
-        {
-          title: "Appearance",
-          description: "Choose light, dark, or system theme preferences.",
-          href: "/settings/appearance",
-          icon: Moon,
-        },
-        {
-          title: "Notifications",
-          description: "Control which workspace alerts you receive and how often.",
-          href: "/settings/notifications",
-          icon: Bell,
-        },
-        {
-          title: "API Keys",
-          description: "Create and revoke personal API keys for CLI scripts and REST endpoints.",
-          href: "/settings/api-keys",
-          icon: Key,
-        },
-        {
-          title: "Support & Feedback",
-          description: "Submit support tickets or report platform issues to the team.",
-          href: "/settings/support",
-          icon: Lifebuoy,
-        },
-      ],
-    },
-  ];
-
-  if (canConfigureQa) {
-    settingsGroups.push({
-      id: "test-management",
-      title: "Test Management",
-      description: "Reusable templates, execution environments, and workflow automation for QA.",
-      items: [
-        {
-          title: "Test Case Setup",
-          description: "Configure templates and custom fields carried by test cases.",
-          href: "/settings/test-case-setup",
-          icon: ListChecks,
-        },
-        {
-          title: "Test Environments",
-          description: "Manage base URLs and {{variables}} injected into test runs.",
-          href: "/settings/environments",
-          icon: Globe,
-        },
-        {
-          title: "Automation Rules",
-          description: "Auto-assign teammates or trigger webhooks when item statuses change.",
-          href: "/settings/automation",
-          icon: Lightning,
-        },
-      ],
-    });
-  }
-
-  if (isAdmin) {
-    settingsGroups.push(
-      {
-        id: "workspace-team",
-        title: "Workspace & Team",
-        description: "Manage subscription limits, workspace memberships, and access roles.",
-        items: [
-          {
-            title: "Workspace & Plan",
-            description: "Review workspace details, plan subscription, and seat usage.",
-            href: "/settings/workspace",
-            icon: Buildings,
-          },
-          {
-            title: "Members & Workspaces",
-            description: "Manage team members, pending invitations, and workspace access.",
-            href: "/settings/workspaces",
-            icon: UsersThree,
-          },
-          {
-            title: "Custom Roles",
-            description: "Create custom roles and choose granular permissions per role.",
-            href: "/settings/roles",
-            icon: ShieldCheck,
-          },
-          {
-            title: "Assignees Directory",
-            description: "Maintain the directory of people available for task and run assignments.",
-            href: "/assignees",
-            icon: Users,
-          },
-        ],
-      },
-      {
-        id: "ai-integrations",
-        title: "AI & Integrations",
-        description: "Connect AI providers, external issue trackers, and outgoing webhooks.",
-        items: [
-          {
-            title: "AI & Models",
-            description: "Configure AI provider keys (Gemini, Claude, OpenAI, Groq, DeepSeek).",
-            href: "/settings/ai",
-            icon: Robot,
-          },
-          {
-            title: "AI Usage & Tokens",
-            description: "Track AI calls and token consumption across features and models.",
-            href: "/settings/ai-usage",
-            icon: ChartBar,
-          },
-          {
-            title: "Integrations",
-            description: "Connect Jira, Trello, or Lark Base to sync defects and tasks.",
-            href: "/settings/integrations",
-            icon: PlugsConnected,
-          },
-          {
-            title: "Webhooks",
-            description: "Push real-time HTTP payloads to your endpoints when data changes.",
-            href: "/settings/webhooks",
-            icon: WebhooksLogo,
-          },
-        ],
-      },
-    );
-  }
+  const settingsGroups = getSettingsGroups({ isAdmin, canConfigureQa });
 
   return (
     <PageShell
@@ -219,18 +94,18 @@ export default async function SettingsPage() {
 
             <div className="flex-1 overflow-hidden rounded-lg border border-slate-200 bg-white divide-y divide-slate-100">
               {group.items.map((item) => {
-                const Icon = item.icon;
+                const Icon = ICONS[item.icon];
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-slate-50/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600"
+                    className="group flex cursor-pointer items-center gap-4 px-4 py-3.5 transition-colors hover:bg-slate-50/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600"
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600 transition-colors group-hover:bg-blue-50 group-hover:text-blue-600">
                       <Icon size={18} weight="bold" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
+                      <span className="block text-sm font-semibold text-slate-900 transition-colors group-hover:text-blue-700">
                         {item.title}
                       </span>
                       <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">

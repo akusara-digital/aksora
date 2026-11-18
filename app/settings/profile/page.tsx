@@ -1,7 +1,6 @@
-import { PageShell } from"@/components/layout/page-shell";
-import { getCurrentUser } from"@/lib/auth";
-import { isManagementAdmin } from"@/lib/roles";
-import { User, ShieldCheck } from"@phosphor-icons/react/dist/ssr";
+import { PageShell } from "@/components/layout/page-shell";
+import { getCurrentUser } from "@/lib/auth";
+import { User, ShieldCheck } from "@phosphor-icons/react/dist/ssr";
 import { redirect } from"next/navigation";
 import { ProfileForm } from"./profile-form";
 import { RestartTourButton } from"@/components/layout/restart-tour-button";
@@ -26,15 +25,11 @@ export default async function ProfilePage() {
    mfaEnabled: Boolean(dbUser?.mfaEnabled),
  };
 
- const isAdmin = isManagementAdmin(user.role, user.company);
-
- const crumbs = isAdmin
- ? [
- { label:"Dashboard", href:"/dashboard" },
- { label:"Settings", href:"/settings" },
- { label:"Profile" }
- ]
- : [{ label:"Profile" }];
+  const crumbs = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Settings", href: "/settings" },
+    { label: "Profile" },
+  ];
 
  return (
  <PageShell 
