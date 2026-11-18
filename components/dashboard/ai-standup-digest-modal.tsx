@@ -7,6 +7,7 @@ import { toast } from "@/components/ui/toast";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { cn } from "@/lib/utils";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 export function AiStandupDigestModal({
   isOpen,
@@ -144,10 +145,12 @@ export function AiStandupDigestModal({
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
                 Formatted Slack / Teams Digest
               </label>
-              <textarea
+              <AutoResizeTextarea
                 value={standupText}
                 onChange={(e) => setStandupText(e.target.value)}
-                className="h-48 w-full resize-none overflow-y-auto rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs font-mono text-slate-800 outline-none leading-relaxed"
+                rows={4}
+                maxHeight={300}
+                className="bg-slate-50/50 p-3 text-xs font-mono text-slate-800 leading-relaxed"
               />
             </div>
           ) : (

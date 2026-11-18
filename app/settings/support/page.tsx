@@ -11,6 +11,7 @@ import {
 } from "@phosphor-icons/react";
 import { PageShell } from "@/components/layout/page-shell";
 import { toast } from "@/components/ui/toast";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 type Ticket = {
   id: number;
@@ -111,11 +112,13 @@ export default function SupportPage() {
               placeholder="Subject"
               className="w-full border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
             />
-            <textarea
+            <AutoResizeTextarea
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}
               placeholder="Describe your issue or request..."
-              className="h-28 w-full border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400 resize-none overflow-y-auto"
+              rows={3}
+              maxHeight={260}
+              className="px-3 py-2.5 text-sm"
             />
             <div className="flex flex-wrap gap-2">
               <select

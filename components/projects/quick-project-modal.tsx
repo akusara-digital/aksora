@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FolderSimplePlus, Plus } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 export interface QuickProjectModalProps {
   isOpen: boolean;
@@ -115,12 +116,13 @@ export function QuickProjectModal({ isOpen, onClose, onSuccess }: QuickProjectMo
           <label className="text-xs font-bold text-slate-700">
             Description <span className="text-slate-400 font-normal">(Optional)</span>
           </label>
-          <textarea
+          <AutoResizeTextarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
+            maxHeight={220}
             placeholder="Brief scope or purpose of this project..."
-            className="w-full resize-none rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            className="p-3 text-xs placeholder:text-slate-400"
           />
         </div>
 

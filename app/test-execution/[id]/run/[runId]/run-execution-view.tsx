@@ -14,6 +14,7 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { RunPlayMode } from "./run-play-mode";
 import { QuickBugModal } from "@/components/bugs/quick-bug-modal";
 import { EvidenceUploadField } from "@/components/shared/evidence-upload-field";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { ExecutionMatrixView } from "@/components/test-management/execution-matrix-view";
 import { AiVisionInspector } from "@/components/test-management/ai-vision-inspector";
 
@@ -401,7 +402,7 @@ export function RunExecutionView({
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Notes</label>
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} className="h-16 w-full resize-none overflow-y-auto rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900" placeholder="Optional notes" />
+                <AutoResizeTextarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} maxHeight={180} className="px-3 py-1.5 text-xs text-slate-900" placeholder="Optional notes" />
               </div>
             </div>
             <div className="flex gap-2 px-4 py-3 border-t border-slate-100">
@@ -648,12 +649,14 @@ export function RunExecutionView({
                         </div>
                         <div className="mb-3">
                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Actual Result</label>
-                          <textarea
+                          <AutoResizeTextarea
                             value={selectedCase.actualResult}
                             onChange={e => updateActualResult(selectedIdx, e.target.value)}
                             placeholder="What actually happened?"
                             disabled={isCompleted}
-                            className="h-20 w-full resize-none overflow-y-auto rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 disabled:opacity-50"
+                            rows={2}
+                            maxHeight={180}
+                            className="bg-slate-800 border-slate-700 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 disabled:opacity-50"
                           />
                         </div>
 

@@ -14,6 +14,7 @@ import {
   ArrowsOut,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 type TestCase = {
   id: string | number;
@@ -170,11 +171,14 @@ export function PlayModeView({
                     {showNotes ? "Minimize" : "Expand"}
                   </button>
                 </h5>
-                <textarea
+                <AutoResizeTextarea
                   value={currentCase.actualResult || ""}
                   onChange={(e) => updateActual(e.target.value)}
                   placeholder="Type findings here..."
-                  className="w-full h-24 overflow-y-auto bg-white/5 border border-white/10 p-4 text-sm outline-none focus:border-blue-500/50 transition resize-none"
+                  rows={3}
+                  minHeight={80}
+                  maxHeight={220}
+                  className="bg-white/5 border border-white/10 p-4 text-sm text-white placeholder:text-gray-500 focus:border-blue-500/50"
                 />
               </section>
             </div>

@@ -10,6 +10,7 @@ import { QuickBugModal } from "@/components/bugs/quick-bug-modal";
 import { compressImageToWebp } from "@/lib/image-compress";
 import { RunPlayModeFooter } from "./run-play-mode-footer";
 import { RunPlayFailureBanner } from "./run-play-failure-banner";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 type CaseItem = {
   verdictId: number; testCaseId: number; tcId: string; caseName: string;
@@ -305,10 +306,13 @@ export function RunPlayMode({
                     )}
                   </div>
                 </div>
-                <textarea
+                <AutoResizeTextarea
                   value={currentCase.actualResult || ""}
                   onChange={(e) => updateActual(e.target.value)}
                   onBlur={handleActualBlur}
+                  rows={3}
+                  minHeight={80}
+                  maxHeight={220}
                   onPaste={(e) => {
                     const items = e.clipboardData?.items;
                     if (!items) return;
@@ -324,8 +328,7 @@ export function RunPlayMode({
                     }
                   }}
                   placeholder="Type findings here or paste screenshot directly with Ctrl+V..."
-                  style={{ width: "100%", height: "80px", borderRadius: "14px", padding: "14px", fontSize: "13px", resize: "none", outline: "none" }}
-                  className="bg-white/5 border border-white/10 text-white placeholder:text-slate-600 focus:border-blue-500/50 overflow-y-auto"
+                  className="bg-white/5 border border-white/10 text-white placeholder:text-slate-600 focus:border-blue-500/50 p-3.5 text-xs rounded-xl"
                 />
 
                 {currentCase.evidence && (

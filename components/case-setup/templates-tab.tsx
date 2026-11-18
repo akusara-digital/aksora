@@ -6,6 +6,7 @@ import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import type { CustomFieldValues } from "@/lib/case-fields";
 import { CustomFieldsEditor } from "./custom-fields-editor";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { useSetupList } from "./use-setup-list";
 
 type TemplateFields = {
@@ -44,7 +45,7 @@ function TemplateForm({ initial, onCancel, onSave }: { initial: Template; onCanc
   const textarea = (key: "preCondition" | "testStep" | "expectedResult", label: string, rows: number) => (
     <label className={`${labelCls} sm:col-span-2`}>
       {label}
-      <textarea rows={rows} value={t.fields[key] ?? ""} onChange={(e) => setField({ [key]: e.target.value })} className={inputCls} />
+      <AutoResizeTextarea rows={rows} maxHeight={220} value={t.fields[key] ?? ""} onChange={(e) => setField({ [key]: e.target.value })} className="mt-1 py-2 text-xs" />
     </label>
   );
   const select = (key: "priority" | "typeCase", label: string, options: string[]) => (

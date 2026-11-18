@@ -12,6 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 
@@ -277,12 +278,13 @@ export function WorkLogQuickModal({ isOpen, onClose, defaultDate }: WorkLogQuick
             <label className="block text-xs font-semibold text-gray-700 mb-1">
               Natural Language Work Summary:
             </label>
-            <textarea
+            <AutoResizeTextarea
               rows={3}
+              maxHeight={220}
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="e.g. MOT bug slicing 4 hours, sprint planning meeting 1 hour, remaining regression testing on Oronamin C 3.5 hours"
-              className="w-full rounded-lg border border-gray-200 p-3 text-xs text-gray-800 outline-none focus:border-blue-500 transition-colors"
+              className="p-3 text-xs"
             />
           </div>
 

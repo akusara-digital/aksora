@@ -21,6 +21,7 @@ import {
 import { DurationInput } from "@/components/shared/duration-input";
 import { getAiRequestPayload } from "@/lib/ai-keys";
 import { getStoredSicmundusCreds } from "@/lib/sicmundus-client";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 export type { SicmundusTaskProp, SicmundusSyncResult };
 
@@ -373,12 +374,14 @@ export function SicmundusSyncModal({
                 <label htmlFor={notesInputId} className="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1">
                   Notes <span className="text-gray-400 font-normal lowercase">(optional)</span>
                 </label>
-                <textarea
+                <AutoResizeTextarea
                   id={notesInputId}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                  maxHeight={200}
                   placeholder="Additional work notes or bug references..."
-                  className="h-20 w-full resize-none overflow-y-auto border border-gray-300 px-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400 focus:border-sky-600 focus:outline-none"
+                  className="px-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400"
                 />
               </div>
 

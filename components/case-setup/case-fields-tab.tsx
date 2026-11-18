@@ -5,6 +5,7 @@ import { PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { CASE_FIELD_KINDS, type CaseFieldDef, type CaseFieldKind } from "@/lib/case-fields";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { useSetupList } from "./use-setup-list";
 
 const inputCls =
@@ -63,7 +64,7 @@ function FieldForm({ initial, onCancel, onSave }: { initial: CaseFieldDef; onCan
         {f.kind === "select" && (
           <label className={`${labelCls} sm:col-span-2`}>
             Options (one per line)
-            <textarea rows={4} value={optionsText} onChange={(e) => setOptionsText(e.target.value)} className={`${inputCls} h-auto py-2`} />
+            <AutoResizeTextarea rows={4} maxHeight={220} value={optionsText} onChange={(e) => setOptionsText(e.target.value)} className="mt-1 py-2 text-xs" />
           </label>
         )}
       </div>

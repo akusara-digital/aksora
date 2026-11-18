@@ -7,6 +7,7 @@ import { toast } from "@/components/ui/toast";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { cn } from "@/lib/utils";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 export function AiReleaseNotesModal({
   isOpen,
@@ -189,10 +190,12 @@ export function AiReleaseNotesModal({
                 </button>
               </div>
 
-              <textarea
+              <AutoResizeTextarea
                 value={activeTab === "user" ? userFacing : techChangelog}
                 onChange={(e) => (activeTab === "user" ? setUserFacing(e.target.value) : setTechChangelog(e.target.value))}
-                className="h-64 w-full resize-none overflow-y-auto rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs font-mono text-slate-800 outline-none leading-relaxed"
+                rows={5}
+                maxHeight={360}
+                className="bg-slate-50/50 p-3 text-xs font-mono text-slate-800 leading-relaxed"
               />
             </div>
           ) : (

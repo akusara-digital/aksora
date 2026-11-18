@@ -7,6 +7,7 @@ import { toast } from "@/components/ui/toast";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { cn } from "@/lib/utils";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 interface AiRootCauseModalProps {
   isOpen: boolean;
@@ -116,11 +117,13 @@ export function AiRootCauseModal({
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
               Optional Console Stack Trace / Network Payload
             </label>
-            <textarea
+            <AutoResizeTextarea
               value={errorLog}
               onChange={(e) => setErrorLog(e.target.value)}
+              rows={3}
+              maxHeight={240}
               placeholder="Paste stack trace or server response to make analysis more accurate..."
-              className="h-24 w-full resize-none overflow-y-auto rounded-lg border border-slate-200 p-2.5 text-xs font-mono text-slate-800 outline-none transition focus:border-indigo-500"
+              className="p-2.5 text-xs font-mono text-slate-800 focus:border-indigo-500"
             />
           </div>
 

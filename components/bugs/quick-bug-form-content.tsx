@@ -2,6 +2,7 @@
 
 import { Image as ImageIcon, Warning, Sparkle, X, CheckCircle } from "@phosphor-icons/react";
 import { DuplicateBugsBanner, type DuplicateBugItem } from "@/components/bugs/duplicate-bugs-banner";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 interface QuickBugFormContentProps {
   project: string;
@@ -110,9 +111,11 @@ export function QuickBugFormContent({
             </button>
           </div>
         </div>
-        <textarea
+        <AutoResizeTextarea
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}
+          rows={3}
+          maxHeight={260}
           onPaste={(e) => {
             const items = e.clipboardData?.items;
             if (items) {
@@ -129,7 +132,7 @@ export function QuickBugFormContent({
             }
           }}
           placeholder="e.g., Pay button on Safari iOS checkout keeps spinning and won't submit. Got error 504 Gateway Timeout in network tab after 30s. (You can also paste a screenshot directly with Ctrl+V!)"
-          className="h-28 w-full resize-none overflow-y-auto rounded-lg border border-slate-200 p-3 text-xs font-medium text-slate-900 outline-none transition focus:border-blue-500 leading-relaxed"
+          className="p-3 text-xs font-medium text-slate-900 leading-relaxed"
         />
       </div>
 
@@ -241,28 +244,34 @@ export function QuickBugFormContent({
 
           <div>
             <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Steps to Reproduce</label>
-            <textarea
+            <AutoResizeTextarea
               value={steps}
               onChange={(e) => setSteps(e.target.value)}
-              className="h-20 w-full resize-none overflow-y-auto rounded-md border border-slate-200 bg-white p-2 text-xs font-medium text-slate-900 leading-relaxed"
+              rows={2}
+              maxHeight={200}
+              className="p-2 text-xs font-medium text-slate-900 leading-relaxed"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[10px] font-bold uppercase text-emerald-700 mb-1">Expected Result</label>
-              <textarea
+              <AutoResizeTextarea
                 value={expected}
                 onChange={(e) => setExpected(e.target.value)}
-                className="h-16 w-full resize-none overflow-y-auto rounded-md border border-emerald-200 bg-emerald-50/50 p-2 text-xs font-medium text-emerald-900 leading-relaxed"
+                rows={2}
+                maxHeight={160}
+                className="border-emerald-200 bg-emerald-50/50 p-2 text-xs font-medium text-emerald-900 leading-relaxed"
               />
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase text-rose-700 mb-1">Actual Result</label>
-              <textarea
+              <AutoResizeTextarea
                 value={actual}
                 onChange={(e) => setActual(e.target.value)}
-                className="h-16 w-full resize-none overflow-y-auto rounded-md border border-rose-200 bg-rose-50/50 p-2 text-xs font-medium text-rose-900 leading-relaxed"
+                rows={2}
+                maxHeight={160}
+                className="border-rose-200 bg-rose-50/50 p-2 text-xs font-medium text-rose-900 leading-relaxed"
               />
             </div>
           </div>

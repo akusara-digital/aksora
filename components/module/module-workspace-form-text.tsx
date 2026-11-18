@@ -200,7 +200,8 @@ export function ModuleWorkspaceFormText({
      ? undefined
      : initialValue
  }
- rows={field.kind === "textarea" ? 1 : 1}
+ rows={field.kind === "textarea" ? 3 : 1}
+ maxHeight={field.kind === "textarea" ? 260 : 120}
  required={field.required}
  placeholder={field.placeholder ?? `Enter ${field.label}`}
  disabled={module === "test-plans" && field.name === "scope"}
@@ -217,7 +218,6 @@ export function ModuleWorkspaceFormText({
  }
  }}
  className={cn(
- field.kind === "textarea" ? "min-h-10" : "min-h-10 overflow-y-hidden",
  field.helperKind === "version-sequence" && "pr-10",
  field.name === "scope" && module === "test-plans" && "bg-gray-100 text-gray-500 cursor-not-allowed",
  )}

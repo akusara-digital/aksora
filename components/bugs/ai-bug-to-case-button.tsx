@@ -7,6 +7,7 @@ import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import type { TableRow } from "@/components/module/module-workspace-table-row";
 
 interface AiBugToCaseButtonProps {
@@ -248,10 +249,12 @@ export function AiBugToCaseButton({ bug, className }: AiBugToCaseButtonProps) {
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
               Steps to Verify Fix <span className="text-rose-500">*</span>
             </label>
-            <textarea
+            <AutoResizeTextarea
               value={testStep}
               onChange={(e) => setTestStep(e.target.value)}
-              className="h-20 w-full resize-none overflow-y-auto rounded-lg border border-slate-200 p-2.5 text-xs font-medium text-slate-900 outline-none transition focus:border-blue-500 leading-relaxed"
+              rows={2}
+              maxHeight={200}
+              className="p-2.5 text-xs font-medium text-slate-900 leading-relaxed"
             />
           </div>
 
@@ -259,10 +262,12 @@ export function AiBugToCaseButton({ bug, className }: AiBugToCaseButtonProps) {
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
               Expected Result (Confirming defect is gone) <span className="text-rose-500">*</span>
             </label>
-            <textarea
+            <AutoResizeTextarea
               value={expectedResult}
               onChange={(e) => setExpectedResult(e.target.value)}
-              className="h-16 w-full resize-none overflow-y-auto rounded-lg border border-slate-200 p-2.5 text-xs font-medium text-slate-900 outline-none transition focus:border-blue-500 leading-relaxed"
+              rows={2}
+              maxHeight={180}
+              className="p-2.5 text-xs font-medium text-slate-900 leading-relaxed"
             />
           </div>
 

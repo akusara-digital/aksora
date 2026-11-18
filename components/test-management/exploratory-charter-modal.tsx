@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Compass, X } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import type { ExploratorySessionItem } from "./exploratory-session-view";
 
 interface ExploratoryCharterModalProps {
@@ -102,12 +103,13 @@ export function ExploratoryCharterModal({
             <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
               Charter Objective & Mission
             </label>
-            <textarea
+            <AutoResizeTextarea
               rows={3}
+              maxHeight={220}
               placeholder="Explore [target/feature] with [resources/tools] to uncover [potential risks/bugs]..."
               value={newCharter}
               onChange={(e) => setNewCharter(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:border-blue-600 focus:outline-hidden"
+              className="px-3 py-2 text-xs"
             />
           </div>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { ChatCircle, PaperPlaneTilt, Warning, Lock } from "@phosphor-icons/react";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -203,13 +204,15 @@ export function CommentThread({ entityType, entityId }: CommentThreadProps) {
       {!loading && !readOnly && (
         <div className="mt-3">
           <div className="relative">
-            <textarea
+            <AutoResizeTextarea
               value={content}
               onChange={(e) => handleContentChange(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Add a comment..."
               disabled={submitting}
-              className="h-16 w-full resize-none overflow-y-auto border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 placeholder:text-gray-400 focus:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              rows={2}
+              maxHeight={180}
+              className="text-xs placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <div className="flex items-center justify-between mt-1.5">
               <span className={`text-[10px] font-medium ${charCount > MAX_CONTENT ? "text-rose-500" : "text-gray-400"}`}>
@@ -245,11 +248,11 @@ export function CommentThread({ entityType, entityId }: CommentThreadProps) {
       {/* Read-only disabled input */}
       {!loading && readOnly && (
         <div className="mt-3">
-          <textarea
+          <AutoResizeTextarea
             disabled
             placeholder="You do not have write access"
             rows={2}
-            className="w-full resize-none  border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-400 cursor-not-allowed"
+            className="px-3 py-2 text-xs text-gray-400 cursor-not-allowed bg-gray-50"
           />
         </div>
       )}

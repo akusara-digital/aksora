@@ -4,6 +4,7 @@ import type { KeyboardEvent, ReactNode } from "react";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { compressImageToWebp } from "@/lib/image-compress";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 export type TestCaseRow = {
  id?: number;

@@ -7,6 +7,7 @@ import { toast } from "@/components/ui/toast";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { cn } from "@/lib/utils";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 interface AiSmokeSuiteModalProps {
   isOpen: boolean;
@@ -118,11 +119,13 @@ export function AiSmokeSuiteModal({
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
               Deployment Changelog / PR Commits <span className="text-rose-500">*</span>
             </label>
-            <textarea
+            <AutoResizeTextarea
               value={changelog}
               onChange={(e) => setChangelog(e.target.value)}
+              rows={3}
+              maxHeight={240}
               placeholder="e.g. PR #142: Refactored authentication session refresh, fixed JWT token expiration race condition in checkout flow."
-              className="h-28 w-full resize-none overflow-y-auto rounded-lg border border-slate-200 p-2.5 text-xs text-slate-900 outline-none transition focus:border-emerald-500 leading-relaxed"
+              className="p-2.5 text-xs text-slate-900 leading-relaxed focus:border-emerald-500"
             />
           </div>
 

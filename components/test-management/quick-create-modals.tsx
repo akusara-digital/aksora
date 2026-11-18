@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Checks, FolderPlus } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 export type PlanOption = {
   id: number;
@@ -119,12 +120,11 @@ function QuickCreateSuiteForm({
 
       <div>
         <label className="mb-1 block text-xs font-semibold text-slate-700">Goal / Notes</label>
-        <textarea
+        <AutoResizeTextarea
           rows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Scope or objective of this test suite..."
-          className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
         />
       </div>
 
@@ -305,13 +305,12 @@ function QuickCreateCaseForm({
         <label className="mb-1 block text-xs font-semibold text-slate-700">
           Test Steps <span className="text-rose-500">*</span>
         </label>
-        <textarea
+        <AutoResizeTextarea
           rows={3}
           required
           value={testStep}
           onChange={(e) => setTestStep(e.target.value)}
           placeholder={"1. Open /login\n2. Enter valid email and password\n3. Click Sign In"}
-          className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
         />
       </div>
 
@@ -319,13 +318,12 @@ function QuickCreateCaseForm({
         <label className="mb-1 block text-xs font-semibold text-slate-700">
           Expected Result <span className="text-rose-500">*</span>
         </label>
-        <textarea
+        <AutoResizeTextarea
           rows={2}
           required
           value={expectedResult}
           onChange={(e) => setExpectedResult(e.target.value)}
           placeholder="User is redirected to /dashboard"
-          className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
         />
       </div>
 

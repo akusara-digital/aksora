@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChartBar, CheckCircle, XCircle, Warning, Clock, Timer, Printer } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { SignoffDecisionPill, OutcomeBadge } from "@/components/runs/signoff-badges";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 type Report = {
   run: { runNumber: number; status: string; tester: string; attempt: number; startedAt: string; completedAt: string | null; notes: string };
@@ -119,8 +120,8 @@ export function RunReportView({ token, report }: { token: string; report: Report
                 {pending.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
               <label htmlFor="signoff-comment" className="block text-[11px] font-bold uppercase tracking-widest text-slate-500">Comment</label>
-              <textarea id="signoff-comment" value={comment} onChange={(e) => setComment(e.target.value)} rows={2} maxLength={2000}
-                className="w-full rounded-md border border-slate-200 bg-white p-2 text-sm text-slate-900" placeholder="Optional. Say why if you reject." />
+              <AutoResizeTextarea id="signoff-comment" value={comment} onChange={(e) => setComment(e.target.value)} rows={2} maxHeight={160} maxLength={2000}
+                className="p-2 text-sm text-slate-900" placeholder="Optional. Say why if you reject." />
               <div className="flex gap-2">
                 <button type="button" disabled={busy || !signoffId} onClick={() => decide("approved")}
                   className="h-9 rounded-lg bg-emerald-600 px-4 text-xs font-bold text-white disabled:opacity-40">Approve</button>

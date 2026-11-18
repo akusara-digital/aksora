@@ -129,7 +129,7 @@ describe("ModuleWorkspace smoke", () => {
   it("shows edit actions but not delete for assignable roles", () => {
     const html = renderWorkspace("users", "fullstack");
 
-    expect(html).toContain("Add Users");
+    expect(html).toContain("New User");
     expect(html).toContain(">Edit<");
     expect(html).not.toContain(">Delete<");
   });

@@ -12,6 +12,7 @@ import {
   ClipboardText,
 } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 
@@ -277,22 +278,26 @@ export function StandupClient() {
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-600">What did you do yesterday?</label>
-              <textarea
+              <AutoResizeTextarea
                 value={yesterday}
                 onChange={(e) => setYesterday(e.target.value)}
-                placeholder="- Worked on...\n- Executed test suite for login flow\n- Verified resolved bug #42"
-                className="h-28 w-full resize-none overflow-y-auto glass-card p-3 font-mono text-xs text-slate-950 placeholder:text-slate-400 leading-relaxed focus:border-slate-400 focus:outline-none"
+                rows={3}
+                maxHeight={240}
+                placeholder={"- Worked on...\n- Executed test suite for login flow\n- Verified resolved bug #42"}
+                className="glass-card p-3 font-mono text-xs text-slate-950 placeholder:text-slate-400 leading-relaxed"
                 required
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-600">What is your focus for today?</label>
-              <textarea
+              <AutoResizeTextarea
                 value={today}
                 onChange={(e) => setToday(e.target.value)}
-                placeholder="- Focus on...\n- Run regression test on staging\n- Review test cases with team"
-                className="h-28 w-full resize-none overflow-y-auto glass-card p-3 font-mono text-xs text-slate-950 placeholder:text-slate-400 leading-relaxed focus:border-slate-400 focus:outline-none"
+                rows={3}
+                maxHeight={240}
+                placeholder={"- Focus on...\n- Run regression test on staging\n- Review test cases with team"}
+                className="glass-card p-3 font-mono text-xs text-slate-950 placeholder:text-slate-400 leading-relaxed"
                 required
               />
             </div>
@@ -311,11 +316,13 @@ export function StandupClient() {
               </label>
 
               {hasBlocker && (
-                <textarea
+                <AutoResizeTextarea
                   value={blockers}
                   onChange={(e) => setBlockers(e.target.value)}
+                  rows={2}
+                  maxHeight={200}
                   placeholder="Describe your blockers or assistance needed..."
-                  className="h-24 w-full resize-none overflow-y-auto glass-card p-3 font-mono text-xs text-slate-950 leading-relaxed focus:border-slate-400 focus:outline-none border-amber-300 bg-amber-50/20"
+                  className="glass-card p-3 font-mono text-xs text-slate-950 leading-relaxed border-amber-300 bg-amber-50/20"
                   required
                 />
               )}

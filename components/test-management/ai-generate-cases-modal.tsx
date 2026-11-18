@@ -9,6 +9,7 @@ import { getActiveAiCredentials } from "@/lib/ai-keys";
 import { cn } from "@/lib/utils";
 import { AiGeneratedCaseCard, type CandidateAction, type GeneratedCase } from "@/components/test-management/ai-generated-case-card";
 import { findClosestCase, NEAR_DUPLICATE_SCORE } from "@/components/test-management/case-similarity";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 interface ExistingCase {
   id?: number;
@@ -393,15 +394,17 @@ export function AiGenerateCasesModal({
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
             User Story / Acceptance Criteria / Prompt {imageBase64 ? "(Optional if image attached)" : <span className="text-rose-500">*</span>}
           </label>
-          <textarea
+          <AutoResizeTextarea
             value={story}
             onChange={(e) => setStory(e.target.value)}
+            rows={3}
+            maxHeight={260}
             placeholder={
               imageBase64
                 ? "Optional: provide extra context (e.g., 'Focus on checkout payment validations and voucher error handling')."
                 : "e.g., As an authenticated user, I should be able to reset my password using an email OTP. The OTP is valid for 5 minutes and expires after 3 invalid attempts."
             }
-            className="h-24 w-full resize-none overflow-y-auto rounded-lg border border-slate-200 p-3 text-xs font-medium text-slate-900 outline-none transition focus:border-blue-500 leading-relaxed"
+            className="p-3 text-xs font-medium text-slate-900 leading-relaxed"
           />
         </div>
 

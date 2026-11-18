@@ -6,6 +6,7 @@ import { toast } from "@/components/ui/toast";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { FormDrawer } from "@/components/shared/form-drawer";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { cn } from "@/lib/utils";
 
 type Note = {
@@ -279,11 +280,13 @@ export function NotesClient() {
           </div>
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700">Content</label>
-            <textarea
+            <AutoResizeTextarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Write something..."
-              className="h-48 w-full resize-none overflow-y-auto rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              rows={4}
+              maxHeight={320}
+              className="px-3 py-2 text-sm"
             />
           </div>
           <div>
