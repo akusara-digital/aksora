@@ -53,7 +53,7 @@ export function CallToActionBanner() {
             />
             <button
               type="submit"
-              className="shrink-0 rounded-full bg-[#a3e635] px-6 py-3 text-xs sm:text-sm font-bold text-slate-950 shadow-md transition-all hover:bg-[#bef264] hover:shadow-lg"
+              className="shrink-0 rounded-full bg-[#a3e635] px-6 py-3 text-xs sm:text-sm font-bold text-slate-950 shadow-md transition-all hover:bg-[#bef264] hover:shadow-lg cursor-pointer active:scale-95"
             >
               Start Free
             </button>

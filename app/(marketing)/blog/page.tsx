@@ -150,16 +150,25 @@ export default function BlogPage() {
           <p className="mt-2 text-[13px] text-gray-500 max-w-md mx-auto">
             Get notified when we publish new articles. No spam, unsubscribe anytime.
           </p>
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+          <form
+            action="/contact"
+            method="GET"
+            className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto"
+          >
             <input
               type="email"
+              name="email"
+              required
               placeholder="your@email.com"
               className="w-full sm:flex-1 border border-gray-200 bg-white px-4 py-2.5 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-blue-600 focus:ring-0 focus:outline-none transition-colors"
             />
-            <button className="w-full sm:w-auto bg-blue-600 px-6 py-2.5 text-[13px] font-semibold text-white hover:bg-blue-700 transition-colors whitespace-nowrap">
+            <button
+              type="submit"
+              className="w-full sm:w-auto bg-blue-600 px-6 py-2.5 text-[13px] font-semibold text-white hover:bg-blue-700 transition-colors whitespace-nowrap cursor-pointer"
+            >
               Subscribe
             </button>
-          </div>
+          </form>
         </div>
       </section>
 

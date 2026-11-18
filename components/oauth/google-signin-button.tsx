@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/toast";
 import { useTranslation } from "@/hooks/use-translation";
+import { cn } from "@/lib/utils";
 
 declare global {
   interface Window {
@@ -12,7 +13,12 @@ declare global {
         id: {
           initialize: (config: Record<string, unknown>) => void;
           renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
-          prompt: () => void;
+          prompt: (
+            callback?: (notification: {
+              isNotDisplayed: () => boolean;
+              getNotDisplayedReason?: () => string;
+            }) => void,
+          ) => void;
         };
       };
     };
@@ -100,6 +106,7 @@ export function GoogleSignInButton({
   const t = dict.login;
   const buttonHostRef = useRef<HTMLDivElement | null>(null);
   const [pending, setPending] = useState(false);
+  const [gisRendered, setGisRendered] = useState(false);
   const [localError, setLocalError] = useState("");
 
   const updateError = useCallback(
@@ -196,16 +203,42 @@ export function GoogleSignInButton({
       });
 
       if (buttonHostRef.current && window.google?.accounts?.id) {
+        const isDark =
+          typeof document !== "undefined" &&
+          (document.documentElement.classList.contains("dark") ||
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
         const buttonWidth =
           buttonHostRef.current.clientWidth || buttonHostRef.current.offsetWidth || 340;
         window.google.accounts.id.renderButton(buttonHostRef.current, {
-          theme: "outline",
+          theme: isDark ? "filled_black" : "outline",
           size: "large",
           shape: "rectangular",
           type: "standard",
           width: Math.min(Math.max(buttonWidth, 240), 400),
           text: "continue_with",
+          logo_alignment: "left",
         });
+
+        const checkRendered = () => {
+          if (mounted && buttonHostRef.current?.querySelector("iframe")) {
+            setGisRendered(true);
+          }
+        };
+        setTimeout(checkRendered, 50);
+        setTimeout(checkRendered, 250);
+        setTimeout(checkRendered, 600);
+
+        try {
+          const observer = new MutationObserver(() => {
+            if (mounted && buttonHostRef.current?.querySelector("iframe")) {
+              setGisRendered(true);
+              observer.disconnect();
+            }
+          });
+          observer.observe(buttonHostRef.current, { childList: true, subtree: true });
+        } catch {
+          /* ignore observer error */
+        }
       }
     }
 
@@ -229,8 +262,17 @@ export function GoogleSignInButton({
 
   return (
     <div className="w-full">
-      <div className="relative w-full">
-        {/* Custom Visible Button */}
+      {/* 1. Official Google Identity Services Rendered Button (kept in DOM with layout width) */}
+      <div
+        ref={buttonHostRef}
+        className={cn(
+          "w-full flex items-center justify-center transition-all",
+          gisRendered ? "min-h-[44px]" : "h-0 overflow-hidden"
+        )}
+      />
+
+      {/* 2. Sleek Custom Fallback Button (visible when GIS iframe is loading or not yet rendered) */}
+      {!gisRendered && (
         <button
           type="button"
           onClick={() => {
@@ -241,10 +283,17 @@ export function GoogleSignInButton({
             }
             if (window.google?.accounts?.id) {
               try {
-                window.google.accounts.id.prompt();
+                window.google.accounts.id.prompt((notification: { isNotDisplayed: () => boolean; getNotDisplayedReason?: () => string }) => {
+                  if (notification.isNotDisplayed()) {
+                    const reason = notification.getNotDisplayedReason?.() || "suppressed";
+                    toast(`Google Sign-In prompt suppressed (${reason}). Please refresh or check ad-blockers.`, "warning");
+                  }
+                });
               } catch {
-                /* fallback */
+                toast("Initializing Google sign-in...", "info");
               }
+            } else {
+              toast("Google Sign-In is loading or blocked by an extension. Please check ad-blockers.", "warning");
             }
           }}
           disabled={pending}
@@ -257,16 +306,7 @@ export function GoogleSignInButton({
           )}
           <span>{pending ? t.connecting || "Connecting..." : t.continueWithGoogle || "Continue with Google"}</span>
         </button>
-
-        {/* Transparent Google Identity Services iframe overlay */}
-        <div
-          ref={buttonHostRef}
-          aria-hidden="true"
-          className={`absolute inset-0 w-full h-full flex items-center justify-center opacity-[0.001] cursor-pointer z-10 overflow-hidden ${
-            pending ? "pointer-events-none" : "pointer-events-auto"
-          } [&_iframe]:!w-full [&_iframe]:!h-full [&_iframe]:!min-h-[48px] [&_iframe]:!cursor-pointer`}
-        />
-      </div>
+      )}
 
       {/* Dev helper for localhost:3001 if Google OAuth origin is restricted */}
       {process.env.NODE_ENV !== "production" && (

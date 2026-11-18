@@ -24,8 +24,9 @@ export default function GlobalError({
         Something went wrong. Please try again or refresh the page.
       </p>
       <button
+        type="button"
         onClick={reset}
-        className="flex items-center gap-2  bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700"
+        className="flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700 cursor-pointer active:scale-95"
       >
         <ArrowClockwise size={16} weight="bold" />
         Try again

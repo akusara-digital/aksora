@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "@/components/ui/toast";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
@@ -108,6 +108,18 @@ export function Dashboard(props: DashboardProps) {
   const [showStandup, setShowStandup] = useState(false);
   const [newRunMenuOpen, setNewRunMenuOpen] = useState(false);
   const [dateRangePreset, setDateRangePreset] = useState<"7d" | "30d" | "all">("7d");
+  const newRunMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!newRunMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (newRunMenuRef.current && !newRunMenuRef.current.contains(e.target as Node)) {
+        setNewRunMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [newRunMenuOpen]);
 
   // Real database metrics with zero hardcoding
   const tcVal = props.metrics?.find((m) => m.label === "Test Cases")?.value;
@@ -219,7 +231,7 @@ export function Dashboard(props: DashboardProps) {
           </button>
 
           {/* "+ New Test Run" Button */}
-          <div className="relative inline-flex rounded-xl shadow-2xs">
+          <div ref={newRunMenuRef} className="relative inline-flex rounded-xl shadow-2xs">
             <Link
               href="/test-execution"
               className="inline-flex h-9 items-center gap-1.5 rounded-l-xl bg-blue-600 px-3.5 text-xs font-bold text-white transition hover:bg-blue-700"

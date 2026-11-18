@@ -29,13 +29,13 @@ export function MarketingHeader() {
           <LanguageSwitcher />
           <Link
             href="/login"
-            className="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-xs font-semibold text-slate-800 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-xs font-semibold text-slate-800 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
           >
             {t.signIn}
           </Link>
           <Link
             href="/demo"
-            className="rounded-full bg-[#a3e635] px-5 py-1.5 text-xs font-bold text-slate-950 shadow-sm transition-all hover:bg-[#bef264] hover:shadow"
+            className="rounded-full bg-[#a3e635] px-5 py-1.5 text-xs font-bold text-slate-950 shadow-sm transition-all hover:bg-[#bef264] hover:shadow cursor-pointer"
           >
             Demo
           </Link>
@@ -44,7 +44,7 @@ export function MarketingHeader() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 md:hidden dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 md:hidden dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900 cursor-pointer"
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
             {mobileMenuOpen ? <X size={18} weight="bold" /> : <List size={18} weight="bold" />}

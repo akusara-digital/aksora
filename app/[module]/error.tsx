@@ -24,8 +24,9 @@ export default function ModuleError({
         An error occurred while loading this page. This might be a temporary issue.
       </p>
       <button
+        type="button"
         onClick={reset}
-        className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+        className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 cursor-pointer active:scale-95"
       >
         <ArrowClockwise size={16} weight="bold" />
         Try again

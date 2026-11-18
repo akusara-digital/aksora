@@ -62,7 +62,7 @@ export function ModuleEmptyState({ shortTitle, canAdd, colSpan = 2, onAdd, hasAc
       <td colSpan={colSpan} className="px-4 py-16 text-center">
         <div className="flex flex-col items-center gap-5">
           <div className="relative">
-            <div className="absolute inset-0 bg-sky-400/10 blur-2xl scale-[2]" />
+            <div className="absolute inset-0 bg-sky-400/10 blur-2xl scale-[2] pointer-events-none" />
             <div className="relative flex h-20 w-20 items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-gray-300 ring-1 ring-gray-200/60 shadow-sm">
               {hasActiveFilters ? (
                 <Funnel size={36} weight="bold" />
