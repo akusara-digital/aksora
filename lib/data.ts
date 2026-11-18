@@ -81,4 +81,5 @@ export {
   getAllTestSuitesWithPlan,
   getTestPlansSummary,
   getPublicReportData,
+  clearTestManagementCache,
 } from "@/lib/test-management-data";

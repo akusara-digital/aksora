@@ -1,29 +1,35 @@
 "use client";
 
-import { useState, useMemo } from"react";
-import Link from"next/link";
-import { cn, formatDate, formatDisplayText } from"@/lib/utils";
-import { Badge } from"@/components/shared/badge";
-import { Breadcrumb } from"@/components/layout/breadcrumb";
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { cn, formatDate, formatDisplayText } from "@/lib/utils";
+import { Badge } from "@/components/shared/badge";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import {
- Play,
- CheckCircle,
- XCircle,
- Warning,
- Clock,
- CalendarBlank,
- User,
- Tag,
- ArrowLeft,
- Checks,
- CircleNotch,
- CaretDown,
- ArrowSquareOut,
- MagnifyingGlass,
- FunnelSimple,
- Share,
- Check,
-} from"@phosphor-icons/react";
+  Play,
+  CheckCircle,
+  XCircle,
+  Warning,
+  Clock,
+  CalendarBlank,
+  User,
+  Tag,
+  ArrowLeft,
+  Checks,
+  CircleNotch,
+  CaretDown,
+  ArrowSquareOut,
+  MagnifyingGlass,
+  FunnelSimple,
+  Share,
+  Check,
+  ListChecks,
+} from "@phosphor-icons/react";
+import {
+  PlanScopeChecklistModal,
+  type AvailableSuite,
+} from "@/components/test-management/plan-scope-checklist-modal";
 
 type TestCase = {
  id: number;
@@ -96,10 +102,14 @@ const ALL ="All";
 export function TestPlanDetail({
  plan,
  suites,
+ availableSuites = [],
 }: {
  plan: Plan;
  suites: Suite[];
+ availableSuites?: AvailableSuite[];
 }) {
+ const router = useRouter();
+ const [showScopeModal, setShowScopeModal] = useState(false);
  const [openSuites, setOpenSuites] = useState<Record<string, boolean>>({});
  const [search, setSearch] = useState("");
  const [filterStatusMap, setFilterStatusMap] = useState<Record<string, string>>({});
@@ -195,6 +205,14 @@ export function TestPlanDetail({
  <ArrowLeft size={15} weight="bold" />
  </Link>
  <Badge value={plan.status} />
+ <button
+  type="button"
+  onClick={() => setShowScopeModal(true)}
+  className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 h-8 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-xs"
+ >
+  <ListChecks size={14} weight="bold" />
+  Checklist Scope ({suites.length} Suites)
+ </button>
  {plan.publicToken && (
  <button
  onClick={copyReportLink}
@@ -313,11 +331,40 @@ export function TestPlanDetail({
  </div>
 
  {filteredSuites.length === 0 ? (
+ suites.length === 0 ? (
+ <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-xs">
+ <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-3">
+ <ListChecks size={26} weight="bold" />
+ </div>
+ <h3 className="text-sm font-bold text-slate-900">No test suites linked to this plan yet</h3>
+ <p className="mx-auto mt-1 mb-5 max-w-md text-xs text-slate-500">
+ Author test suites and test cases first in your repository, then select which suites and cases to execute in this test plan checklist.
+ </p>
+ <div className="flex flex-wrap items-center justify-center gap-2.5">
+ <button
+ type="button"
+ onClick={() => setShowScopeModal(true)}
+ className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+ >
+ <ListChecks size={15} weight="bold" />
+ Select Test Suites Checklist
+ </button>
+ <Link
+ href="/test-cases"
+ className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+ >
+ <Checks size={14} weight="bold" className="text-slate-400" />
+ Go to Test Cases
+ </Link>
+ </div>
+ </div>
+ ) : (
  <div className="rounded-xl border border-dashed border-slate-200 bg-white p-16 text-center">
  <Checks size={36} className="mx-auto mb-3 text-slate-300" weight="bold" />
  <p className="font-bold text-slate-700">No suites found</p>
  <p className="mt-1 text-sm text-slate-500">Try changing the filter or search term.</p>
  </div>
+ )
  ) : (
  <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
  {filteredSuites.map((suite) => {
@@ -485,6 +532,18 @@ export function TestPlanDetail({
  </div>
  )}
  </div>
+
+ <PlanScopeChecklistModal
+  isOpen={showScopeModal}
+  onClose={() => setShowScopeModal(false)}
+  planId={plan.id}
+  planTitle={plan.title || "Test Plan"}
+  availableSuites={availableSuites}
+  currentlyLinkedSuiteIds={suites.map((s) => s.id)}
+  onSuccess={() => {
+    router.refresh();
+  }}
+ />
  </div>
  );
 }
