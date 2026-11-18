@@ -23,6 +23,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
+import { AppLoader } from "@/components/shared/app-loader";
 import { ResponsiveContainer } from "@/components/shared/responsive-container";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -169,9 +170,7 @@ export default function TestGapPage() {
       }
     >
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-        </div>
+        <AppLoader message="Loading test gap analysis..." />
       ) : !data ? (
         <p className="py-10 text-center text-sm text-gray-500">Failed to load test gap data.</p>
       ) : (

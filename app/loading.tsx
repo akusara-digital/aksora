@@ -1,5 +1,6 @@
-import { DashboardSkeleton } from "@/components/ui/skeleton";
+import { AppLoader } from "@/components/shared/app-loader";
 
 export default function Loading() {
-  return <DashboardSkeleton />;
+  return <AppLoader fullScreen size="lg" message="Loading Aksora..." />;
 }
+

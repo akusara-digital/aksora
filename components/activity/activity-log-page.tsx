@@ -23,6 +23,7 @@ import {
 import { cn, formatDisplayText } from "@/lib/utils";
 import { PageShell } from "@/components/layout/page-shell";
 import { ModulePagination } from "@/components/module/module-pagination";
+import { AppLoader } from "@/components/shared/app-loader";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -223,12 +224,7 @@ export function ActivityLogPage() {
 // ── Sub-Components ─────────────────────────────────────────────────────────
 
 function LoadingState() {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
-      <div className="h-5 w-5 animate-square-spin bg-gray-400" />
-      <p className="text-xs font-semibold">Loading activity...</p>
-    </div>
-  );
+  return <AppLoader message="Loading activity..." />;
 }
 
 function EmptyState({ scope }: { scope: "my" | "team" }) {

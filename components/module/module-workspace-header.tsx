@@ -234,8 +234,8 @@ export function ModuleWorkspaceHeader({
               ) : null}
 
               {(pending || refreshing) && (
-                <span role="status" className="flex items-center gap-1 text-[11px] font-medium text-blue-600">
-                  <span className="h-3 w-3 animate-square-spin bg-blue-600" />
+                <span role="status" className="flex items-center gap-1.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
+                  <span className="h-3 w-3 rounded-full border-2 border-blue-600 border-t-transparent animate-spin shrink-0" />
                   Refreshing...
                 </span>
               )}

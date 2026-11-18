@@ -21,6 +21,7 @@ const FlakyProjectChart = dynamic(() => import("./flaky-chart").then(m => m.Flak
 import { cn } from "@/lib/utils";
 import { EMPTY_FLAKY_DATA, type FlakyData, type FlakyTest } from "./flaky-types";
 import { VerdictTimeline, FlakinessGauge } from "./flaky-components";
+import { AppLoader } from "@/components/shared/app-loader";
 
 export function FlakyTestsClient({ initialData }: { initialData: FlakyData }) {
   const [data, setData] = useState<FlakyData>(initialData);
@@ -123,9 +124,7 @@ export function FlakyTestsClient({ initialData }: { initialData: FlakyData }) {
       }
     >
       {loading && !data ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-        </div>
+        <AppLoader message="Loading flaky tests..." />
       ) : (
         <div className="space-y-6">
           {/* Summary Cards */}

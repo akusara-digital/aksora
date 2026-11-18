@@ -8,6 +8,7 @@ import { toast } from "@/components/ui/toast";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { GoogleSignInButton } from "@/components/oauth/google-signin-button";
 import { ThemeSwitcher } from "@/components/shared/theme-switcher";
+import { AppLoader } from "@/components/shared/app-loader";
 import { useTranslation } from "@/hooks/use-translation";
 
 function getSafeRedirectUrl(raw: string | null): string {
@@ -204,13 +205,7 @@ export function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-white dark:bg-[#0B0F19] text-3xl font-black tracking-tighter text-blue-600">
-          Aksora
-        </div>
-      }
-    >
+    <Suspense fallback={<AppLoader fullScreen size="lg" message="Loading sign-in..." />}>
       <LoginContent />
     </Suspense>
   );

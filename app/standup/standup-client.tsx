@@ -15,6 +15,7 @@ import { toast } from "@/components/ui/toast";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
+import { AppLoader } from "@/components/shared/app-loader";
 
 type Task = { id: number; title: string; status: string; priority: string; project: string };
 type BugItem = { id: number; title: string; severity: string; status: string; project: string };
@@ -222,7 +223,7 @@ export function StandupClient() {
   };
 
   if (loading) {
-    return <div className="text-sm text-slate-500 py-10">Preparing standup context...</div>;
+    return <AppLoader message="Preparing standup context..." />;
   }
 
   return (
