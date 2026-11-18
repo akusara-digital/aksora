@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Buildings, CaretDown, Gear, SignOut, UserCircle } from "@phosphor-icons/react";
-import { WorkspaceSwitcher } from "./workspace-switcher";
+import { CaretDown, Gear, SignOut, UserCircle } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
 
@@ -142,35 +141,7 @@ export function AccountDropdown({
               <span className="text-gray-500">Role</span>
               <span className="font-semibold text-gray-800">{getRoleLabel(user?.role || "")}</span>
             </div>
-            {companyName && (
-              <div className="flex items-center justify-between py-1">
-                <span className="text-gray-500">Workspace</span>
-                <span className="max-w-36 truncate font-semibold text-gray-800">{companyName}</span>
-              </div>
-            )}
           </div>
-
-          {(user?.memberships?.length ?? 0) >= 1 && (
-            <div className="mt-3 border-t border-gray-100 pt-3">
-              <WorkspaceSwitcher
-                memberships={user?.memberships ?? []}
-                activeWorkspaceId={user?.activeWorkspaceId}
-                activeWorkspaceUuid={user?.workspaceUuid}
-                compact
-                onSwitched={() => setAccountOpen(false)}
-              />
-              <div className="mt-2 border-t border-gray-100 pt-2">
-                <Link
-                  href={`/settings/workspaces${wsParam}`}
-                  onClick={() => setAccountOpen(false)}
-                  className="flex items-center gap-2 px-2 py-1 text-xs font-semibold text-sky-700 hover:text-sky-900"
-                >
-                  <Buildings size={14} weight="bold" />
-                  Manage Workspaces
-                </Link>
-              </div>
-            </div>
-          )}
 
           <div className="mt-3 space-y-0.5 border-t border-gray-100 pt-3">
             <Link

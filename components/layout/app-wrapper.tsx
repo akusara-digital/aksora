@@ -41,8 +41,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const companyName = String(user?.company || "").trim();
-  const accountLabel = companyName || (user ? getRoleLabel(user?.role || "") : "Workspace");
+  const accountLabel = user ? getRoleLabel(user?.role || "") : "User";
 
   const isStandalone = isStandaloneRoute(pathname);
 

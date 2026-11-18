@@ -2,13 +2,14 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { CaretLeft, CaretRight, Camera, Robot, ArrowSquareOut } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, ArrowSquareOut } from "@phosphor-icons/react";
+import { BugSnapIcon } from "@/components/shared/bugsnap-icon";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
 import { normalizeRole } from "@/lib/roles";
 import { BrandMark } from "@/components/shared/brand-mark";
 import { filterGroups, SidebarSection } from "@/components/layout/sidebar-nav";
-import { ProjectSwitcher } from "@/components/layout/project-switcher";
+import { SidebarWorkspaceSwitcher } from "@/components/layout/sidebar-workspace-switcher";
 import { useTranslation } from "@/hooks/use-translation";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 
@@ -87,11 +88,7 @@ export function Sidebar({
   const role = normalizeRole(userRole);
   const visibleGroups = filterGroups(role, t.sidebar);
 
-  const bugsnapBase = process.env.NEXT_PUBLIC_BUGSNAP_URL || "https://bugsnap.akusaraproject.my.id";
-  const bugsnapHref = ws ? `${bugsnapBase.replace(/\/+$/, "")}/captures?ws=${encodeURIComponent(ws)}` : bugsnapBase;
-
-  const snaptestBase = process.env.NEXT_PUBLIC_SNAPTEST_URL || "https://snaptest.akusaraproject.my.id";
-  const snaptestHref = ws ? `${snaptestBase.replace(/\/+$/, "")}?ws=${encodeURIComponent(ws)}` : snaptestBase;
+  const bugsnapHref = process.env.NEXT_PUBLIC_BUGSNAP_URL || "https://bugsnap.akusaraproject.my.id";
 
   function showTooltip(e: React.MouseEvent<HTMLElement>, label: string) {
     if (!collapsed) return;
@@ -124,8 +121,8 @@ export function Sidebar({
             />
           </div>
 
-          {/* Global Project Switcher */}
-          <ProjectSwitcher collapsed={collapsed} />
+          {/* Global Workspace Switcher */}
+          <SidebarWorkspaceSwitcher collapsed={collapsed} />
 
           {/* Nav */}
           <div className={cn("flex-1 overflow-y-auto py-3", collapsed ? "px-1" : "px-0")}>
@@ -145,12 +142,12 @@ export function Sidebar({
 
           {/* Bottom actions */}
           <div className="mt-auto border-t border-slate-200 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            {/* Sister Apps (BugSnap & SnapTest) */}
+            {/* Sister Apps (BugSnap) */}
             {/* ponytail: external links default to # if env vars are unset */}
             <div className="space-y-0.5 pb-2 mb-2 border-b border-slate-200">
               {!collapsed && (
                 <div className="px-3 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400 select-none">
-                  {t.sidebar.sisterApps || "Sister Apps"}
+                  {t.sidebar.sisterApps || "Explore Our Apps"}
                 </div>
               )}
               <a
@@ -165,28 +162,9 @@ export function Sidebar({
                 )}
               >
                 <span className="flex items-center gap-2">
-                  <Camera size={15} weight="bold" className="text-indigo-600 shrink-0" />
+                  <BugSnapIcon size={16} />
                   <span className={cn("overflow-hidden whitespace-nowrap transition-all duration-150", collapsed ? "opacity-0 w-0" : "opacity-100 w-auto")}>
                     {t.sidebar.bugsnap}
-                  </span>
-                </span>
-                {!collapsed && <ArrowSquareOut size={12} className="text-slate-400 group-hover:text-slate-700" />}
-              </a>
-              <a
-                href={snaptestHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                onMouseEnter={(e) => showTooltip(e, t.sidebar.snaptest)}
-                onMouseLeave={hideTooltip}
-                className={cn(
-                  "flex h-8 items-center text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors rounded-md group",
-                  collapsed ? "w-8 mx-auto justify-center px-0" : "w-[calc(100%-1rem)] mx-2 justify-between px-2.5"
-                )}
-              >
-                <span className="flex items-center gap-2">
-                  <Robot size={15} weight="bold" className="text-emerald-600 shrink-0" />
-                  <span className={cn("overflow-hidden whitespace-nowrap transition-all duration-150", collapsed ? "opacity-0 w-0" : "opacity-100 w-auto")}>
-                    {t.sidebar.snaptest}
                   </span>
                 </span>
                 {!collapsed && <ArrowSquareOut size={12} className="text-slate-400 group-hover:text-slate-700" />}

@@ -60,7 +60,7 @@ const dict: Dictionary = {
     aiSettings: "AI & Model",
     apiKeys: "Kunci API",
     support: "Dukungan",
-    sisterApps: "Aplikasi Terkait",
+    sisterApps: "Coba Aplikasi Lainnya",
     bugsnap: "BugSnap (Tangkap Layar & Bug)",
     snaptest: "SnapTest (Otomasi AI QA)",
     collapse: "Ciutkan menu",

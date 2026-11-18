@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       role: "admin",
       company: workspace.name,
       activeWorkspaceId: workspace.id,
+      workspaceUuid: workspace.uuid,
     }),
     {
       httpOnly: true,
