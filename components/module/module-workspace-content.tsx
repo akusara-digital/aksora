@@ -31,7 +31,7 @@ export type ModuleWorkspaceProps = {
   relatedOptions?: Record<string, Array<{ label: string; value: string }>>;
   initialFormValues?: Record<string, string>;
   hiddenFields?: string[];
-  user?: { role?: string; company?: string | null } | null;
+  user?: { role?: string; company?: string | null; name?: string | null } | null;
   topContent?: ReactNode;
   versionSequenceDefaultValue?: string;
   viewId?: string | null;
@@ -386,15 +386,31 @@ export function ModuleWorkspace({
     replaceWorkspaceUrl(withUpdatedWorkspaceParams(currentSearch, (p) => { p.set("page", String(nextPage)); }));
   }, [currentSearch, replaceWorkspaceUrl]);
 
+  const contextualInitialValues = useMemo(() => {
+    const values = { ...initialFormValues };
+    const projectFilter = activeFilters.find((f) => f.key === "project")?.value;
+    const sprintFilter = activeFilters.find((f) => f.key === "sprint")?.value;
+    if (projectFilter && !values.project) {
+      values.project = String(projectFilter);
+    }
+    if (sprintFilter && !values.sprint) {
+      values.sprint = String(sprintFilter);
+    }
+    if (user?.name?.trim() && !values.assignee) {
+      values.assignee = user.name.trim();
+    }
+    return values;
+  }, [initialFormValues, activeFilters, user?.name]);
+
   // Memoized: large object passed to useModuleWorkspaceActions, avoids recreation every render
   const actionArgs = useMemo(() => ({
-    module, configFields: resolvedConfig.fields, rows: localRows, initialFormValues, router, toast,
+    module, configFields: resolvedConfig.fields, rows: localRows, initialFormValues: contextualInitialValues, router, toast,
     startTransition, showForm, editingRow, deleteId, pendingDeleteId, undoTimerRef, formDirty,
     openSelectField, setSelectValues, setRefreshing, setRows: setLocalRows, setShowForm,
     setEditingRow, setViewingRow, setFieldErrors, setDuplicates, setSprintDuplicate, setLastSprint,
     setAttachments, setDateWarnings, setFormDirty, setOpenSelectField, setPendingDeleteId,
     setDeleteId, setKanbanRows: setLocalKanbanRows, setImportErrors,
-  }), [module, resolvedConfig.fields, localRows, initialFormValues, router, showForm, editingRow, deleteId, pendingDeleteId, formDirty, openSelectField]) satisfies Parameters<typeof useModuleWorkspaceActions>[0];
+  }), [module, resolvedConfig.fields, localRows, contextualInitialValues, router, showForm, editingRow, deleteId, pendingDeleteId, formDirty, openSelectField]) satisfies Parameters<typeof useModuleWorkspaceActions>[0];
 
   const {
     refreshPage,

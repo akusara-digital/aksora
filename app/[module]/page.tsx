@@ -364,6 +364,32 @@ export default async function ModulePage({
 
     if (["test-plans", "test-sessions", "meeting-notes", "tasks", "bugs", "deployments", "work-logs"].includes(moduleKey)) {
       relatedOptions.project = await getProjectOptions();
+      const projectFilter = Array.isArray(query.project) ? query.project[0] : query.project;
+      if (projectFilter && !initialFormValues.project) {
+        initialFormValues.project = String(projectFilter);
+      } else if (!initialFormValues.project && relatedOptions.project && relatedOptions.project.length === 1) {
+        initialFormValues.project = String(relatedOptions.project[0].value);
+      }
+    }
+
+    if (currentUser?.name?.trim()) {
+      const currentUserName = currentUser.name.trim();
+      if (!initialFormValues.assignee && ["tasks", "test-cases", "test-plans", "test-suites", "work-logs"].includes(moduleKey)) {
+        initialFormValues.assignee = currentUserName;
+      }
+      if (!initialFormValues.tester && ["test-sessions"].includes(moduleKey)) {
+        initialFormValues.tester = currentUserName;
+      }
+    }
+
+    if (!initialFormValues.priority) {
+      initialFormValues.priority = "Medium";
+    }
+
+    if (!initialFormValues.status) {
+      if (moduleKey === "tasks") initialFormValues.status = "To Do";
+      else if (moduleKey === "bugs") initialFormValues.status = "Open";
+      else if (moduleKey === "test-cases" || moduleKey === "test-suites") initialFormValues.status = "Active";
     }
 
     if (moduleKey === "deployments" && !initialFormValues.version) {

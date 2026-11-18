@@ -27,7 +27,7 @@ function QuickCreateSuiteForm({
 }: Omit<QuickCreateSuiteModalProps, "isOpen">) {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [testPlanId, setTestPlanId] = useState("");
+  const [testPlanId, setTestPlanId] = useState(() => (plans.length === 1 ? String(plans[0].id) : ""));
   const [status, setStatus] = useState<"active" | "draft">("active");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
