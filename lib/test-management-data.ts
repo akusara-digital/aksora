@@ -20,6 +20,10 @@ type ReadScope = {
 type DetailCacheEntry<T> = { expiresAt: number; data: T };
 const detailCache = new Map<string, DetailCacheEntry<unknown>>();
 
+export function clearTestManagementCache() {
+  detailCache.clear();
+}
+
 async function getReadScope(): Promise<ReadScope> {
   const user = await getCurrentUser();
   const scope = getAccessScope(user);
@@ -265,8 +269,8 @@ export async function getTestSuiteByToken(token: string) {
   const cached = getCached<Record<string, unknown> | null>(cacheKey("suite-token", scope, token));
   if (cached !== null) return cached;
   const item = await db.get(
-    `SELECT id, company, "publicToken", "testPlanId", title, assignee, status, notes, "updatedAt" FROM "TestSuite" WHERE "publicToken" = ? AND "deletedAt" IS NULL ${scope.andWhere}`,
-    [token, ...scope.params],
+    `SELECT id, company, "publicToken", "testPlanId", title, assignee, status, notes, "updatedAt" FROM "TestSuite" WHERE ("publicToken" = ? OR CAST(id AS TEXT) = ?) AND "deletedAt" IS NULL ${scope.andWhere}`,
+    [token, token, ...scope.params],
   ) as Record<string, unknown> | undefined;
   if (!item) return null;
   return setCached(cacheKey("suite-token", scope, token), item);

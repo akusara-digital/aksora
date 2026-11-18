@@ -1,21 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { Badge } from "@/components/shared/badge";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  CheckCircle,
-  XCircle,
-  Warning,
-  Clock,
   Checks,
-  DotsThreeVertical,
-  PencilSimple,
   Table,
   Plus,
-  Play,
 } from "@phosphor-icons/react";
-import { AiGenerateCasesButton } from "@/components/test-management/ai-generate-cases-button";
+import { toast } from "@/components/ui/toast";
 import {
   QuickCreateCaseModal,
   QuickCreateSuiteModal,
@@ -31,6 +23,7 @@ import {
 } from "@/components/test-management/test-case-table";
 import { SuiteSidebarList } from "@/components/test-management/suite-sidebar-list";
 import { TestCaseFilters } from "@/components/test-management/test-case-filters";
+import { TestCaseSuiteHeader } from "@/components/test-management/test-case-suite-header";
 
 type SuiteItem = {
   id: number;
@@ -55,15 +48,15 @@ export function TestCaseLibrary({
   plans?: PlanOption[];
   initialSearch?: string;
 }) {
+  const router = useRouter();
   const [search] = useState(initialSearch);
   const [filterStatus, setFilterStatus] = useState(ALL);
   const [filterProject, setFilterProject] = useState(ALL);
   const [filterAssignee] = useState(ALL);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNewSuiteModal, setShowNewSuiteModal] = useState(false);
   const [showNewCaseModal, setShowNewCaseModal] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [startingRun, setStartingRun] = useState(false);
 
   const projectOptions = useMemo(() => {
     const set = new Set<string>();
@@ -119,26 +112,32 @@ export function TestCaseLibrary({
       }
       const g = map.get(key)!;
       g.cases.push(c);
-      const s = c.status;
-      if (s === "Passed") g.passed++;
-      else if (s === "Failed") g.failed++;
-      else if (s === "Blocked") g.blocked++;
+      if (c.status === "Passed") g.passed++;
+      else if (c.status === "Failed") g.failed++;
+      else if (c.status === "Blocked") g.blocked++;
       else g.pending++;
     });
 
-    return Array.from(map.values())
-      .map((group) => ({ ...group, cases: [...group.cases].sort(compareTestCases) }))
-      .sort(compareSuiteGroups);
+    const result = Array.from(map.values());
+    result.forEach((g) => g.cases.sort(compareTestCases));
+    return result.sort(compareSuiteGroups);
   }, [cases, suites]);
 
-  const filteredGroups = useMemo(() => {
+  const filteredGroups = useMemo<SuiteGroup[]>(() => {
     return groups
-      .filter((g) => filterProject === ALL || g.planProject === filterProject)
+      .filter((g) => {
+        if (filterProject === ALL) return true;
+        return g.planProject === filterProject;
+      })
       .map((g) => {
         let filteredCases = g.cases;
-        if (filterStatus !== ALL) filteredCases = filteredCases.filter((c) => c.status === filterStatus);
+        if (filterStatus !== ALL) {
+          filteredCases = filteredCases.filter((c) => c.status === filterStatus);
+        }
         if (filterAssignee !== ALL) {
-          filteredCases = filteredCases.filter((c) => (c.assignee || g.suiteAssignee || "Unassigned") === filterAssignee);
+          filteredCases = filteredCases.filter(
+            (c) => (c.assignee || g.suiteAssignee) === filterAssignee,
+          );
         }
         if (search) {
           const q = search.toLowerCase();
@@ -175,30 +174,45 @@ export function TestCaseLibrary({
   }, [groups, filterProject, filterStatus, filterAssignee, search]);
 
   const selected = filteredGroups.find((g) => g.key === selectedKey) ?? filteredGroups[0] ?? null;
-  const displayCases = selected
-    ? filterStatus !== ALL || search
-      ? selected.filteredCases
-      : selected.cases
+  const displayCases: TestCase[] = selected
+    ? (filterStatus !== ALL || search
+      ? selected.filteredCases ?? selected.cases
+      : selected.cases) ?? []
     : [];
   const suggestedTcId = `TC-${String((selected?.cases.length ?? 0) + 1).padStart(3, "0")}`;
 
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node | null;
-      if (target && menuRef.current?.contains(target)) return;
-      setIsMenuOpen(false);
-    };
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsMenuOpen(false);
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isMenuOpen]);
+  const handleRunSuite = async (suiteGroup?: SuiteGroup | null) => {
+    const target = suiteGroup || selected;
+    if (!target) {
+      toast("No test suite selected", "error");
+      return;
+    }
+    const suiteId = Number(target.key);
+    if (!suiteId || isNaN(suiteId)) {
+      toast("Please select a valid test suite first.", "error");
+      return;
+    }
+    setStartingRun(true);
+    try {
+      const res = await fetch("/api/execution-runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          testSuiteId: suiteId,
+        }),
+      });
+      const d = await res.json();
+      if (!res.ok) {
+        throw new Error(d.error || "Failed to start test run");
+      }
+      toast(`Test Run #${d.data?.runNumber || ""} initiated. Redirecting...`, "success");
+      const token = target.suiteToken || target.key;
+      router.push(`/test-execution/${token}/run/${d.data.id}`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to start run", "error");
+      setStartingRun(false);
+    }
+  };
 
   return (
     <div className="space-y-3 pb-6">
@@ -220,11 +234,9 @@ export function TestCaseLibrary({
             filteredGroups={filteredGroups}
             allGroupsCount={groups.length}
             selectedKey={selectedKey}
-            onSelectKey={(key) => {
-              setSelectedKey(key);
-              setIsMenuOpen(false);
-            }}
+            onSelectKey={(key) => setSelectedKey(key)}
             onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
+            onRunSuite={handleRunSuite}
             filterStatus={filterStatus}
             filterAssignee={filterAssignee}
             search={search}
@@ -250,7 +262,7 @@ export function TestCaseLibrary({
                   <button
                     type="button"
                     onClick={() => setShowNewSuiteModal(true)}
-                    className="mt-1 inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700"
+                    className="mt-1 inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 shadow-sm"
                   >
                     <Plus size={14} weight="bold" />
                     New Suite
@@ -259,101 +271,12 @@ export function TestCaseLibrary({
               </div>
             ) : (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 px-6 py-4">
-                  <div className="min-w-0">
-                    {selected.planProject && (
-                      <p className="mb-0.5 text-[11px] font-bold uppercase tracking-widest text-blue-500">
-                        {selected.planProject}
-                        {selected.planTitle ? ` · ${selected.planTitle}` : ""}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <h2 className="truncate text-base font-bold text-gray-900">
-                        {selected.suiteTitle}
-                      </h2>
-                      {selected.suiteStatus && <Badge value={selected.suiteStatus} />}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="hidden sm:flex items-center gap-3 text-xs font-bold text-gray-400">
-                      <span className="flex items-center gap-1">
-                        <CheckCircle size={13} className="text-emerald-500" />
-                        {selected.passed}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <XCircle size={13} className="text-rose-500" />
-                        {selected.failed}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Warning size={13} className="text-amber-500" />
-                        {selected.blocked}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock size={13} className="text-gray-400" />
-                        {selected.pending}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowNewCaseModal(true)}
-                      className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700"
-                    >
-                      <Plus size={14} weight="bold" />
-                      Add Case
-                    </button>
-                    <AiGenerateCasesButton
-                      suiteId={String(
-                        selected.cases[0]?.testSuiteId || selected.key || "",
-                      )}
-                      suiteLabel={selected.suiteTitle}
-                      existingCases={selected.cases}
-                    />
-                    {(selected.suiteToken || selected.key) && (
-                      <div ref={menuRef} className="relative">
-                        <button
-                          type="button"
-                          aria-label="Open test case menu"
-                          aria-expanded={isMenuOpen}
-                          aria-haspopup="menu"
-                          onClick={() => setIsMenuOpen((open) => !open)}
-                          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-gray-200 text-gray-500 transition hover:bg-gray-50"
-                        >
-                          <DotsThreeVertical size={18} weight="bold" />
-                        </button>
-                        {isMenuOpen && (
-                          <div className="absolute right-0 top-11 z-20 w-56 rounded-md border border-gray-200 bg-white p-1.5 shadow-lg">
-                            <Link
-                              href={`/test-cases/${selected.suiteToken || selected.key}`}
-                              className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                              onClick={() => setIsMenuOpen(false)}
-                            >
-                              <PencilSimple size={16} weight="bold" />
-                              Edit Test Case
-                            </Link>
-                            {selected.suiteToken && (
-                              <Link
-                                href={`/test-suites/${selected.suiteToken}`}
-                                className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                                onClick={() => setIsMenuOpen(false)}
-                              >
-                                <Table size={16} weight="bold" />
-                                Open Suite Detail
-                              </Link>
-                            )}
-                            <Link
-                              href="/test-execution"
-                              className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                              onClick={() => setIsMenuOpen(false)}
-                            >
-                              <Play size={16} weight="bold" />
-                              Go to Test Runs
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <TestCaseSuiteHeader
+                  selected={selected}
+                  onAddCase={() => setShowNewCaseModal(true)}
+                  onRunSuite={() => handleRunSuite(selected)}
+                  startingRun={startingRun}
+                />
 
                 {displayCases.length === 0 ? (
                   <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center text-gray-400">
@@ -367,7 +290,7 @@ export function TestCaseLibrary({
                       <button
                         type="button"
                         onClick={() => setShowNewCaseModal(true)}
-                        className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700"
+                        className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 shadow-sm"
                       >
                         <Plus size={14} weight="bold" />
                         Add First Test Case

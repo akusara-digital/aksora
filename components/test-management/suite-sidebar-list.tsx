@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { FolderSimple, Plus } from "@phosphor-icons/react";
+import { FolderSimple, Plus, Play } from "@phosphor-icons/react";
 import type { SuiteGroup } from "./test-case-table";
 
 interface SuiteSidebarListProps {
@@ -12,6 +11,7 @@ interface SuiteSidebarListProps {
   selectedKey: string | null;
   onSelectKey: (key: string) => void;
   onOpenNewSuiteModal: () => void;
+  onRunSuite?: (group: SuiteGroup) => void;
   filterStatus: string;
   filterAssignee: string;
   search: string;
@@ -24,6 +24,7 @@ export function SuiteSidebarList({
   selectedKey,
   onSelectKey,
   onOpenNewSuiteModal,
+  onRunSuite,
   filterStatus,
   filterAssignee,
   search,
@@ -40,7 +41,7 @@ export function SuiteSidebarList({
             </p>
             <p className="text-[11px] text-gray-500">
               {allGroupsCount === 0
-                ? "Create a suite first to organize and write test cases."
+                ? "Create a suite to organize modules and write test cases."
                 : "Adjust your filters or create a new suite."}
             </p>
           </div>
@@ -54,12 +55,6 @@ export function SuiteSidebarList({
                 <Plus size={13} weight="bold" />
                 Create First Suite
               </button>
-              <Link
-                href="/test-plans"
-                className="text-[11px] font-medium text-blue-600 hover:underline"
-              >
-                Or start from a Test Plan
-              </Link>
             </div>
           )}
         </div>
@@ -126,14 +121,35 @@ export function SuiteSidebarList({
                   </p>
                 )}
               </div>
-              <span
-                className={cn(
-                  "mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold",
-                  isActive ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500",
+              <div className="flex items-center gap-1.5 shrink-0">
+                {onRunSuite && (
+                  <button
+                    type="button"
+                    title={`Run ${group.suiteTitle} immediately`}
+                    aria-label={`Run suite ${group.suiteTitle}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRunSuite(group);
+                    }}
+                    className={cn(
+                      "flex h-6 w-6 items-center justify-center rounded transition cursor-pointer",
+                      isActive
+                        ? "bg-white/20 text-white hover:bg-white/35"
+                        : "text-gray-400 hover:bg-emerald-50 hover:text-emerald-600",
+                    )}
+                  >
+                    <Play size={11} weight="fill" />
+                  </button>
                 )}
-              >
-                {displayCount}
-              </span>
+                <span
+                  className={cn(
+                    "mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold",
+                    isActive ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500",
+                  )}
+                >
+                  {displayCount}
+                </span>
+              </div>
             </div>
             <div
               className={cn(
