@@ -66,10 +66,10 @@ vi.mock("@/hooks/use-translation", () => ({
 }));
 
 import { Sidebar } from "@/components/layout/sidebar";
-import { getGroups } from "@/components/layout/sidebar-nav";
+import { filterFooterItems, getFooterItems, getGroups } from "@/components/layout/sidebar-nav";
 
 describe("Sidebar", () => {
-  it("marks test execution active for execution detail routes", () => {
+  it("marks test runs active for execution detail routes", () => {
     const html = renderToStaticMarkup(
       <Sidebar
         collapsed={false}
@@ -81,132 +81,82 @@ describe("Sidebar", () => {
     expect(html).toContain('href="/test-execution"');
     expect(html).toMatch(/href="\/test-execution"[^>]*bg-sky-50[\s\S]*?Test Sessions/);
     expect(html).not.toMatch(/href="\/test-suites"[^>]*bg-sky-50/);
+    // Footer utility items render in the sidebar
+    expect(html).toContain('href="/notes"');
+    expect(html).toContain('href="/settings"');
   });
 
-  it("reorganizes groups into the exact required structure and ordering", () => {
-    const groups = getGroups({
+  it("organizes main nav into 4 balanced groups (8 items) + compact footer utilities", () => {
+    const mockDict = {
       dashboard: "Dashboard",
-      groupTestManagement: "Test Management",
       projects: "Projects",
-      testPlans: "Test Plans",
-      testSuites: "Test Suites",
+      groupTestManagement: "Test Management",
       testCases: "Test Cases",
-      testSessions: "Test Sessions",
-      groupWorkTracking: "Work Tracking",
+      testRuns: "Test Runs",
+      groupWorkAndDefects: "Work & Defects",
       tasks: "Tasks",
       bugs: "Bugs",
-      sprints: "Sprints",
-      workLog: "Work Log",
-      ganttTimeline: "Gantt / Timeline",
-      groupDocumentation: "Team Workspace",
-      groupTeamWorkspace: "Team Workspace",
-      dailyStandup: "Daily Standup",
-      meetingNotes: "Meeting Notes",
-      activityLog: "Activity Log",
-      groupPersonal: "Personal Tools",
-      groupPersonalTools: "Personal Tools",
-      notes: "Notes",
-      passwordManager: "Password Manager",
-      groupReports: "Reports & Analytics",
-      groupReportsAnalytics: "Reports & Analytics",
-      report: "Report",
-      testCoverage: "Test Coverage",
-      flakyTests: "Flaky Tests",
-      testGapAnalysis: "Test Gap Analysis",
-      deploymentLog: "Deployment Log",
-      workloadHeatmap: "Workload Heatmap",
-      groupSystemSettings: "System Settings",
+      groupTeamAndReports: "Team & Reports",
+      teamPulse: "Team Pulse",
+      reports: "Reports",
+      notesAndVault: "Notes & Vault",
       settings: "Settings",
-      aiSettings: "AI & Models",
-      apiKeys: "API Keys",
-      support: "Support",
-    } as unknown as Parameters<typeof getGroups>[0]);
+    } as unknown as Parameters<typeof getGroups>[0];
 
-    // Section A: Main Navigation (Dashboard, Projects)
+    const groups = getGroups(mockDict);
+    const footerItems = getFooterItems(mockDict);
+
+    // Group 0: Main Overview (no header)
     expect(groups[0].title).toBe("");
     expect(groups[0].items.map((i) => i.href)).toEqual(["/dashboard", "/projects"]);
 
-    // Section B: Test Management (Test Repository, Test Execution)
+    // Group 1: Test Management (First-class QA pillar)
     expect(groups[1].title).toBe("Test Management");
     expect(groups[1].items.map((i) => i.href)).toEqual([
       "/test-cases",
       "/test-execution",
     ]);
 
-    // Section C: Work Tracking (Tasks & Sprints, Bugs, Team & Logs)
-    expect(groups[2].title).toBe("Work Tracking");
+    // Group 2: Work & Defects
+    expect(groups[2].title).toBe("Work & Defects");
     expect(groups[2].items.map((i) => i.href)).toEqual([
       "/tasks",
       "/bugs",
-      "/work-logs",
     ]);
 
-    // Section D: Reports & Analytics
-    expect(groups[3].title).toBe("Reports & Analytics");
+    // Group 3: Team & Reports
+    expect(groups[3].title).toBe("Team & Reports");
     expect(groups[3].items.map((i) => i.href)).toEqual([
+      "/standup",
       "/reports",
     ]);
 
-    // Section E: Personal Tools
-    expect(groups[4].title).toBe("Personal Tools");
-    expect(groups[4].items.map((i) => i.href)).toEqual([
-      "/notes",
-    ]);
+    expect(groups).toHaveLength(4);
+    expect(footerItems.map((i) => i.href)).toEqual(["/notes", "/settings"]);
 
-    // Section F: System Settings
-    expect(groups[5].title).toBe("System Settings");
-    expect(groups[5].items.map((i) => i.href)).toEqual([
-      "/settings",
-    ]);
-
-    // Ensure no duplicate routes across all groups
-    const allHrefs = groups.flatMap((g) => g.items.map((i) => i.href));
-    const uniqueHrefs = new Set(allHrefs);
-    expect(allHrefs.length).toBe(uniqueHrefs.size);
+    // Ensure no duplicate routes across main nav + footer
+    const allHrefs = [
+      ...groups.flatMap((g) => g.items.map((i) => i.href)),
+      ...footerItems.map((i) => i.href),
+    ];
+    expect(allHrefs.length).toBe(new Set(allHrefs).size);
     expect(allHrefs.length).toBe(10);
   });
 
-  it("uses updated refined copy and labels when provided", () => {
-    const groups = getGroups({
-      groupOverview: "Overview",
-      dashboard: "Dashboard",
-      projects: "Projects",
-      groupTestManagement: "Test Management",
-      testRepository: "Test Repository",
-      testExecution: "Test Execution",
-      groupWorkTracking: "Work Tracking",
-      tasksAndSprints: "Tasks & Sprints",
-      bugsAndIssues: "Bugs & Issues",
-      teamAndLogs: "Team & Work Logs",
-      groupReportsAnalytics: "Reports & Analytics",
-      groupReports: "Reports & Analytics",
-      groupPersonalTools: "Personal Tools",
+  it("exposes Settings footer utility to all roles (including non-admin QA/FE)", () => {
+    const mockDict = {
       notesAndVault: "Notes & Vault",
-      groupSystemSettings: "System Settings",
       settings: "Settings",
-    } as unknown as Parameters<typeof getGroups>[0]);
+    } as unknown as Parameters<typeof getFooterItems>[0];
 
-    expect(groups[0].title).toBe("Overview");
-    expect(groups[0].items[0].label).toBe("Dashboard");
-    expect(groups[0].items[1].label).toBe("Projects");
-
-    expect(groups[1].title).toBe("Test Management");
-    expect(groups[1].items[0].label).toBe("Test Repository");
-    expect(groups[1].items[1].label).toBe("Test Execution");
-
-    expect(groups[2].title).toBe("Work Tracking");
-    expect(groups[2].items[0].label).toBe("Tasks & Sprints");
-    expect(groups[2].items[1].label).toBe("Bugs & Issues");
-    expect(groups[2].items[2].label).toBe("Team & Work Logs");
-
-    expect(groups[3].title).toBe("Reports & Analytics");
-    expect(groups[3].items[0].label).toBe("Reports & Analytics");
-
-    expect(groups[4].title).toBe("Personal Tools");
-    expect(groups[4].items[0].label).toBe("Notes & Vault");
-
-    expect(groups[5].title).toBe("System Settings");
-    expect(groups[5].items[0].label).toBe("Settings");
+    expect(filterFooterItems("qa", mockDict).map((i) => i.href)).toEqual([
+      "/notes",
+      "/settings",
+    ]);
+    expect(filterFooterItems("fe", mockDict).map((i) => i.href)).toEqual([
+      "/notes",
+      "/settings",
+    ]);
   });
 });
 

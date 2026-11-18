@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { CaretDown, Gear, SignOut, UserCircle } from "@phosphor-icons/react";
+import { Bell, CaretDown, Gear, Moon, SignOut, UserCircle } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
 
@@ -64,7 +64,7 @@ export function AccountDropdown({
       <button
         type="button"
         onClick={() => setAccountOpen((v) => !v)}
-        className="flex h-8 items-center gap-2 border border-gray-200 bg-white px-2 text-left transition hover:bg-gray-50"
+        className="flex h-8 cursor-pointer items-center gap-2 border border-gray-200 bg-white px-2 text-left transition hover:bg-gray-50"
       >
         {user?.avatar ? (
           <img src={user.avatar} alt="" loading="lazy" decoding="async" className="h-6 w-6 rounded-full object-cover" />
@@ -147,28 +147,42 @@ export function AccountDropdown({
             <Link
               href={`/settings/profile${wsParam}`}
               onClick={() => setAccountOpen(false)}
-              className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
             >
               <UserCircle size={15} weight="bold" />
               Profile
             </Link>
-            {(String(user?.role || "").trim() === "admin" || String(user?.role || "").trim() === "superadmin") && (
-              <Link
-                href={`/settings/users${wsParam}`}
-                onClick={() => setAccountOpen(false)}
-                className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-              >
-                <Gear size={15} weight="bold" />
-                Account settings
-              </Link>
-            )}
+            <Link
+              href={`/settings/appearance${wsParam}`}
+              onClick={() => setAccountOpen(false)}
+              className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            >
+              <Moon size={15} weight="bold" />
+              Appearance
+            </Link>
+            <Link
+              href={`/settings/notifications${wsParam}`}
+              onClick={() => setAccountOpen(false)}
+              className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            >
+              <Bell size={15} weight="bold" />
+              Notifications
+            </Link>
+            <Link
+              href={`/settings${wsParam}`}
+              onClick={() => setAccountOpen(false)}
+              className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            >
+              <Gear size={15} weight="bold" />
+              Settings
+            </Link>
             <button
               type="button"
               onClick={() => {
                 setAccountOpen(false);
                 onLogoutClick();
               }}
-              className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+              className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
             >
               <SignOut size={15} weight="bold" />
               Logout

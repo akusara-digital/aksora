@@ -39,34 +39,34 @@ type SubNavGroup = {
 };
 
 const SUB_NAV_GROUPS: SubNavGroup[] = [
-  // 1. Test Repository
+  // 1. Test Cases (Repository & Planning)
   {
     match: (p) =>
       p === "/test-cases" ||
       p.startsWith("/test-cases/") ||
       p.startsWith("/test-suites") ||
-      (p.startsWith("/test-plans") && !p.startsWith("/test-plans/projects/")) ||
-      p.startsWith("/exploratory"),
+      (p.startsWith("/test-plans") && !p.startsWith("/test-plans/projects/")),
     tabs: [
       { href: "/test-cases", label: "Test Cases", icon: Checks },
       { href: "/test-suites", label: "Test Suites", icon: Table },
       { href: "/test-plans", label: "Test Plans", icon: ClipboardText },
-      { href: "/exploratory", label: "Exploratory (SBTM)", icon: Compass },
     ],
   },
-  // 2. Test Execution
+  // 2. Test Runs (Execution, Exploratory, Schedules & Recordings)
   {
     match: (p) =>
       p.startsWith("/test-execution") ||
+      p.startsWith("/exploratory") ||
       p.startsWith("/schedules") ||
       p.startsWith("/recordings"),
     tabs: [
-      { href: "/test-execution", label: "Test Sessions & Runs", icon: PlayCircle },
+      { href: "/test-execution", label: "Test Runs", icon: PlayCircle },
+      { href: "/exploratory", label: "Exploratory (SBTM)", icon: Compass },
       { href: "/schedules", label: "Schedules", icon: CalendarCheck },
       { href: "/recordings", label: "Recordings", icon: VideoCamera },
     ],
   },
-  // 3. Tasks & Work Tracking
+  // 3. Tasks & Sprints
   {
     match: (p) =>
       p.startsWith("/tasks") ||
@@ -78,37 +78,37 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       { href: "/gantt", label: "Gantt Timeline", icon: Rows },
     ],
   },
-  // 4. Team & Collaboration
+  // 4. Team Pulse
   {
     match: (p) =>
-      p.startsWith("/work-logs") ||
       p.startsWith("/standup") ||
+      p.startsWith("/work-logs") ||
       p.startsWith("/meeting-notes") ||
       p.startsWith("/activity-log"),
     tabs: [
-      { href: "/work-logs", label: "Work Logs", icon: ClockCountdown },
       { href: "/standup", label: "Daily Standup", icon: MicrophoneStage },
+      { href: "/work-logs", label: "Work Logs", icon: ClockCountdown },
       { href: "/meeting-notes", label: "Meeting Notes", icon: Note },
       { href: "/activity-log", label: "Activity Log", icon: ClockCounterClockwise },
     ],
   },
-  // 5. Reports & Analytics
+  // 5. Reports
   {
     match: (p) =>
       p.startsWith("/reports") ||
       p.startsWith("/weekly-report") ||
       p.startsWith("/deployments"),
     tabs: [
-      { href: "/reports/test-coverage", label: "Test Coverage", icon: ChartPieSlice },
-      { href: "/reports/sprint-burndown", label: "Sprint Burndown", icon: ChartLineUp },
+      { href: "/reports/test-coverage", label: "Coverage", icon: ChartPieSlice },
       { href: "/reports/flaky-tests", label: "Flaky Tests", icon: ShuffleAngular },
       { href: "/reports/test-gap", label: "Test Gap", icon: MagnifyingGlass },
-      { href: "/reports/workload", label: "Workload Heatmap", icon: Users },
-      { href: "/deployments", label: "Deployment Log", icon: RocketLaunch },
-      { href: "/weekly-report", label: "Weekly Summary", icon: ChartLineUp },
+      { href: "/reports/sprint-burndown", label: "Burndown", icon: ChartLineUp },
+      { href: "/reports/workload", label: "Workload", icon: Users },
+      { href: "/deployments", label: "Deployments", icon: RocketLaunch },
+      { href: "/weekly-report", label: "Weekly Report", icon: ChartLineUp },
     ],
   },
-  // 6. Personal Tools
+  // 6. Notes & Vault
   {
     match: (p) => p.startsWith("/notes") || p.startsWith("/vault"),
     tabs: [

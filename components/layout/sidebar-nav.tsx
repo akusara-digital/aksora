@@ -29,131 +29,81 @@ export type SidebarGroup = { title: string; items: SidebarItem[] };
 export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
   return [
     {
-      title: t.groupOverview || "",
+      title: "",
       items: [
-        { href: "/dashboard", label: t.dashboard, icon: SquaresFour },
+        { href: "/dashboard", label: t.dashboard || "Dashboard", icon: SquaresFour },
         { href: "/projects", label: t.projects || "Projects", icon: FolderSimple },
       ],
     },
     {
-      title: t.groupTestManagement,
+      title: t.groupTestManagement || "Test Management",
       items: [
-        { href: "/test-cases", label: t.testRepository || t.testCases || "Test Repository", icon: Checks },
-        { href: "/test-execution", label: t.testExecution || t.testSessions || "Test Execution", icon: PlayCircle },
+        { href: "/test-cases", label: t.testCases || t.testRepository || "Test Cases", icon: Checks },
+        { href: "/test-execution", label: t.testRuns || t.testExecution || t.testSessions || "Test Runs", icon: PlayCircle },
       ],
     },
     {
-      title: t.groupWorkTracking,
+      title: t.groupWorkAndDefects || t.groupWorkTracking || "Work & Defects",
       items: [
-        { href: "/tasks", label: t.tasksAndSprints || t.tasks || "Tasks & Sprints", icon: Kanban },
-        { href: "/bugs", label: t.bugsAndIssues || t.bugs || "Bugs & Issues", icon: Bug },
-        { href: "/work-logs", label: t.teamAndLogs || t.workLog || "Team & Work Logs", icon: ClockCountdown },
+        { href: "/tasks", label: t.tasks || t.tasksAndSprints || "Tasks", icon: Kanban },
+        { href: "/bugs", label: t.bugs || t.bugsAndIssues || "Bugs", icon: Bug },
       ],
     },
     {
-      title: t.groupReportsAnalytics || t.groupReports,
+      title: t.groupTeamAndReports || t.groupReportsAnalytics || "Team & Reports",
       items: [
-        { href: "/reports", label: t.groupReports || "Reports & Analytics", icon: ChartLineUp },
-      ],
-    },
-    {
-      title: t.groupPersonalTools || t.groupPersonal,
-      items: [
-        { href: "/notes", label: t.notesAndVault || t.notes || "Notes & Vault", icon: NotePencil },
-      ],
-    },
-    {
-      title: t.groupSystemSettings,
-      items: [
-        { href: "/settings", label: t.settings, icon: Gear },
+        { href: "/standup", label: t.teamPulse || t.teamAndLogs || t.dailyStandup || "Team Pulse", icon: ClockCountdown },
+        { href: "/reports", label: t.reports || t.groupReports || "Reports", icon: ChartLineUp },
       ],
     },
   ];
 }
 
+export function getFooterItems(t: Dictionary["sidebar"]): SidebarItem[] {
+  return [
+    { href: "/notes", label: t.notesAndVault || t.notes || "Notes & Vault", icon: NotePencil },
+    { href: "/settings", label: t.settings || "Settings", icon: Gear },
+  ];
+}
+
 // ─── Role-based filtering ────────────────────────────────────────────────────
 
+const FULL_ROLE_MENU = [
+  "/",
+  "/dashboard",
+  "/projects",
+  "/test-cases",
+  "/test-execution",
+  "/tasks",
+  "/bugs",
+  "/standup",
+  "/work-logs",
+  "/reports",
+  "/notes",
+  "/settings",
+];
+
+const DEV_ROLE_MENU = [
+  "/",
+  "/dashboard",
+  "/projects",
+  "/tasks",
+  "/bugs",
+  "/standup",
+  "/work-logs",
+  "/reports",
+  "/notes",
+  "/settings",
+];
+
 const ROLE_MENU: Record<string, string[]> = {
-  admin: [
-    "/",
-    "/dashboard",
-    "/projects",
-    "/test-cases",
-    "/test-execution",
-    "/tasks",
-    "/bugs",
-    "/work-logs",
-    "/reports",
-    "/notes",
-    "/settings",
-  ],
-  fullstack: [
-    "/",
-    "/dashboard",
-    "/projects",
-    "/test-cases",
-    "/test-execution",
-    "/tasks",
-    "/bugs",
-    "/work-logs",
-    "/reports",
-    "/notes",
-  ],
-  ai: [
-    "/",
-    "/dashboard",
-    "/projects",
-    "/test-cases",
-    "/test-execution",
-    "/tasks",
-    "/bugs",
-    "/work-logs",
-    "/reports",
-    "/notes",
-  ],
-  qa: [
-    "/",
-    "/dashboard",
-    "/projects",
-    "/test-cases",
-    "/test-execution",
-    "/tasks",
-    "/bugs",
-    "/work-logs",
-    "/reports",
-    "/notes",
-  ],
-  fe: [
-    "/",
-    "/dashboard",
-    "/projects",
-    "/tasks",
-    "/bugs",
-    "/work-logs",
-    "/reports",
-    "/notes",
-  ],
-  be: [
-    "/",
-    "/dashboard",
-    "/projects",
-    "/tasks",
-    "/bugs",
-    "/work-logs",
-    "/reports",
-    "/notes",
-  ],
-  pm: [
-    "/",
-    "/dashboard",
-    "/projects",
-    "/test-cases",
-    "/tasks",
-    "/bugs",
-    "/work-logs",
-    "/reports",
-    "/notes",
-  ],
+  admin: FULL_ROLE_MENU,
+  fullstack: FULL_ROLE_MENU,
+  ai: FULL_ROLE_MENU,
+  qa: FULL_ROLE_MENU,
+  fe: DEV_ROLE_MENU,
+  be: DEV_ROLE_MENU,
+  pm: [...DEV_ROLE_MENU, "/test-cases"],
 };
 
 function canSeeHref(role: string, href: string) {
@@ -170,15 +120,15 @@ function canSeeHref(role: string, href: string) {
     return allowed.includes("/test-cases") || allowed.includes("/test-suites") || allowed.includes("/test-plans");
   }
   if (href === "/test-execution") {
-    return allowed.includes("/test-execution") || allowed.includes("/schedules") || allowed.includes("/recordings");
+    return allowed.includes("/test-execution") || allowed.includes("/exploratory") || allowed.includes("/schedules") || allowed.includes("/recordings");
   }
-  if (href === "/work-logs") {
-    return allowed.includes("/work-logs") || allowed.includes("/standup") || allowed.includes("/meeting-notes") || allowed.includes("/activity-log");
+  if (href === "/standup" || href === "/work-logs") {
+    return allowed.includes("/standup") || allowed.includes("/work-logs") || allowed.includes("/meeting-notes") || allowed.includes("/activity-log");
   }
   if (href === "/notes") {
     return allowed.includes("/notes") || allowed.includes("/vault");
   }
-  if (href === "/settings") return role === "admin";
+  if (href === "/settings") return true;
   return false;
 }
 
@@ -189,6 +139,10 @@ export function filterGroups(role: string, t: Dictionary["sidebar"]) {
       items: group.items.filter((item) => canSeeHref(role, item.href)),
     }))
     .filter((group) => group.items.length > 0);
+}
+
+export function filterFooterItems(role: string, t: Dictionary["sidebar"]) {
+  return getFooterItems(t).filter((item) => canSeeHref(role, item.href));
 }
 
 export function SidebarNavItem({
@@ -210,17 +164,21 @@ export function SidebarNavItem({
 
   const isSuiteExecutionRoute =
     pathname.startsWith("/test-execution") ||
+    pathname.startsWith("/exploratory") ||
     pathname.startsWith("/schedules") ||
     pathname.startsWith("/recordings");
   const isProjectDetailRoute = pathname.startsWith("/test-plans/projects/");
+
+  const isDashboardGroup =
+    item.href === "/dashboard" &&
+    (pathname === "/dashboard" || pathname.startsWith("/my-work"));
 
   const isTestCasesGroup =
     item.href === "/test-cases" &&
     (pathname === "/test-cases" ||
       pathname.startsWith("/test-cases/") ||
       pathname.startsWith("/test-suites") ||
-      (pathname.startsWith("/test-plans") && !isProjectDetailRoute) ||
-      pathname.startsWith("/exploratory"));
+      (pathname.startsWith("/test-plans") && !isProjectDetailRoute));
 
   const isTestExecutionGroup = item.href === "/test-execution" && isSuiteExecutionRoute;
 
@@ -232,10 +190,11 @@ export function SidebarNavItem({
       pathname.startsWith("/gantt"));
 
   const isTeamGroup =
-    item.href === "/work-logs" &&
-    (pathname === "/work-logs" ||
+    (item.href === "/standup" || item.href === "/work-logs") &&
+    (pathname === "/standup" ||
+      pathname.startsWith("/standup/") ||
+      pathname === "/work-logs" ||
       pathname.startsWith("/work-logs/") ||
-      pathname.startsWith("/standup") ||
       pathname.startsWith("/meeting-notes") ||
       pathname.startsWith("/activity-log"));
 
@@ -252,13 +211,16 @@ export function SidebarNavItem({
       pathname.startsWith("/notes/") ||
       pathname.startsWith("/vault"));
 
-  const isSettingsGroup = item.href === "/settings" && pathname.startsWith("/settings");
+  const isSettingsGroup =
+    item.href === "/settings" &&
+    (pathname.startsWith("/settings") || pathname.startsWith("/assignees"));
 
   const isProjectsGroup =
     item.href === "/projects" && (pathname.startsWith("/projects/") || isProjectDetailRoute);
 
   const active =
     pathname === item.href ||
+    isDashboardGroup ||
     isTestCasesGroup ||
     isTestExecutionGroup ||
     isTasksGroup ||
@@ -271,6 +233,7 @@ export function SidebarNavItem({
       item.href !== "/test-cases" &&
       item.href !== "/test-execution" &&
       item.href !== "/tasks" &&
+      item.href !== "/standup" &&
       item.href !== "/work-logs" &&
       item.href !== "/reports" &&
       item.href !== "/notes" &&
