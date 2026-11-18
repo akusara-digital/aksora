@@ -79,8 +79,7 @@ for (const { status, filePath } of entries) {
       normalized.startsWith("plans/") ||
       normalized.startsWith("specs/");
     const isRootMd = !normalized.includes("/");
-    const isAllowedRoot =
-      ALLOWED_ROOT_MD.has(normalized) || normalized.startsWith("antislop");
+    const isAllowedRoot = ALLOWED_ROOT_MD.has(normalized);
 
     if (isForbiddenDir || (isRootMd && !isAllowedRoot)) {
       errors.push(
