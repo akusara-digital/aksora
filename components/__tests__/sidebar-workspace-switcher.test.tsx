@@ -19,19 +19,20 @@ vi.mock("next/link", () => ({
 import { SidebarWorkspaceSwitcher } from "@/components/layout/sidebar-workspace-switcher";
 
 describe("SidebarWorkspaceSwitcher", () => {
-  it("renders active workspace trigger in expanded view", () => {
+  it("renders active workspace trigger with tier and role in expanded view", () => {
     const html = renderToStaticMarkup(
-      <SidebarWorkspaceSwitcher collapsed={false} />
+      <SidebarWorkspaceSwitcher collapsed={false} />,
     );
     expect(html).toContain("Switch workspace");
-    expect(html).toContain("Free plan");
+    expect(html).toContain("FREE");
+    expect(html).toContain("member");
   });
 
   it("renders compact trigger in collapsed view", () => {
     const html = renderToStaticMarkup(
-      <SidebarWorkspaceSwitcher collapsed={true} />
+      <SidebarWorkspaceSwitcher collapsed={true} />,
     );
     expect(html).toContain("Switch workspace");
-    expect(html).not.toContain("Free plan");
+    expect(html).not.toContain("FREE");
   });
 });
