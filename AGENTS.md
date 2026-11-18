@@ -2,8 +2,17 @@
 
 **Aksora** (formerly QA Daily Hub) is the workspace for engineering teams: test planning, execution, bug tracking, tasks/sprints, standups, and auto-generated weekly reports — all in one app. Built by Akusara Digital. Brand: **Aksora — One Team. One Flow.** Site: `aksora.akusaraproject.my.id`. Company: `https://akusaradigital.com`.
 
-## Versioning (REQUIRED)
+## Multi-Agent Git Safety & Local Commit Rule (MANDATORY)
+1. **Commit Locally Often (Safety Net)**:
+   - Setiap kali sebuah task/perbaikan selesai dan lulus verifikasi (`typecheck` & `test`), agen WAJIB langsung membuat local commit dengan conventional message (`fix: ...`, `feat: ...`, `refactor: ...`).
+   - JANGAN membiarkan file kotor mengendap di uncommitted working tree agar hasil kerja tidak tertimpa (*clobbered*) oleh agen lain yang bekerja di repo ini.
+2. **No Auto-Push Remains Strict**:
+   - Local commit bebas dan sangat dianjurkan setelah verifikasi lulus.
+   - `git push` ke remote origin tetap DILARANG OTOMATIS tanpa instruksi eksplisit di turn tersebut (kata kunci "push"). Slang/afirmasi kasual ("gas", "lanjut", "sip") bukan izin untuk push.
+
+## Versioning & Pre-Push (REQUIRED)
 - **Every push to aksora project MUST bump `version` in `package.json`** (semver `MAJOR.MINOR.PATCH`). Include the version change in the same commit, then push.
+- **Mandatory Pre-Push Graphify Update**: Sebelum push, WAJIB jalankan `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`). Hapus snapshot/history lama di `graphify-out/` agar graph selalu bersih dan sinkron dengan codebase terbaru.
 - Run `pnpm precheck` before any release push.
 
 ## Stack
@@ -22,7 +31,7 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 
 ## Knowledge Graph / Graphify (MANDATORY)
 - **MANDATORY**: Before fixing bugs, refactoring, or building new features, always consult `graphify-out/graph.json` or run `pnpm graphify:query "<target>"` (`python -m graphify query "<target>"`) / `graphify-out/GRAPH_REPORT.md` first.
-- **Graph Rebuilding / Refresh**: Whenever file exports, dependencies, or architectural boundaries change, re-index via `pnpm graphify:update` (`python -m graphify update . --force`).
+- **Graph Rebuilding & Pre-Push**: Whenever file exports, dependencies, or architectural boundaries change — and **WAJIB sebelum push** — re-index via `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`). Hapus folder/history snapshot lama di `graphify-out/` agar graph selalu bersih.
 - **Subagent Rule (STRICT)**: Always run `graphify query "<target>"` YOURSELF before spawning any subagent. Extract the caller hierarchy, exact file paths, and line locations (`src=... loc=L...`) from the graph query and paste them directly into the subagent's prompt.
 - **Strict Ban on Sweep-Reading**: NEVER spawn a subagent with broad/open-ended instructions that cause it to blindly grep, scan random directories, or sweep-read large files. Go straight to the pinpointed nodes using the knowledge graph.
 - Pinpoint the exact files, caller hierarchies, and dependencies to touch. Do NOT waste context tokens scanning random files — go straight to the point using the knowledge graph.
@@ -73,7 +82,7 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 14. **New Components**: WAJIB masuk folder domain dalam `components/[domain]/`.
 
 ## Do NOT (CRITICAL - STRICTLY ENFORCED)
-- **NEVER git push or git commit unless explicitly and unambiguously requested with the exact words "commit" or "push". Slang, affirmations, or casual phrases (e.g., "gas", "gas semua", "lanjut", "oke", "mantap", "sip") MUST NEVER be interpreted as permission to push/commit.**
+- **NEVER git push to remote origin unless explicitly and unambiguously requested with the exact word "push". Slang, affirmations, or casual phrases (e.g., "gas", "gas semua", "lanjut", "oke", "mantap", "sip") MUST NEVER be interpreted as permission to push. (Note: Local commits are permitted and mandatory once verification passes).**
 - **NEVER add a `Co-Authored-By` trailer (or any co-author credit) to commit messages.**
 - Add packages without checking `package.json`.
 - Add SQLite or `isPostgres` branching.
