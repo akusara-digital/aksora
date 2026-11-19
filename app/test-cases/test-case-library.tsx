@@ -324,6 +324,7 @@ export function TestCaseLibrary({
         isOpen={showNewSuiteModal}
         plans={plans}
         defaultProject={filterProject !== ALL ? filterProject : undefined}
+        projectOptions={projectOptions}
         onClose={() => setShowNewSuiteModal(false)}
         onCreated={(newSuiteId) => setSelectedKey(newSuiteId)}
       />
