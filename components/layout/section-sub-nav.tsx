@@ -12,7 +12,6 @@ import {
   Kanban,
   Rows,
   ClockCountdown,
-  MicrophoneStage,
   Note,
   ClockCounterClockwise,
   ChartPieSlice,
@@ -81,13 +80,9 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
   {
     match: (p) =>
       p.startsWith("/tasks") ||
-      p.startsWith("/standup") ||
-      p.startsWith("/sprints") ||
       p.startsWith("/gantt"),
     tabs: [
       { href: "/tasks", label: "Tasks Board", icon: Kanban },
-      { href: "/standup", label: "Daily Standup", icon: MicrophoneStage },
-      { href: "/sprints", label: "Sprints Backlog", icon: Kanban },
       { href: "/gantt", label: "Gantt Timeline", icon: Rows },
     ],
   },
@@ -126,8 +121,9 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
   },
   // 5. Notes & Vault
   {
-    match: (p) => p.startsWith("/notes") || p.startsWith("/vault") || p.startsWith("/meeting-notes"),
+    match: (p) => p.startsWith("/notes") || p.startsWith("/vault") || p.startsWith("/meeting-notes") || p.startsWith("/work-logs"),
     tabs: [
+      { href: "/work-logs", label: "Work Logs", icon: ClockCountdown },
       { href: "/notes", label: "Personal Notes", icon: NotePencil },
       { href: "/meeting-notes", label: "Meeting Notes", icon: Note },
       { href: "/vault", label: "Password Vault", icon: LockKey },

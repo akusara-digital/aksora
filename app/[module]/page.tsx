@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ModuleWorkspace } from "@/components/module/module-workspace";
 import { getAssigneeOptions, getModuleRows, getModuleRowsPage, getProjectOptions, getTestCaseStatsBySuiteIds, getTestPlanReferenceRows, getTestSuitesByPlanIds } from "@/lib/data";
@@ -161,6 +161,9 @@ export default async function ModulePage({
   const { module: rawModule } = await params;
   const query = searchParams ? await searchParams : {};
   const moduleKey = rawModule;
+  if (moduleKey === "sprints") {
+    redirect("/tasks");
+  }
   const currentUser = await getCurrentUser();
   if (!moduleOrder.includes(moduleKey as ModuleKey)) {
     notFound();

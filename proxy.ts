@@ -34,7 +34,6 @@ const publicPaths = [
   "/test-cases/detail/",
   "/features",
   "/pricing",
-  "/demo",
   "/about",
   "/blog",
   "/docs",

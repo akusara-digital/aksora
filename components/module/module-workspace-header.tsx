@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, FileXls, FilePdf, UploadSimple, MagnifyingGlass, Table, Kanban, MicrophoneStage } from "@phosphor-icons/react";
+import { Plus, FileXls, FilePdf, UploadSimple, MagnifyingGlass, Table, Kanban } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { ModuleFilterBar, type FilterValue } from "@/components/module/module-filter-bar";
 import { ColumnVisibilityToggle } from "@/components/module/column-visibility-toggle";
@@ -118,16 +118,6 @@ export function ModuleWorkspaceHeader({
                 </>
               )}
 
-              {module === "tasks" && (
-                <Link
-                  href="/standup"
-                  title="Daily Standup"
-                  className="inline-flex h-8 cursor-pointer items-center gap-1.5 border border-gray-200 bg-white px-2.5 text-[13px] font-medium text-gray-700 transition hover:bg-gray-50 hover:text-blue-600"
-                >
-                  <MicrophoneStage size={14} weight="bold" className="shrink-0 text-blue-600" />
-                  <span>Daily Standup</span>
-                </Link>
-              )}
 
               {module === "work-logs" && <WorkLogAiActions />}
 

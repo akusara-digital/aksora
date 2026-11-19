@@ -46,34 +46,40 @@ describe("SectionSubNav", () => {
     expect(html).toContain("Exploratory (SBTM)");
   });
 
-  it("renders Tasks & Flow tabs when on /tasks or /standup", () => {
+  it("renders Tasks & Flow tabs when on /tasks or /gantt", () => {
     currentPathname = "/tasks";
     let html = renderToStaticMarkup(<SectionSubNav />);
     expect(html).toContain('href="/tasks"');
-    expect(html).toContain('href="/standup"');
-    expect(html).toContain('href="/sprints"');
     expect(html).toContain('href="/gantt"');
     expect(html).toContain("Tasks Board");
-    expect(html).toContain("Daily Standup");
-    expect(html).toContain("Sprints Backlog");
     expect(html).toContain("Gantt Timeline");
+    expect(html).not.toContain("Daily Standup");
+    expect(html).not.toContain("Sprints Backlog");
 
-    currentPathname = "/standup";
+    currentPathname = "/gantt";
     html = renderToStaticMarkup(<SectionSubNav />);
     expect(html).toContain('href="/tasks"');
-    expect(html).toContain('href="/standup"');
-    expect(html).toContain("Daily Standup");
+    expect(html).toContain('href="/gantt"');
+    expect(html).not.toContain("Daily Standup");
+    expect(html).not.toContain("Sprints Backlog");
   });
 
-  it("renders Notes & Vault tabs including Meeting Notes when on /notes or /meeting-notes", () => {
+  it("renders Notes & Vault tabs including Work Logs and Meeting Notes when on /notes, /meeting-notes, or /work-logs", () => {
     currentPathname = "/meeting-notes";
-    const html = renderToStaticMarkup(<SectionSubNav />);
+    let html = renderToStaticMarkup(<SectionSubNav />);
+    expect(html).toContain('href="/work-logs"');
     expect(html).toContain('href="/notes"');
     expect(html).toContain('href="/meeting-notes"');
     expect(html).toContain('href="/vault"');
+    expect(html).toContain("Work Logs");
     expect(html).toContain("Personal Notes");
     expect(html).toContain("Meeting Notes");
     expect(html).toContain("Password Vault");
+
+    currentPathname = "/work-logs";
+    html = renderToStaticMarkup(<SectionSubNav />);
+    expect(html).toContain('href="/work-logs"');
+    expect(html).toContain("Work Logs");
   });
 
   it("renders clean single-row Reports navigation tabs without nested sub-rows", () => {

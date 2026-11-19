@@ -429,7 +429,7 @@ export function renderEmailTemplate(
       const name = params.name || "";
       const taskCount = Number(params.taskCount || 0);
       const blockerCount = Number(params.blockerCount || 0);
-      const standupUrl = params.standupUrl || `${APP_URL}/standup`;
+      const standupUrl = params.standupUrl || `${APP_URL}/tasks`;
       const greeting = isId
         ? name ? `Halo ${name},` : "Halo,"
         : name ? `Hi ${name},` : "Hello,";

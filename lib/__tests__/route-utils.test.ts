@@ -60,7 +60,6 @@ describe("route-utils", () => {
     expect(isStandaloneRoute("/reports/workload")).toBe(false);
     expect(isStandaloneRoute("/reports/sprint-burndown")).toBe(false);
     expect(isStandaloneRoute("/gantt")).toBe(false);
-    expect(isStandaloneRoute("/standup")).toBe(false);
     expect(isStandaloneRoute("/notes")).toBe(false);
     expect(isStandaloneRoute("/vault")).toBe(false);
   });

@@ -76,7 +76,6 @@ const FULL_ROLE_MENU = [
   "/test-execution",
   "/tasks",
   "/bugs",
-  "/standup",
   "/work-logs",
   "/reports",
   "/notes",
@@ -89,7 +88,6 @@ const DEV_ROLE_MENU = [
   "/projects",
   "/tasks",
   "/bugs",
-  "/standup",
   "/work-logs",
   "/reports",
   "/notes",
@@ -114,7 +112,7 @@ function canSeeHref(role: string, href: string) {
     return allowed.some((r) => r.startsWith("/reports") || r === "/weekly-report" || r === "/deployments");
   }
   if (href === "/tasks") {
-    return allowed.includes("/tasks") || allowed.includes("/sprints") || allowed.includes("/gantt") || allowed.includes("/standup");
+    return allowed.includes("/tasks") || allowed.includes("/gantt");
   }
   if (href === "/test-cases") {
     return allowed.includes("/test-cases") || allowed.includes("/test-suites") || allowed.includes("/test-plans");
@@ -122,11 +120,11 @@ function canSeeHref(role: string, href: string) {
   if (href === "/test-execution") {
     return allowed.includes("/test-execution") || allowed.includes("/exploratory") || allowed.includes("/schedules") || allowed.includes("/recordings");
   }
-  if (href === "/standup" || href === "/work-logs") {
-    return allowed.includes("/standup") || allowed.includes("/work-logs") || allowed.includes("/meeting-notes") || allowed.includes("/activity-log");
+  if (href === "/work-logs") {
+    return allowed.includes("/work-logs") || allowed.includes("/meeting-notes") || allowed.includes("/activity-log");
   }
   if (href === "/notes") {
-    return allowed.includes("/notes") || allowed.includes("/vault");
+    return allowed.includes("/notes") || allowed.includes("/vault") || allowed.includes("/work-logs") || allowed.includes("/meeting-notes");
   }
   if (href === "/settings") return true;
   return false;
@@ -186,8 +184,6 @@ export function SidebarNavItem({
     item.href === "/tasks" &&
     (pathname === "/tasks" ||
       pathname.startsWith("/tasks/") ||
-      pathname.startsWith("/standup") ||
-      pathname.startsWith("/sprints") ||
       pathname.startsWith("/gantt"));
 
   const isReportsGroup =
@@ -201,6 +197,7 @@ export function SidebarNavItem({
     item.href === "/notes" &&
     (pathname === "/notes" ||
       pathname.startsWith("/notes/") ||
+      pathname.startsWith("/work-logs") ||
       pathname.startsWith("/meeting-notes") ||
       pathname.startsWith("/vault"));
 
