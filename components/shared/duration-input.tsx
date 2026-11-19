@@ -88,7 +88,7 @@ export function DurationInput({
       {/* Dual Inputs: Hours and Minutes */}
       <div className="grid grid-cols-2 gap-2.5">
         <div>
-          <span className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+          <span className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
             Hours
           </span>
           <div className="relative flex items-center">
@@ -101,18 +101,18 @@ export function DurationInput({
               value={hoursDraft}
               onChange={(e) => handleHoursChange(e.target.value)}
               className={cn(
-                "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900 pr-10 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:outline-none disabled:border-blue-200/80 disabled:bg-blue-50/60 disabled:text-blue-900 disabled:cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100 dark:disabled:border-blue-900/50 dark:disabled:bg-blue-950/30 dark:disabled:text-blue-300",
+                "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 pr-10 outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 disabled:border-blue-200/80 disabled:bg-blue-50/60 disabled:text-blue-900 disabled:cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100",
                 error && "border-rose-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-500/15"
               )}
             />
-            <span className="pointer-events-none absolute right-3 text-[11px] font-semibold text-gray-400">
+            <span className="pointer-events-none absolute right-3 text-xs font-semibold text-slate-400 dark:text-zinc-500">
               hrs
             </span>
           </div>
         </div>
 
         <div>
-          <span className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+          <span className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
             Minutes
           </span>
           <div className="relative flex items-center">
@@ -126,11 +126,11 @@ export function DurationInput({
               value={minutesDraft}
               onChange={(e) => handleMinutesChange(e.target.value)}
               className={cn(
-                "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900 pr-12 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:outline-none disabled:border-blue-200/80 disabled:bg-blue-50/60 disabled:text-blue-900 disabled:cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100 dark:disabled:border-blue-900/50 dark:disabled:bg-blue-950/30 dark:disabled:text-blue-300",
+                "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 pr-11 outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 disabled:border-blue-200/80 disabled:bg-blue-50/60 disabled:text-blue-900 disabled:cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100",
                 error && "border-rose-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-500/15"
               )}
             />
-            <span className="pointer-events-none absolute right-3 text-[11px] font-semibold text-gray-400">
+            <span className="pointer-events-none absolute right-3 text-xs font-semibold text-slate-400 dark:text-zinc-500">
               min
             </span>
           </div>
@@ -138,15 +138,15 @@ export function DurationInput({
       </div>
 
       {/* Live Converter Result Indicator */}
-      <div className="flex items-center justify-between border-t border-gray-100 pt-1 text-[11px]">
-        <div className="flex items-center gap-1.5 text-gray-600">
-          <Clock size={13} weight="bold" className="text-sky-600" />
-          <span>Total:</span>
-          <span className="font-bold text-sky-700">
+      <div className="flex items-center justify-between border-t border-slate-200/70 pt-1.5 text-[11px] dark:border-zinc-800">
+        <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-300">
+          <Clock size={13} weight="bold" className="text-amber-500" />
+          <span className="font-medium text-slate-500 dark:text-zinc-400">Total:</span>
+          <span className="font-bold text-amber-600 dark:text-amber-400">
             {currentTotal > 0 ? `${currentTotal} min` : "0 min"}
           </span>
           {currentTotal > 0 && (
-            <span className="text-gray-400">({formatDuration(currentTotal)})</span>
+            <span className="text-slate-400 dark:text-zinc-500">({formatDuration(currentTotal)})</span>
           )}
         </div>
       </div>
@@ -155,7 +155,7 @@ export function DurationInput({
       {showPresets && (
         <div className="pt-0.5">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mr-0.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-0.5 dark:text-zinc-500">
               Quick:
             </span>
             {DURATION_PRESETS.map((preset) => {
@@ -169,8 +169,8 @@ export function DurationInput({
                   className={cn(
                     "rounded-md border px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer disabled:opacity-50",
                     isSelected
-                      ? "border-sky-600 bg-sky-50 text-sky-700 font-bold"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-amber-500 bg-amber-50 text-amber-800 font-bold dark:border-amber-400 dark:bg-amber-950/40 dark:text-amber-300"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
                   )}
                 >
                   {preset.label}

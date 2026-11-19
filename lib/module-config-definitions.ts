@@ -550,9 +550,9 @@ export const moduleConfigs: Record<ModuleKey, ModuleConfig> = {
       { name: "startTime", label: "Start Time", kind: "text", placeholder: "e.g. 08:00" },
       { name: "endTime", label: "End Time", kind: "text", placeholder: "e.g. 12:00" },
       { name: "durationMinutes", label: "Duration", kind: "text", placeholder: "Hours / Minutes" },
-      { name: "description", label: "Description", kind: "textarea", placeholder: "What did you work on?", required: true, span: 3 },
-      { name: "output", label: "Output / Deliverable", kind: "textarea", placeholder: "What was produced or completed?", span: 3 },
-      { name: "notes", label: "Notes", kind: "textarea", placeholder: "Additional notes or blockers...", span: 3 },
+      { name: "description", label: "Description", kind: "textarea", placeholder: "What did you work on?", required: true, rows: 3, span: 3 },
+      { name: "output", label: "Output / Deliverable", kind: "textarea", placeholder: "What was produced or completed?", rows: 2, span: 3 },
+      { name: "notes", label: "Notes", kind: "textarea", placeholder: "Additional notes or blockers...", rows: 2, span: 3 },
     ],
     columns: [
       { key: "date", label: "Date" },

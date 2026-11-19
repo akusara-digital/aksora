@@ -74,6 +74,7 @@ export function ModuleWorkspaceForm({
  versionSequenceDefaultValue,
 }: ModuleWorkspaceFormProps) {
   const isBugModule = module === "bugs";
+  const isWorkLogModule = module === "work-logs";
   const fieldByName = new Map(fields.map((f) => [f.name, f]));
 
   const renderField = (name: string, customSpanClass?: string) => {
@@ -224,6 +225,81 @@ export function ModuleWorkspaceForm({
                 "project", "module", "bugType", "title",
                 "preconditions", "stepsToReproduce", "expectedResult", "actualResult",
                 "severity", "priority", "status", "suggestedDev", "relatedItems", "evidence",
+              ]);
+              const otherFields = fields.filter((f) => !handledNames.has(f.name) && !hiddenFields.includes(f.name));
+              if (otherFields.length === 0) return null;
+              return (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-start pt-2">
+                  {otherFields.map((f) => renderField(f.name))}
+                </div>
+              );
+            })()}
+          </div>
+        ) : isWorkLogModule ? (
+          <div className="space-y-6">
+            {/* Context & Project */}
+            <div className="space-y-2.5">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Context & Classification
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-start">
+                {renderField("project")}
+                {renderField("category")}
+                {renderField("date")}
+              </div>
+            </div>
+
+            {/* Time & Duration Tracking */}
+            <div className="space-y-2.5">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Time & Duration
+              </div>
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-4 sm:p-5 dark:border-zinc-800 dark:bg-zinc-900/40">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+                  {/* Left: Time Range */}
+                  <div className="space-y-3 lg:col-span-5">
+                    <div className="grid grid-cols-2 gap-3">
+                      {renderField("startTime", "w-full")}
+                      {renderField("endTime", "w-full")}
+                    </div>
+                    <div className="rounded-lg border border-slate-200/70 bg-white/80 px-3 py-2 text-[11px] text-slate-500 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
+                      💡 <strong>Smart Sync:</strong> Setting start & end times calculates duration. Picking a preset calculates end time.
+                    </div>
+                  </div>
+
+                  {/* Vertical Divider on Desktop */}
+                  <div className="hidden lg:flex lg:col-span-1 lg:justify-center lg:self-stretch">
+                    <div className="w-px h-full min-h-[120px] bg-slate-200 dark:bg-zinc-800" />
+                  </div>
+
+                  {/* Right: Duration Widget */}
+                  <div className="lg:col-span-6">
+                    {renderField("durationMinutes", "w-full")}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Work Details & Deliverables */}
+            <div className="space-y-3">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Work Details & Deliverables
+              </div>
+              <div className="space-y-4">
+                {renderField("description", "w-full")}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start">
+                  {renderField("output", "w-full")}
+                  {renderField("notes", "w-full")}
+                </div>
+              </div>
+            </div>
+
+            {/* Dynamic fallback for any extra custom fields */}
+            {(() => {
+              const handledNames = new Set([
+                "project", "category", "date",
+                "startTime", "endTime", "durationMinutes",
+                "description", "output", "notes",
               ]);
               const otherFields = fields.filter((f) => !handledNames.has(f.name) && !hiddenFields.includes(f.name));
               if (otherFields.length === 0) return null;
