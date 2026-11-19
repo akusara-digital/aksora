@@ -274,13 +274,17 @@ export function GlobalSearch({
  type="button"
  onClick={() => setOpen(true)}
  className={cn(
-"flex w-full max-w-[min(22rem,calc(100vw-2rem))] items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs text-slate-400 shadow-sm transition hover:border-slate-300 hover:text-slate-600 sm:w-auto",
+"flex h-8 w-full items-center justify-between gap-2.5 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-400 shadow-xs transition hover:border-slate-300 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/15",
  triggerClassName,
  )}
  >
- <MagnifyingGlass size={14} weight="bold" />
- <span className={cn("hidden flex-1 truncate text-left sm:inline", compactTrigger &&"hidden")}>{triggerLabel}</span>
- <kbd className={cn("hidden rounded-md border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 sm:inline", compactTrigger &&"hidden")}>
+ <div className="flex items-center gap-2 min-w-0">
+ <MagnifyingGlass size={14} weight="bold" className="shrink-0 text-slate-400" />
+ <span className={cn("truncate text-left text-slate-400", compactTrigger &&"hidden")}>
+ {triggerLabel}
+ </span>
+ </div>
+ <kbd className={cn("shrink-0 rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500", compactTrigger &&"hidden")}>
  {triggerShortcut}
  </kbd>
  </button>

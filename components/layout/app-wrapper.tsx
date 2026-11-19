@@ -266,16 +266,21 @@ export function AppWrapper({ children }: AppWrapperProps) {
           className="flex flex-1 flex-col transition-[margin-left] duration-150 ease-in-out md:ml-[var(--sidebar-w)]"
           style={{ "--sidebar-w": sidebarWidth } as React.CSSProperties}
         >
-          <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-[var(--border-color)] bg-white px-4 md:px-6">
-            <button
-              type="button"
-              onClick={() => setMobileOpen((v) => !v)}
-              className="flex h-8 w-8 items-center justify-center border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 md:hidden"
-              aria-label="Open menu"
-            >
-              <List size={18} weight="bold" />
-            </button>
-            <div className="ml-auto flex items-center gap-2">
+          <header className="sticky top-0 z-30 flex h-12 items-center justify-between gap-3 border-b border-[var(--border-color)] bg-white px-4 md:px-6">
+            <div className="flex flex-1 items-center gap-3 min-w-0">
+              <button
+                type="button"
+                onClick={() => setMobileOpen((v) => !v)}
+                className="flex h-8 w-8 shrink-0 items-center justify-center border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 md:hidden"
+                aria-label="Open menu"
+              >
+                <List size={18} weight="bold" />
+              </button>
+              <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
+                <GlobalSearch />
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
               <div ref={notifRef} className="relative">
                 {notifOpen && <NotificationPanel anchorRef={notifRef} onClose={() => setNotifOpen(false)} />}
                 <button
@@ -293,7 +298,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
                   )}
                 </button>
               </div>
-              <GlobalSearch />
               <AccountDropdown
                 user={user}
                 accountLabel={accountLabel}
