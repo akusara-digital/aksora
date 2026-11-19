@@ -71,12 +71,19 @@ export function SuiteSidebarList({
             ? (group.filteredCases?.length ?? group.cases.length)
             : group.cases.length;
         return (
-          <button
+          <div
             key={group.key}
-            type="button"
+            role="button"
+            tabIndex={0}
             onClick={() => onSelectKey(group.key)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelectKey(group.key);
+              }
+            }}
             className={cn(
-              "w-full cursor-pointer rounded-md px-4 py-3.5 text-left transition-all",
+              "w-full cursor-pointer rounded-md px-4 py-3.5 text-left transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
               isActive
                 ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
                 : "hover:bg-gray-50",
@@ -130,6 +137,9 @@ export function SuiteSidebarList({
                     onClick={(e) => {
                       e.stopPropagation();
                       onRunSuite(group);
+                    }}
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
                     }}
                     className={cn(
                       "flex h-6 w-6 items-center justify-center rounded transition cursor-pointer",
@@ -198,7 +208,7 @@ export function SuiteSidebarList({
                 </div>
               )}
             </div>
-          </button>
+          </div>
         );
       })}
     </div>
