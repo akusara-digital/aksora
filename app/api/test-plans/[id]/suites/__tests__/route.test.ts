@@ -87,9 +87,38 @@ describe("POST /api/test-plans/[id]/suites", () => {
       success: true,
       planId: 10,
       linkedSuitesCount: 2,
+      linkedCasesCount: 0,
     });
-    expect(mocks.dbRun).toHaveBeenCalledTimes(2);
+    expect(mocks.dbRun).toHaveBeenCalledTimes(3);
     expect(mocks.clearTestManagementCache).toHaveBeenCalledTimes(1);
+  });
+
+  it("persists test case checklist scope when caseIds are supplied", async () => {
+    mocks.getCurrentUser.mockResolvedValueOnce({ id: 1, email: "qa@example.com" });
+    mocks.dbGet.mockResolvedValueOnce({ id: 10, publicToken: "plan-tok", title: "Release Plan" });
+    mocks.dbRun.mockResolvedValue({ changes: 1 });
+
+    const res = await POST(
+      new Request("http://localhost/api/test-plans/10/suites", {
+        method: "POST",
+        body: JSON.stringify({ suiteIds: [101], caseIds: [201, 202, 203] }),
+      }),
+      { params: Promise.resolve({ id: "10" }) },
+    );
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json).toEqual({
+      success: true,
+      planId: 10,
+      linkedSuitesCount: 1,
+      linkedCasesCount: 3,
+    });
+    expect(mocks.dbRun).toHaveBeenCalledTimes(3);
+    expect(mocks.dbRun).toHaveBeenLastCalledWith(
+      expect.stringContaining('UPDATE "TestPlan" SET "scope" = ?'),
+      [JSON.stringify({ suiteIds: [101], caseIds: [201, 202, 203] }), 10, 1],
+    );
   });
 
   it("handles unlinking all suites when suiteIds is empty", async () => {

@@ -13,6 +13,7 @@ import {
   QuickCreateSuiteModal,
   type PlanOption,
 } from "@/components/test-management/quick-create-modals";
+import { CreatePlanFromCasesModal } from "@/components/test-management/create-plan-from-cases-modal";
 import {
   TestCaseTable,
   TestCaseMobileCards,
@@ -56,6 +57,7 @@ export function TestCaseLibrary({
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [showNewSuiteModal, setShowNewSuiteModal] = useState(false);
   const [showNewCaseModal, setShowNewCaseModal] = useState(false);
+  const [planCases, setPlanCases] = useState<TestCase[] | null>(null);
   const [startingRun, setStartingRun] = useState(false);
 
   const projectOptions = useMemo(() => {
@@ -307,6 +309,7 @@ export function TestCaseLibrary({
                       <TestCaseTable
                         displayCases={displayCases}
                         suiteAssignee={selected.suiteAssignee}
+                        onCreateTestPlan={(selectedCases) => setPlanCases(selectedCases)}
                       />
                     </div>
                   </div>
@@ -332,6 +335,20 @@ export function TestCaseLibrary({
           suiteTitle={selected.suiteTitle}
           suggestedTcId={suggestedTcId}
           onClose={() => setShowNewCaseModal(false)}
+        />
+      )}
+
+      {planCases && (
+        <CreatePlanFromCasesModal
+          isOpen={!!planCases}
+          selectedCases={planCases}
+          projectOptions={projectOptions}
+          defaultProject={filterProject !== ALL ? filterProject : undefined}
+          onClose={() => setPlanCases(null)}
+          onSuccess={(planToken) => {
+            setPlanCases(null);
+            router.push(`/test-plans/${planToken}`);
+          }}
         />
       )}
     </div>

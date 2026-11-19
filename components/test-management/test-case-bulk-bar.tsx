@@ -9,6 +9,7 @@ import {
   Trash,
   X,
   CircleNotch,
+  ClipboardText,
 } from "@phosphor-icons/react";
 
 interface TestCaseBulkBarProps {
@@ -17,6 +18,7 @@ interface TestCaseBulkBarProps {
   onBulkPriority: (priority: string) => Promise<void>;
   onBulkDelete: () => Promise<void>;
   onClearSelection: () => void;
+  onCreateTestPlan?: () => void;
 }
 
 export function TestCaseBulkBar({
@@ -25,6 +27,7 @@ export function TestCaseBulkBar({
   onBulkPriority,
   onBulkDelete,
   onClearSelection,
+  onCreateTestPlan,
 }: TestCaseBulkBarProps) {
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -70,6 +73,18 @@ export function TestCaseBulkBar({
         </span>
         <span className="text-slate-200">selected</span>
       </div>
+
+      {onCreateTestPlan && (
+        <button
+          type="button"
+          onClick={onCreateTestPlan}
+          className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 hover:bg-blue-500 px-2.5 py-1 text-[11px] font-bold text-white transition cursor-pointer shadow-xs shrink-0"
+          title="Create a new Test Plan from these selected test cases"
+        >
+          <ClipboardText size={13} weight="bold" />
+          <span>Create Plan</span>
+        </button>
+      )}
 
       {busy ? (
         <div className="flex items-center gap-2 px-3 text-slate-300">

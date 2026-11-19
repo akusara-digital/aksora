@@ -38,6 +38,13 @@ export async function POST(
       .map((sid: unknown) => Number(sid))
       .filter((num: number) => Number.isInteger(num) && num > 0);
 
+    const hasCaseIds = Array.isArray(body?.caseIds);
+    const validCaseIds = hasCaseIds
+      ? body.caseIds
+          .map((cid: unknown) => Number(cid))
+          .filter((num: number) => Number.isInteger(num) && num > 0)
+      : [];
+
     const planIdStr = String(plan.id);
 
     // 1. Unlink any suites currently linked to this plan in the user's scope
@@ -55,12 +62,25 @@ export async function POST(
       );
     }
 
+    // 3. Persist scope checklist details in TestPlan.scope
+    if (hasCaseIds || validSuiteIds.length > 0) {
+      const scopePayload = JSON.stringify({
+        suiteIds: validSuiteIds,
+        caseIds: validCaseIds,
+      });
+      await db.run(
+        `UPDATE "TestPlan" SET "scope" = ?, "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = ?${scope.andWhere}`,
+        [scopePayload, plan.id, ...scope.params],
+      );
+    }
+
     clearTestManagementCache();
 
     return NextResponse.json({
       success: true,
       planId: plan.id,
       linkedSuitesCount: validSuiteIds.length,
+      linkedCasesCount: validCaseIds.length,
     });
   } catch (error) {
     console.error("POST /api/test-plans/[id]/suites error:", error);

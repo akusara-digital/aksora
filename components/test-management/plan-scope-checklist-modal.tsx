@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   CaretDown,
@@ -9,6 +9,7 @@ import {
   Checks,
   FolderSimple,
   MagnifyingGlass,
+  MinusSquare,
   Square,
 } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
@@ -21,6 +22,7 @@ export type AvailableSuiteCase = {
   caseName: string;
   priority?: string;
   typeCase?: string;
+  status?: string;
 };
 
 export type AvailableSuite = {
@@ -41,6 +43,7 @@ interface PlanScopeChecklistModalProps {
   planTitle: string;
   availableSuites: AvailableSuite[];
   currentlyLinkedSuiteIds: Array<string | number>;
+  currentlyLinkedCaseIds?: Array<string | number>;
   onSuccess: () => void;
 }
 
@@ -51,53 +54,126 @@ export function PlanScopeChecklistModal({
   planTitle,
   availableSuites,
   currentlyLinkedSuiteIds,
+  currentlyLinkedCaseIds,
   onSuccess,
 }: PlanScopeChecklistModalProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
+  const [selectedSuiteIds, setSelectedSuiteIds] = useState<Set<string>>(() => {
     return new Set(currentlyLinkedSuiteIds.map(String));
   });
-  const [expandedSuiteIds, setExpandedSuiteIds] = useState<Set<string>>(new Set());
+
+  const [selectedCaseIds, setSelectedCaseIds] = useState<Set<string>>(() => {
+    if (currentlyLinkedCaseIds && currentlyLinkedCaseIds.length > 0) {
+      return new Set(currentlyLinkedCaseIds.map(String));
+    }
+    const initialCases = new Set<string>();
+    const suiteSet = new Set(currentlyLinkedSuiteIds.map(String));
+    for (const suite of availableSuites) {
+      if (suiteSet.has(String(suite.id))) {
+        suite.cases?.forEach((c) => initialCases.add(String(c.id)));
+      }
+    }
+    return initialCases;
+  });
+
+  const [expandedSuiteIds, setExpandedSuiteIds] = useState<Set<string>>(() => {
+    return new Set(currentlyLinkedSuiteIds.map(String));
+  });
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Sync when opening
-  const handleOpenReset = () => {
-    setSelectedIds(new Set(currentlyLinkedSuiteIds.map(String)));
-    setSearch("");
-    setExpandedSuiteIds(new Set());
-  };
+  useEffect(() => {
+    if (isOpen) {
+      const suiteSet = new Set(currentlyLinkedSuiteIds.map(String));
+      setSelectedSuiteIds(suiteSet);
+
+      if (currentlyLinkedCaseIds && currentlyLinkedCaseIds.length > 0) {
+        setSelectedCaseIds(new Set(currentlyLinkedCaseIds.map(String)));
+      } else {
+        const initialCases = new Set<string>();
+        for (const suite of availableSuites) {
+          if (suiteSet.has(String(suite.id))) {
+            suite.cases?.forEach((c) => initialCases.add(String(c.id)));
+          }
+        }
+        setSelectedCaseIds(initialCases);
+      }
+
+      setExpandedSuiteIds(new Set(currentlyLinkedSuiteIds.map(String)));
+      setSearch("");
+    }
+  }, [isOpen, currentlyLinkedSuiteIds, currentlyLinkedCaseIds, availableSuites]);
 
   const filteredSuites = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return availableSuites;
     return availableSuites.filter((suite) => {
       if (suite.title.toLowerCase().includes(q)) return true;
-      if (suite.cases?.some((c) => c.caseName.toLowerCase().includes(q) || c.tcId.toLowerCase().includes(q))) {
+      if (
+        suite.cases?.some(
+          (c) =>
+            c.caseName.toLowerCase().includes(q) ||
+            c.tcId.toLowerCase().includes(q) ||
+            c.typeCase?.toLowerCase().includes(q) ||
+            c.priority?.toLowerCase().includes(q),
+        )
+      ) {
         return true;
       }
       return false;
     });
   }, [availableSuites, search]);
 
-  const totalCasesSelected = useMemo(() => {
-    let count = 0;
-    for (const suite of availableSuites) {
-      if (selectedIds.has(String(suite.id))) {
-        count += suite.cases?.length || 0;
-      }
-    }
-    return count;
-  }, [availableSuites, selectedIds]);
+  const toggleSuiteSelection = (suite: AvailableSuite) => {
+    const sId = String(suite.id);
+    const suiteCases = suite.cases || [];
+    const caseIdsInSuite = suiteCases.map((c) => String(c.id));
+    const allSelected =
+      caseIdsInSuite.length > 0 &&
+      caseIdsInSuite.every((cid) => selectedCaseIds.has(cid));
 
-  const toggleSelectSuite = (suiteId: string) => {
-    setSelectedIds((prev) => {
+    setSelectedSuiteIds((prev) => {
       const next = new Set(prev);
-      if (next.has(suiteId)) {
-        next.delete(suiteId);
+      if (allSelected) {
+        next.delete(sId);
       } else {
-        next.add(suiteId);
+        next.add(sId);
       }
       return next;
+    });
+
+    setSelectedCaseIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        caseIdsInSuite.forEach((cid) => next.delete(cid));
+      } else {
+        caseIdsInSuite.forEach((cid) => next.add(cid));
+      }
+      return next;
+    });
+  };
+
+  const toggleCaseSelection = (suite: AvailableSuite, caseId: string | number) => {
+    const cId = String(caseId);
+    const sId = String(suite.id);
+    const suiteCases = suite.cases || [];
+
+    const nextCases = new Set(selectedCaseIds);
+    if (nextCases.has(cId)) {
+      nextCases.delete(cId);
+    } else {
+      nextCases.add(cId);
+    }
+    setSelectedCaseIds(nextCases);
+
+    const hasAnyInSuite = suiteCases.some((c) => nextCases.has(String(c.id)));
+    setSelectedSuiteIds((prev) => {
+      const nextSuites = new Set(prev);
+      if (hasAnyInSuite) {
+        nextSuites.add(sId);
+      } else {
+        nextSuites.delete(sId);
+      }
+      return nextSuites;
     });
   };
 
@@ -113,16 +189,26 @@ export function PlanScopeChecklistModal({
     });
   };
 
-  const selectAll = () => {
-    const all = new Set(selectedIds);
-    filteredSuites.forEach((s) => all.add(String(s.id)));
-    setSelectedIds(all);
+  const selectAllFiltered = () => {
+    const nextSuites = new Set(selectedSuiteIds);
+    const nextCases = new Set(selectedCaseIds);
+    filteredSuites.forEach((s) => {
+      nextSuites.add(String(s.id));
+      s.cases?.forEach((c) => nextCases.add(String(c.id)));
+    });
+    setSelectedSuiteIds(nextSuites);
+    setSelectedCaseIds(nextCases);
   };
 
-  const deselectAll = () => {
-    const next = new Set(selectedIds);
-    filteredSuites.forEach((s) => next.delete(String(s.id)));
-    setSelectedIds(next);
+  const deselectAllFiltered = () => {
+    const nextSuites = new Set(selectedSuiteIds);
+    const nextCases = new Set(selectedCaseIds);
+    filteredSuites.forEach((s) => {
+      nextSuites.delete(String(s.id));
+      s.cases?.forEach((c) => nextCases.delete(String(c.id)));
+    });
+    setSelectedSuiteIds(nextSuites);
+    setSelectedCaseIds(nextCases);
   };
 
   async function handleSave() {
@@ -132,7 +218,8 @@ export function PlanScopeChecklistModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          suiteIds: Array.from(selectedIds).map((id) => Number(id)),
+          suiteIds: Array.from(selectedSuiteIds).map((id) => Number(id)),
+          caseIds: Array.from(selectedCaseIds).map((id) => Number(id)),
         }),
       });
 
@@ -153,28 +240,33 @@ export function PlanScopeChecklistModal({
   }
 
   const allFilteredSelected =
-    filteredSuites.length > 0 && filteredSuites.every((s) => selectedIds.has(String(s.id)));
+    filteredSuites.length > 0 &&
+    filteredSuites.every((s) => {
+      const cases = s.cases || [];
+      if (cases.length === 0) return selectedSuiteIds.has(String(s.id));
+      return cases.every((c) => selectedCaseIds.has(String(c.id)));
+    });
 
   return (
     <ModalShell
       isOpen={isOpen}
       onClose={onClose}
       title="Test Plan Scope Checklist"
-      description={`Select which test suites and their test cases are included in ${planTitle}`}
+      description={`Select the test suites and individual test cases to execute in ${planTitle}`}
       icon={<Checks size={20} weight="bold" className="text-blue-600" />}
-      maxWidth="xl"
+      maxWidth="2xl"
       footer={
         <div className="flex w-full items-center justify-between gap-3">
           <div className="text-xs text-slate-500">
-            <span className="font-bold text-slate-800">{selectedIds.size}</span> suites selected ·{" "}
-            <span className="font-bold text-blue-600">{totalCasesSelected}</span> test cases included
+            <span className="font-bold text-slate-800">{selectedSuiteIds.size}</span> suites ·{" "}
+            <span className="font-bold text-blue-600">{selectedCaseIds.size}</span> test cases selected
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="rounded-md border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+              className="rounded-md border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
             >
               Cancel
             </button>
@@ -182,7 +274,7 @@ export function PlanScopeChecklistModal({
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50 cursor-pointer"
             >
               {saving ? "Saving Scope..." : "Save Scope Checklist"}
             </button>
@@ -208,7 +300,7 @@ export function PlanScopeChecklistModal({
           </div>
         ) : (
           <>
-            {/* Search and select all bar */}
+            {/* Search and bulk actions bar */}
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="relative flex-1 min-w-[200px]">
                 <MagnifyingGlass
@@ -219,7 +311,7 @@ export function PlanScopeChecklistModal({
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Filter suites or cases..."
+                  placeholder="Filter suites or test cases..."
                   className="h-8 w-full rounded-md border border-slate-200 bg-white pl-8 pr-3 text-xs text-slate-800 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
@@ -227,16 +319,16 @@ export function PlanScopeChecklistModal({
                 {allFilteredSelected ? (
                   <button
                     type="button"
-                    onClick={deselectAll}
-                    className="font-semibold text-slate-600 hover:text-slate-900 transition"
+                    onClick={deselectAllFiltered}
+                    className="font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer"
                   >
-                    Deselect All
+                    Deselect All Filtered
                   </button>
                 ) : (
                   <button
                     type="button"
-                    onClick={selectAll}
-                    className="font-semibold text-blue-600 hover:text-blue-700 transition"
+                    onClick={selectAllFiltered}
+                    className="font-semibold text-blue-600 hover:text-blue-700 transition cursor-pointer"
                   >
                     Select All Filtered
                   </button>
@@ -244,18 +336,29 @@ export function PlanScopeChecklistModal({
               </div>
             </div>
 
-            {/* Checklist of suites */}
-            <div className="max-h-[360px] space-y-2 overflow-y-auto pr-1">
+            {/* Checklist of suites and cases */}
+            <div className="max-h-[420px] space-y-2.5 overflow-y-auto pr-1">
               {filteredSuites.length === 0 ? (
                 <div className="py-8 text-center text-xs text-slate-400">
-                  No suites match &ldquo;{search}&rdquo;.
+                  No suites or cases match &ldquo;{search}&rdquo;.
                 </div>
               ) : (
                 filteredSuites.map((suite) => {
                   const sId = String(suite.id);
-                  const isChecked = selectedIds.has(sId);
                   const isExpanded = expandedSuiteIds.has(sId);
-                  const casesCount = suite.cases?.length || 0;
+                  const suiteCases = suite.cases || [];
+                  const casesCount = suiteCases.length;
+                  const selectedCasesInSuite = suiteCases.filter((c) =>
+                    selectedCaseIds.has(String(c.id)),
+                  );
+                  const isAllSelected =
+                    casesCount > 0
+                      ? selectedCasesInSuite.length === casesCount
+                      : selectedSuiteIds.has(sId);
+                  const isPartiallySelected =
+                    casesCount > 0 &&
+                    selectedCasesInSuite.length > 0 &&
+                    selectedCasesInSuite.length < casesCount;
                   const isCurPlan = String(suite.testPlanId) === String(planId);
 
                   return (
@@ -263,26 +366,46 @@ export function PlanScopeChecklistModal({
                       key={sId}
                       className={cn(
                         "rounded-lg border transition",
-                        isChecked
-                          ? "border-blue-200 bg-blue-50/20"
+                        isAllSelected || isPartiallySelected
+                          ? "border-blue-200 bg-blue-50/15"
                           : "border-slate-200 bg-white hover:border-slate-300",
                       )}
                     >
+                      {/* Suite Header Row */}
                       <div className="flex items-center justify-between gap-3 p-3">
-                        <label className="flex flex-1 cursor-pointer items-center gap-2.5 min-w-0">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => toggleSelectSuite(sId)}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <div className="min-w-0 flex-1">
+                        <div className="flex flex-1 items-center gap-2.5 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => toggleSuiteSelection(suite)}
+                            className="cursor-pointer text-slate-400 hover:text-blue-600 transition"
+                            aria-label={`Toggle suite ${suite.title}`}
+                          >
+                            {isAllSelected ? (
+                              <CheckSquare size={18} weight="fill" className="text-blue-600" />
+                            ) : isPartiallySelected ? (
+                              <MinusSquare size={18} weight="fill" className="text-blue-500" />
+                            ) : (
+                              <Square size={18} className="text-slate-300 hover:text-slate-500" />
+                            )}
+                          </button>
+
+                          <div
+                            className="min-w-0 flex-1 cursor-pointer select-none"
+                            onClick={() => toggleExpandSuite(sId)}
+                          >
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="truncate text-xs font-bold text-slate-800">
                                 {suite.title}
                               </span>
-                              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                                {casesCount} {casesCount === 1 ? "case" : "cases"}
+                              <span
+                                className={cn(
+                                  "rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                                  selectedCasesInSuite.length > 0
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-slate-100 text-slate-600",
+                                )}
+                              >
+                                {selectedCasesInSuite.length} of {casesCount} cases selected
                               </span>
                               {isCurPlan ? (
                                 <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600">
@@ -292,11 +415,7 @@ export function PlanScopeChecklistModal({
                                 <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
                                   In: {suite.planTitle}
                                 </span>
-                              ) : (
-                                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
-                                  Unassigned
-                                </span>
-                              )}
+                              ) : null}
                             </div>
                             {suite.planProject && (
                               <p className="mt-0.5 text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
@@ -304,15 +423,15 @@ export function PlanScopeChecklistModal({
                               </p>
                             )}
                           </div>
-                        </label>
+                        </div>
 
                         {casesCount > 0 && (
                           <button
                             type="button"
                             onClick={() => toggleExpandSuite(sId)}
-                            className="flex h-7 items-center gap-1 rounded px-2 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition"
+                            className="flex h-7 items-center gap-1 rounded px-2 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition cursor-pointer"
                           >
-                            <span>Preview</span>
+                            <span>{isExpanded ? "Collapse" : "Cases"}</span>
                             {isExpanded ? (
                               <CaretDown size={12} weight="bold" />
                             ) : (
@@ -322,32 +441,62 @@ export function PlanScopeChecklistModal({
                         )}
                       </div>
 
-                      {/* Expandable test case preview */}
+                      {/* Expandable test cases checklist */}
                       {isExpanded && casesCount > 0 && (
-                        <div className="border-t border-slate-100 bg-slate-50/70 px-4 py-2 text-xs">
-                          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            Included Cases ({casesCount})
-                          </p>
-                          <ul className="space-y-1">
-                            {suite.cases?.map((c) => (
-                              <li
-                                key={c.id}
-                                className="flex items-center justify-between gap-2 text-[11px] text-slate-700"
-                              >
-                                <span className="flex items-center gap-1.5 min-w-0">
-                                  <span className="font-mono text-[10px] font-bold text-slate-400">
-                                    {c.tcId}
-                                  </span>
-                                  <span className="truncate">{c.caseName}</span>
-                                </span>
-                                {c.priority && (
-                                  <span className="text-[10px] font-medium text-slate-400">
-                                    {c.priority}
-                                  </span>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
+                        <div className="border-t border-slate-100 bg-slate-50/50 px-3 py-2">
+                          <div className="space-y-1">
+                            {suiteCases.map((c) => {
+                              const cId = String(c.id);
+                              const isChecked = selectedCaseIds.has(cId);
+
+                              return (
+                                <label
+                                  key={c.id}
+                                  className={cn(
+                                    "flex cursor-pointer items-center justify-between gap-2.5 rounded-md px-2.5 py-1.5 transition",
+                                    isChecked
+                                      ? "bg-blue-50/80 text-slate-900 font-medium"
+                                      : "hover:bg-slate-100 text-slate-600",
+                                  )}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => toggleCaseSelection(suite, c.id)}
+                                      className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                    />
+                                    <span className="font-mono text-[10px] font-bold text-slate-400 shrink-0">
+                                      {c.tcId}
+                                    </span>
+                                    <span className="truncate text-xs">{c.caseName}</span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    {c.typeCase && (
+                                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500">
+                                        {c.typeCase}
+                                      </span>
+                                    )}
+                                    {c.priority && (
+                                      <span
+                                        className={cn(
+                                          "rounded px-1.5 py-0.5 text-[10px] font-bold",
+                                          c.priority === "Critical" || c.priority === "High"
+                                            ? "bg-rose-50 text-rose-600"
+                                            : c.priority === "Medium"
+                                              ? "bg-amber-50 text-amber-600"
+                                              : "bg-slate-100 text-slate-500",
+                                        )}
+                                      >
+                                        {c.priority}
+                                      </span>
+                                    )}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>

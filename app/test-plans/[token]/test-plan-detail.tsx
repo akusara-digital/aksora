@@ -116,6 +116,29 @@ export function TestPlanDetail({
  const [activeTab, setActiveTab] = useState<"all" |"attention" |"empty">("all");
  const [copied, setCopied] = useState(false);
 
+ const parsedScope = useMemo<{ suiteIds: number[]; caseIds: number[] } | null>(() => {
+   if (!plan.scope) return null;
+   try {
+     if (plan.scope.trim().startsWith("{")) {
+       const parsed = JSON.parse(plan.scope);
+       if (Array.isArray(parsed.caseIds) || Array.isArray(parsed.suiteIds)) {
+         return {
+           suiteIds: Array.isArray(parsed.suiteIds) ? parsed.suiteIds.map(Number) : [],
+           caseIds: Array.isArray(parsed.caseIds) ? parsed.caseIds.map(Number) : [],
+         };
+       }
+     }
+   } catch {
+     // not JSON
+   }
+   return null;
+ }, [plan.scope]);
+
+ const scopedCaseIds = useMemo(() => {
+   if (!parsedScope || !parsedScope.caseIds || parsedScope.caseIds.length === 0) return null;
+   return new Set(parsedScope.caseIds.map(String));
+ }, [parsedScope]);
+
  const getFilterStatus = (suiteId: string) => filterStatusMap[suiteId] || ALL;
  const setFilterStatus = (suiteId: string, status: string) =>
  setFilterStatusMap((p) => ({ ...p, [suiteId]: status }));
@@ -142,16 +165,19 @@ export function TestPlanDetail({
  const suitesWithStats = useMemo(() =>
  suites.map((s) => {
  let passed = 0, failed = 0, blocked = 0, pending = 0;
- s.cases.forEach((c) => {
+ const targetCases = scopedCaseIds
+   ? s.cases.filter((c) => scopedCaseIds.has(String(c.id)))
+   : s.cases;
+ targetCases.forEach((c) => {
  const st = String(c.status).toLowerCase();
  if (st ==="passed") passed++;
  else if (st ==="failed") failed++;
  else if (st ==="blocked") blocked++;
  else pending++;
  });
- return { ...s, passed, failed, blocked, pending, total: s.cases.length };
+ return { ...s, passed, failed, blocked, pending, total: targetCases.length, scopedCount: targetCases.length };
  }),
- [suites]
+ [suites, scopedCaseIds]
  );
 
  const totalCases = suitesWithStats.reduce((a, s) => a + s.total, 0);
@@ -208,10 +234,10 @@ export function TestPlanDetail({
  <button
   type="button"
   onClick={() => setShowScopeModal(true)}
-  className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 h-8 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-xs"
+  className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 h-8 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-xs cursor-pointer"
  >
   <ListChecks size={14} weight="bold" />
-  Checklist Scope ({suites.length} Suites)
+  Checklist Scope ({parsedScope ? `${parsedScope.caseIds.length} Cases` : `${suites.length} Suites`})
  </button>
  {plan.publicToken && (
  <button
@@ -243,10 +269,20 @@ export function TestPlanDetail({
  <span className="flex items-center gap-1.5 text-slate-500"><CalendarBlank size={13} weight="bold" className="text-slate-400" /><span className="font-semibold text-slate-700">{formatDate(plan.startDate)} - {formatDate(plan.endDate)}</span></span>
  )}
  </div>
- {(plan.scope || plan.notes) && (
- <p className="mt-4 text-sm text-slate-500 leading-relaxed border-t border-slate-100 pt-4 max-w-2xl">
- {plan.scope || plan.notes}
- </p>
+ {(parsedScope || plan.scope || plan.notes) && (
+ <div className="mt-4 text-sm text-slate-500 leading-relaxed border-t border-slate-100 pt-4 max-w-2xl">
+  {parsedScope ? (
+   <div className="space-y-1.5">
+    <div className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50/80 px-2.5 py-1 text-xs font-bold text-blue-700">
+     <Checks size={14} weight="bold" />
+     Scope Checklist: {parsedScope.caseIds.length} test cases selected across {suites.length} suites
+    </div>
+    {plan.notes && <p className="text-xs text-slate-500">{plan.notes}</p>}
+   </div>
+  ) : (
+   <p>{plan.scope || plan.notes}</p>
+  )}
+ </div>
  )}
  </div>
 
@@ -492,7 +528,14 @@ export function TestPlanDetail({
  {visibleCases.map((tc) => (
  <tr key={tc.id} className="hover:bg-slate-50/60 transition-colors">
  <td className="px-5 py-3 whitespace-nowrap">
- <span className="font-mono text-xs font-bold text-slate-400">{tc.tcId}</span>
+  <div className="flex items-center gap-2">
+   <span className="font-mono text-xs font-bold text-slate-400">{tc.tcId}</span>
+   {scopedCaseIds && scopedCaseIds.has(String(tc.id)) && (
+    <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-600 border border-blue-100">
+     In Scope
+    </span>
+   )}
+  </div>
  </td>
  <td className="px-3 py-3 max-w-xs">
  <p className="truncate font-semibold text-slate-800">{tc.caseName}</p>
@@ -540,6 +583,7 @@ export function TestPlanDetail({
   planTitle={plan.title || "Test Plan"}
   availableSuites={availableSuites}
   currentlyLinkedSuiteIds={suites.map((s) => s.id)}
+  currentlyLinkedCaseIds={parsedScope?.caseIds}
   onSuccess={() => {
     router.refresh();
   }}
