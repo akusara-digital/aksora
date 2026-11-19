@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from"next/dynamic";
+import { useRouter } from "next/navigation";
 import { type Attachment } from"@/components/shared/attachment-uploader";
 import { ModuleWorkspaceHeader } from"@/components/module/module-workspace-header";
 import { ModuleWorkspaceTable } from"@/components/module/module-workspace-table";
@@ -12,6 +13,8 @@ import { getModuleWorkspaceIcon } from"@/components/module/module-workspace-util
 import type { Column, TableRow } from"@/components/module/module-workspace-table-row";
 import type { ModuleKey } from"@/lib/modules";
 import { BugModalModeSelector, type BugCreateMode } from "@/components/bugs/bug-modal-mode-selector";
+import { BugModalHeader } from "@/components/bugs/bug-modal-header";
+import { toast } from "@/components/ui/toast";
 import type { IssueAgentTicketDraft } from "@/lib/ai-issue-agent";
 
 const KanbanBoard = dynamic(() => import("@/components/module/kanban-board").then((module) => module.KanbanBoard), {
@@ -245,8 +248,12 @@ export function ModuleWorkspaceShell({
  void attachments;
  void setAttachments;
  void setSprintDuplicate;
+ const router = useRouter();
  const [bugCreateMode, setBugCreateMode] = useState<BugCreateMode>("ai");
  const [manualBugDraft, setManualBugDraft] = useState<Record<string, unknown> | null>(null);
+ const [selectedBugProject, setSelectedBugProject] = useState<string>(
+   () => selectValues.project || relatedOptions.project?.[0]?.value || "",
+ );
 
  const handleSwitchToManual = (draft: IssueAgentTicketDraft) => {
    setManualBugDraft({
@@ -265,14 +272,33 @@ export function ModuleWorkspaceShell({
    setBugCreateMode("manual");
  };
 
- const handleDirectBugSubmit = (entry: Record<string, unknown>) => {
+ const handleDirectBugSubmit = async (entry: Record<string, unknown>, createAnother?: boolean) => {
    const formData = new FormData();
    for (const [key, val] of Object.entries(entry)) {
      if (val !== undefined && val !== null) {
        formData.set(key, String(val));
      }
    }
-   onSubmit(formData);
+
+   if (createAnother && !editingRow) {
+     try {
+       const res = await fetch(`/api/items/${module}`, {
+         method: "POST",
+         body: formData,
+       });
+       if (!res.ok) {
+         const err = await res.json().catch(() => ({}));
+         throw new Error(err.error || "Failed to create bug");
+       }
+       toast("Bug created successfully! Ready for next bug.", "success");
+       router.refresh();
+     } catch (err) {
+       toast(err instanceof Error ? err.message : "Failed to create bug", "error");
+     }
+   } else {
+     onSubmit(formData);
+     setManualBugDraft(null);
+   }
  };
 
  return (
@@ -384,6 +410,26 @@ export function ModuleWorkspaceShell({
     ? "Fill in core defect details quickly."
     : "Fill in new data with a consistent format."
  }
+ customHeader={
+  module === "bugs" ? (
+    <BugModalHeader
+      title={editingRow ? "Edit Bug" : "New Bug"}
+      project={selectedBugProject || selectValues.project || relatedOptions.project?.[0]?.value || ""}
+      onProjectChange={(p) => {
+        setSelectedBugProject(p);
+        setSelectValues((prev) => ({ ...prev, project: p }));
+      }}
+      projectOptions={relatedOptions.project || []}
+      mode={bugCreateMode}
+      onModeChange={setBugCreateMode}
+      onClose={() => {
+        setManualBugDraft(null);
+        onCancelForm();
+      }}
+      isEditing={Boolean(editingRow)}
+    />
+  ) : undefined
+ }
  headerAccessory={
   module === "bugs" && !editingRow ? (
     <BugModalModeSelector mode={bugCreateMode} onChange={setBugCreateMode} />
@@ -398,6 +444,7 @@ export function ModuleWorkspaceShell({
   <AiIssueAgentContent
     projectOptions={relatedOptions.project || []}
     defaultProject={selectValues.project || ""}
+    selectedProject={selectedBugProject || selectValues.project || relatedOptions.project?.[0]?.value || ""}
     onCancel={() => {
       setManualBugDraft(null);
       onCancelForm();
@@ -410,6 +457,7 @@ export function ModuleWorkspaceShell({
   <StreamlinedBugForm
     projectOptions={relatedOptions.project || []}
     defaultProject={selectValues.project || ""}
+    selectedProject={selectedBugProject || selectValues.project || relatedOptions.project?.[0]?.value || ""}
     devOptions={relatedOptions.suggestedDev || relatedOptions.assignee || []}
     initialData={editingRow || manualBugDraft}
     pending={pending}

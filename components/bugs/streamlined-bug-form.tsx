@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CaretDown,
   CaretRight,
   CircleNotch,
   Tag,
-  User,
+  Plus,
 } from "@phosphor-icons/react";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { toast } from "@/components/ui/toast";
@@ -16,18 +16,19 @@ import { BugCollapsibleDetails } from "./bug-collapsible-details";
 interface StreamlinedBugFormProps {
   projectOptions?: Array<{ label: string; value: string }>;
   defaultProject?: string;
+  selectedProject?: string;
   devOptions?: Array<{ label: string; value: string }>;
   initialData?: Record<string, unknown> | null;
   pending?: boolean;
   onCancel: () => void;
-  onSubmit: (entry: Record<string, unknown>) => void;
+  onSubmit: (entry: Record<string, unknown>, createAnother?: boolean) => void;
 }
 
 const SEVERITY_OPTIONS = [
-  { value: "low", label: "Low", dot: "bg-slate-400", active: "bg-slate-100 text-slate-700 border-slate-300" },
-  { value: "medium", label: "Medium", dot: "bg-amber-400", active: "bg-amber-50 text-amber-700 border-amber-300" },
-  { value: "high", label: "High", dot: "bg-orange-500", active: "bg-orange-50 text-orange-700 border-orange-300" },
-  { value: "critical", label: "Critical", dot: "bg-rose-500", active: "bg-rose-50 text-rose-700 border-rose-300" },
+  { value: "low", label: "Low", dot: "bg-slate-400", active: "bg-slate-100 text-slate-800 border-slate-300" },
+  { value: "medium", label: "Med", dot: "bg-amber-400", active: "bg-amber-50 text-amber-800 border-amber-300" },
+  { value: "high", label: "High", dot: "bg-orange-500", active: "bg-orange-50 text-orange-800 border-orange-300" },
+  { value: "critical", label: "Crit", dot: "bg-rose-500", active: "bg-rose-50 text-rose-800 border-rose-300 ring-1 ring-rose-400/30" },
 ];
 
 const PRIORITY_OPTIONS = ["P0", "P1", "P2", "P3"];
@@ -36,6 +37,7 @@ const BUG_TYPE_OPTIONS = ["Functional", "UI/UX", "Performance", "API", "Security
 export function StreamlinedBugForm({
   projectOptions = [],
   defaultProject = "",
+  selectedProject = "",
   devOptions = [],
   initialData = null,
   pending = false,
@@ -43,15 +45,43 @@ export function StreamlinedBugForm({
   onSubmit,
 }: StreamlinedBugFormProps) {
   const [project, setProject] = useState(
-    () => String(initialData?.project || defaultProject || projectOptions[0]?.value || ""),
+    () => selectedProject || String(initialData?.project || defaultProject || projectOptions[0]?.value || ""),
   );
+
+  // Sync if selectedProject prop changes from modal header
+  useEffect(() => {
+    if (selectedProject) {
+      setProject(selectedProject);
+    }
+  }, [selectedProject]);
+
   const [title, setTitle] = useState(() => String(initialData?.title || ""));
   const [severity, setSeverity] = useState(() => String(initialData?.severity || "medium").toLowerCase());
-  const [priority, setPriority] = useState(() => String(initialData?.priority || "P2").toUpperCase());
+  const [priority, setPriority] = useState(() => String(initialData?.priority || "P3").toUpperCase());
   const [bugType, setBugType] = useState(() => String(initialData?.bugType || "Functional"));
   const [stepsToReproduce, setStepsToReproduce] = useState(() => String(initialData?.stepsToReproduce || ""));
   const [expectedResult, setExpectedResult] = useState(() => String(initialData?.expectedResult || ""));
   const [actualResult, setActualResult] = useState(() => String(initialData?.actualResult || ""));
+  const [createAnother, setCreateAnother] = useState(false);
+
+  // Sync initialData changes (e.g. when switched from AI draft)
+  useEffect(() => {
+    if (initialData) {
+      if (initialData.title !== undefined) setTitle(String(initialData.title || ""));
+      if (initialData.project) setProject(String(initialData.project));
+      if (initialData.severity) setSeverity(String(initialData.severity).toLowerCase());
+      if (initialData.priority) setPriority(String(initialData.priority).toUpperCase());
+      if (initialData.bugType) setBugType(String(initialData.bugType));
+      if (initialData.stepsToReproduce !== undefined) setStepsToReproduce(String(initialData.stepsToReproduce || ""));
+      if (initialData.expectedResult !== undefined) setExpectedResult(String(initialData.expectedResult || ""));
+      if (initialData.actualResult !== undefined) setActualResult(String(initialData.actualResult || ""));
+      if (initialData.suggestedDev !== undefined) setSuggestedDev(String(initialData.suggestedDev || ""));
+      if (initialData.module !== undefined) setModuleName(String(initialData.module || ""));
+      if (initialData.preconditions !== undefined) setPreconditions(String(initialData.preconditions || ""));
+      if (initialData.evidence !== undefined) setEvidence(String(initialData.evidence || ""));
+      if (initialData.relatedItems !== undefined) setRelatedItems(String(initialData.relatedItems || ""));
+    }
+  }, [initialData]);
 
   // Optional collapsible details
   const [showOptional, setShowOptional] = useState(() => {
@@ -69,9 +99,23 @@ export function StreamlinedBugForm({
   const [evidence, setEvidence] = useState(() => String(initialData?.evidence || ""));
   const [relatedItems, setRelatedItems] = useState(() => String(initialData?.relatedItems || ""));
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!project.trim()) {
+  // Keyboard shortcut Ctrl+Enter / Cmd+Enter
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (!pending) {
+          triggerSubmit();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
+  const triggerSubmit = () => {
+    const effectiveProject = selectedProject || project;
+    if (!effectiveProject.trim()) {
       toast("Please select or enter a Project Name.", "error");
       return;
     }
@@ -81,7 +125,7 @@ export function StreamlinedBugForm({
     }
 
     const payload: Record<string, unknown> = {
-      project: project.trim(),
+      project: effectiveProject.trim(),
       title: title.trim(),
       severity,
       priority,
@@ -98,64 +142,70 @@ export function StreamlinedBugForm({
     if (evidence.trim()) payload.evidence = evidence.trim();
     if (relatedItems.trim()) payload.relatedItems = relatedItems.trim();
 
-    onSubmit(payload);
+    onSubmit(payload, createAnother);
+
+    if (createAnother && !initialData?.id) {
+      setTitle("");
+      setStepsToReproduce("");
+      setExpectedResult("");
+      setActualResult("");
+      toast("Bug created! Ready for next bug.", "success");
+    }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    triggerSubmit();
+  };
+
+  const isEditing = Boolean(initialData?.id);
+  const showProjectInBody = !selectedProject && projectOptions.length > 0;
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 sm:p-6 text-xs text-slate-800">
-      {/* Row 1: Project & Title */}
-      <div className="space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="sm:col-span-1">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 sm:p-5 text-xs text-slate-800">
+      <div className="space-y-3.5">
+        {/* Row 0 (Fallback only if project not selected in header) */}
+        {showProjectInBody && (
+          <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
               Project <span className="text-rose-500">*</span>
             </label>
-            {projectOptions.length > 0 ? (
-              <select
-                value={project}
-                onChange={(e) => setProject(e.target.value)}
-                required
-                className="h-9 w-full rounded-md border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-blue-500"
-              >
-                <option value="" disabled>Select Project...</option>
-                {projectOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                required
-                value={project}
-                onChange={(e) => setProject(e.target.value)}
-                placeholder="e.g. Core Web App"
-                className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition focus:border-blue-500"
-              />
-            )}
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
-              Bug Title <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
+            <select
+              value={project}
+              onChange={(e) => setProject(e.target.value)}
               required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Checkout button unresponsive on mobile Safari"
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition focus:border-blue-500"
-            />
+              className="h-9 w-full rounded-md border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+            >
+              <option value="" disabled>Select Project...</option>
+              {projectOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
+        )}
+
+        {/* Row 1: BUG TITLE */}
+        <div>
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+            Bug Title <span className="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Checkout button unresponsive on mobile Safari"
+            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+          />
         </div>
 
-        {/* Row 2: Severity, Priority, & Bug Type */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-lg border border-slate-100 bg-slate-50/70 p-3">
-          {/* Severity */}
-          <div>
-            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+        {/* Row 2: SEVERITY, PRIORITY, & BUG TYPE */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+          {/* Severity (5 cols) */}
+          <div className="sm:col-span-5">
+            <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
               Severity
             </span>
             <div className="grid grid-cols-4 gap-1">
@@ -167,7 +217,7 @@ export function StreamlinedBugForm({
                     type="button"
                     onClick={() => setSeverity(opt.value)}
                     className={cn(
-                      "flex items-center justify-center gap-1 rounded border py-1 text-[11px] font-semibold transition cursor-pointer",
+                      "flex items-center justify-center gap-1.5 rounded-md border py-1.5 text-[11px] font-semibold transition cursor-pointer",
                       isSelected
                         ? opt.active
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
@@ -181,9 +231,9 @@ export function StreamlinedBugForm({
             </div>
           </div>
 
-          {/* Priority */}
-          <div>
-            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          {/* Priority (4 cols) */}
+          <div className="sm:col-span-4">
+            <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
               Priority
             </span>
             <div className="grid grid-cols-4 gap-1">
@@ -195,9 +245,9 @@ export function StreamlinedBugForm({
                     type="button"
                     onClick={() => setPriority(p)}
                     className={cn(
-                      "rounded border py-1 text-center text-[11px] font-bold transition cursor-pointer",
+                      "rounded-md border py-1.5 text-center text-[11px] font-bold transition cursor-pointer",
                       isSelected
-                        ? "border-blue-300 bg-blue-50 text-blue-700"
+                        ? "border-blue-400 bg-blue-50 text-blue-700 shadow-2xs"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
                     )}
                   >
@@ -208,15 +258,15 @@ export function StreamlinedBugForm({
             </div>
           </div>
 
-          {/* Bug Type */}
-          <div>
-            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          {/* Bug Type (3 cols) */}
+          <div className="sm:col-span-3">
+            <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
               Bug Type
             </span>
             <select
               value={bugType}
               onChange={(e) => setBugType(e.target.value)}
-              className="h-[27px] w-full rounded border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-700 outline-none focus:border-blue-500"
+              className="h-8 w-full rounded-md border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 cursor-pointer"
             >
               {BUG_TYPE_OPTIONS.map((type) => (
                 <option key={type} value={type}>
@@ -227,7 +277,7 @@ export function StreamlinedBugForm({
           </div>
         </div>
 
-        {/* Row 3: Steps to Reproduce */}
+        {/* Row 3: STEPS TO REPRODUCE */}
         <div>
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
             Steps to Reproduce
@@ -236,12 +286,12 @@ export function StreamlinedBugForm({
             value={stepsToReproduce}
             onChange={(e) => setStepsToReproduce(e.target.value)}
             rows={3}
-            placeholder="1. Open checkout page&#10;2. Select payment method&#10;3. Click confirm and observe error"
-            className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 outline-none transition focus:border-blue-500"
+            placeholder={"1. Open checkout page\n2. Select payment method\n3. Click confirm"}
+            className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
           />
         </div>
 
-        {/* Row 4: Expected & Actual Result (Side by Side) */}
+        {/* Row 4: EXPECTED & ACTUAL RESULT (Side by Side) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
@@ -251,8 +301,8 @@ export function StreamlinedBugForm({
               value={expectedResult}
               onChange={(e) => setExpectedResult(e.target.value)}
               rows={2}
-              placeholder="e.g. Order placed successfully with confirmation screen"
-              className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 outline-none transition focus:border-blue-500"
+              placeholder="Order placed with confirmation screen"
+              className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
             />
           </div>
 
@@ -264,28 +314,28 @@ export function StreamlinedBugForm({
               value={actualResult}
               onChange={(e) => setActualResult(e.target.value)}
               rows={2}
-              placeholder="e.g. Page crashes with 500 error toast"
-              className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 outline-none transition focus:border-blue-500"
+              placeholder="Page crashes with 500 error toast"
+              className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
             />
           </div>
         </div>
 
-        {/* Collapsible Section: Additional Details */}
-        <div className="rounded-lg border border-slate-200 bg-white">
+        {/* Row 5: Collapsible Section: Additional Details */}
+        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-2xs">
           <button
             type="button"
             onClick={() => setShowOptional(!showOptional)}
             className="flex w-full items-center justify-between px-3.5 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
           >
             <span className="flex items-center gap-1.5">
-              <Tag size={14} className="text-slate-400" />
+              <Tag size={14} weight="bold" className="text-slate-400" />
               <span>Additional details (Assignee, Module, Evidence)</span>
             </span>
-            {showOptional ? <CaretDown size={14} /> : <CaretRight size={14} />}
+            {showOptional ? <CaretDown size={14} weight="bold" /> : <CaretRight size={14} weight="bold" />}
           </button>
 
           {showOptional && (
-            <div className="border-t border-slate-100 p-3.5 bg-slate-50/40">
+            <div className="border-t border-slate-100 p-3.5 bg-slate-50/50">
               <BugCollapsibleDetails
                 devOptions={devOptions}
                 suggestedDev={suggestedDev}
@@ -304,24 +354,53 @@ export function StreamlinedBugForm({
         </div>
       </div>
 
-      {/* Footer buttons */}
-      <div className="flex items-center justify-end gap-2 border-t border-slate-200 pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={pending}
-          className="rounded-md border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={pending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50 cursor-pointer"
-        >
-          {pending && <CircleNotch size={14} className="animate-spin text-white" />}
-          <span>{initialData ? "Save Changes" : "Create Bug"}</span>
-        </button>
+      {/* Footer Controls */}
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3.5">
+        {/* Left: Create another checkbox */}
+        {!isEditing ? (
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={createAnother}
+              onChange={(e) => setCreateAnother(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            />
+            <span className="text-xs font-semibold text-slate-700">Create another</span>
+          </label>
+        ) : (
+          <div />
+        )}
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={pending}
+            className="rounded-md border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={pending}
+            className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
+          >
+            {pending ? (
+              <CircleNotch size={13} className="animate-spin text-white" />
+            ) : isEditing ? (
+              <span>Save Changes</span>
+            ) : (
+              <>
+                <Plus size={13} weight="bold" />
+                <span>Create Bug</span>
+              </>
+            )}
+            <kbd className="hidden sm:inline-block rounded bg-blue-700/60 px-1 py-0.5 text-[10px] font-mono font-medium text-blue-100">
+              ⌘↵
+            </kbd>
+          </button>
+        </div>
       </div>
     </form>
   );

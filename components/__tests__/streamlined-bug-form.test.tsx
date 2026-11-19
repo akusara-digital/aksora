@@ -51,4 +51,35 @@ describe("StreamlinedBugForm", () => {
     const devInput = screen.getByPlaceholderText(/e\.g\. dev@company\.com/i);
     expect(devInput).toBeDefined();
   });
+
+  it("handles create another checkbox and passes flag to onSubmit", () => {
+    const handleSubmit = vi.fn();
+    render(<StreamlinedBugForm {...defaultProps} onSubmit={handleSubmit} />);
+
+    const titleInput = screen.getByPlaceholderText(/e\.g\. checkout button unresponsive/i);
+    fireEvent.change(titleInput, { target: { value: "Checkout crash on tablet" } });
+
+    const createAnotherCheckbox = screen.getByRole("checkbox", { name: /create another/i });
+    expect(createAnotherCheckbox).toBeDefined();
+    fireEvent.click(createAnotherCheckbox);
+
+    const submitBtn = screen.getByRole("button", { name: /create bug/i });
+    fireEvent.click(submitBtn);
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+    expect(handleSubmit.mock.calls[0][1]).toBe(true);
+  });
+
+  it("submits form on Ctrl+Enter keyboard shortcut", () => {
+    const handleSubmit = vi.fn();
+    render(<StreamlinedBugForm {...defaultProps} onSubmit={handleSubmit} />);
+
+    const titleInput = screen.getByPlaceholderText(/e\.g\. checkout button unresponsive/i);
+    fireEvent.change(titleInput, { target: { value: "Keyboard shortcut test bug" } });
+
+    fireEvent.keyDown(window, { key: "Enter", ctrlKey: true });
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+    expect(handleSubmit.mock.calls[0][0].title).toBe("Keyboard shortcut test bug");
+  });
 });
