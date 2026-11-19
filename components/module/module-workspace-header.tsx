@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, FileXls, FilePdf, UploadSimple, MagnifyingGlass, Table, Kanban } from "@phosphor-icons/react";
+import { Plus, MagnifyingGlass, Table, Kanban } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { ModuleFilterBar, type FilterValue } from "@/components/module/module-filter-bar";
-import { ColumnVisibilityToggle } from "@/components/module/column-visibility-toggle";
 import { SavedViews } from "@/components/module/saved-views";
 import { QuickBugButton } from "@/components/bugs/quick-bug-button";
 import { QaCopilotButton } from "@/components/shared/qa-copilot-button";
-import { AiReleaseNotesButton } from "@/components/test-sessions/ai-release-notes-button";
-import { AiStandupDigestButton } from "@/components/dashboard/ai-standup-digest-button";
+import { TestSessionsToolsMenu } from "@/components/test-sessions/test-sessions-tools-menu";
 import { WorkLogAiActions } from "@/components/work-logs/work-log-ai-actions";
 import { ModuleMoreActionsMenu } from "@/components/module/module-more-actions-menu";
 
@@ -110,14 +108,9 @@ export function ModuleWorkspaceHeader({
                 />
               </div>
 
-              {module !== "bugs" && module !== "work-logs" && <QaCopilotButton />}
+              {(module === "tasks" || module === "test-cases") && <QaCopilotButton />}
 
-              {module === "test-sessions" && (
-                <>
-                  <AiStandupDigestButton />
-                  <AiReleaseNotesButton />
-                </>
-              )}
+              {module === "test-sessions" && <TestSessionsToolsMenu />}
 
               {module === "work-logs" && <WorkLogAiActions />}
 
@@ -134,66 +127,15 @@ export function ModuleWorkspaceHeader({
                 </>
               )}
 
-              {module === "bugs" || module === "work-logs" ? (
-                <ModuleMoreActionsMenu
-                  module={module}
-                  canAdd={canAdd}
-                  onImportFile={onImportFile}
-                  allColumns={allColumns}
-                  visibleColumnKeys={visibleColumnKeys}
-                  onToggleColumn={onToggleColumn}
-                  onResetColumns={onResetColumns}
-                />
-              ) : (
-                <>
-                  <a
-                    href={`/api/export/${module}`}
-                    title="Export Excel"
-                    aria-label="Export Excel"
-                    className="inline-flex h-8 w-8 items-center justify-center border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-blue-600"
-                  >
-                    <FileXls size={15} weight="bold" />
-                  </a>
-
-                  <a
-                    href={`/api/export/${module}?format=pdf`}
-                    title="Print / Export PDF"
-                    aria-label="Print / Export PDF"
-                    className="inline-flex h-8 w-8 items-center justify-center border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-blue-600"
-                  >
-                    <FilePdf size={15} weight="bold" />
-                  </a>
-
-                  {canAdd && (
-                    <label
-                      title="Import Excel"
-                      aria-label="Import Excel"
-                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-blue-600"
-                    >
-                      <UploadSimple size={15} weight="bold" />
-                      <input
-                        type="file"
-                        accept=".xlsx,.xls"
-                        className="hidden"
-                        onChange={(event) => {
-                          const file = event.target.files?.[0];
-                          if (file) onImportFile(file);
-                          event.target.value = "";
-                        }}
-                      />
-                    </label>
-                  )}
-
-                  {allColumns && visibleColumnKeys && onToggleColumn && onResetColumns && (
-                    <ColumnVisibilityToggle
-                      allColumns={allColumns}
-                      visibleKeys={visibleColumnKeys}
-                      onToggle={onToggleColumn}
-                      onReset={onResetColumns}
-                    />
-                  )}
-                </>
-              )}
+              <ModuleMoreActionsMenu
+                module={module}
+                canAdd={canAdd}
+                onImportFile={onImportFile}
+                allColumns={allColumns}
+                visibleColumnKeys={visibleColumnKeys}
+                onToggleColumn={onToggleColumn}
+                onResetColumns={onResetColumns}
+              />
 
               {topContent ? <div className="flex w-full basis-full flex-col items-end">{topContent}</div> : null}
             </div>

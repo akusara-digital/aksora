@@ -1,11 +1,12 @@
 "use client";
 
-import { usePathname, useRouter } from"next/navigation";
-import { useEffect, useRef, useState, useTransition } from"react";
-import { FilePdf, FileXls, MagnifyingGlass, UploadSimple } from"@phosphor-icons/react";
-import { toast } from"@/components/ui/toast";
-import { ImportErrorsModal, type ImportRowError } from"@/components/shared/import-errors-modal";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
+import { toast } from "@/components/ui/toast";
+import { ImportErrorsModal, type ImportRowError } from "@/components/shared/import-errors-modal";
 import { useTranslation } from "@/hooks/use-translation";
+import { ModuleMoreActionsMenu } from "@/components/module/module-more-actions-menu";
 
 export function SuitesHeaderActions({
  initialSearch,
@@ -23,7 +24,6 @@ export function SuitesHeaderActions({
  const inputPlaceholder = placeholder || t.searchPlaceholder;
  const router = useRouter();
  const pathname = usePathname();
- const uploadRef = useRef<HTMLInputElement | null>(null);
  const [value, setValue] = useState(initialSearch);
  const [locationSearch, setLocationSearch] = useState(() =>
    typeof window !== "undefined" ? window.location.search : ""
@@ -84,39 +84,11 @@ export function SuitesHeaderActions({
  className="h-11 w-full  border border-gray-200 bg-white pl-10 pr-4 text-sm text-gray-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
  />
  </div>
- <a
- href={`/api/export/${exportModule}`}
- title={t.exportExcel}
- aria-label={t.exportExcel}
- className="inline-flex h-11 w-11 items-center justify-center  border border-gray-200 bg-white text-gray-600 shadow-sm transition-all  hover:bg-blue-500 hover:text-white hover:border-blue-500"
- >
- <FileXls size={16} weight="bold" />
- </a>
- <a
- href={`/api/export/${exportModule}?format=pdf`}
- title={t.exportPdf}
- aria-label={t.exportPdf}
- className="inline-flex h-11 w-11 items-center justify-center  border border-gray-200 bg-white text-gray-600 shadow-sm transition-all  hover:bg-blue-500 hover:text-white hover:border-blue-500"
- >
- <FilePdf size={16} weight="bold" />
- </a>
- <button
- type="button"
- onClick={() => uploadRef.current?.click()}
- className="inline-flex h-11 w-11 items-center justify-center  border border-gray-200 bg-white text-gray-600 shadow-sm transition-all  hover:bg-blue-500 hover:text-white hover:border-blue-500"
- >
- <UploadSimple size={16} weight="bold" />
- </button>
- <input
- ref={uploadRef}
- type="file"
- accept=".xlsx,.xls"
- className="hidden"
- onChange={(event) => {
- const file = event.target.files?.[0];
- void handleUpload(file);
- event.currentTarget.value ="";
- }}
+ <ModuleMoreActionsMenu
+ module={exportModule}
+ canAdd={true}
+ onImportFile={(file) => void handleUpload(file)}
+ buttonClassName="h-11 w-11"
  />
  </div>
  <ImportErrorsModal

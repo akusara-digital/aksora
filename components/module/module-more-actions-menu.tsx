@@ -24,6 +24,7 @@ interface ModuleMoreActionsMenuProps {
   visibleColumnKeys?: string[];
   onToggleColumn?: (key: string) => void;
   onResetColumns?: () => void;
+  buttonClassName?: string;
 }
 
 export function ModuleMoreActionsMenu({
@@ -34,6 +35,7 @@ export function ModuleMoreActionsMenu({
   visibleColumnKeys,
   onToggleColumn,
   onResetColumns,
+  buttonClassName,
 }: ModuleMoreActionsMenuProps) {
   const [open, setOpen] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
@@ -62,7 +64,8 @@ export function ModuleMoreActionsMenu({
         title="More actions & export"
         aria-label="More actions"
         className={cn(
-          "inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 cursor-pointer shadow-xs",
+          "inline-flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 cursor-pointer shadow-xs",
+          buttonClassName || "h-8 w-8",
           open && "bg-gray-100 text-gray-900 border-gray-300",
         )}
       >
