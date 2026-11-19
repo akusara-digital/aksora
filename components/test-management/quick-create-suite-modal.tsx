@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FolderPlus, Plus, Trash, CaretDown, CaretUp } from "@phosphor-icons/react";
+import { FolderPlus, Plus, CaretDown, CaretUp, PencilSimple, Sparkle } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
+import { QuickCreateSuiteAiSection, type InitialCaseItem } from "./quick-create-suite-ai-section";
+import { QuickCreateSuiteCaseRow } from "./quick-create-suite-case-row";
 
 export type PlanOption = {
   id: number;
@@ -19,13 +22,6 @@ export type QuickCreateSuiteModalProps = {
   defaultProject?: string;
   onClose: () => void;
   onCreated?: (suiteId: string) => void;
-};
-
-type InitialCaseItem = {
-  id: string;
-  caseName: string;
-  typeCase: "Positive" | "Negative";
-  expectedResult: string;
 };
 
 export function QuickCreateSuiteForm({
@@ -48,18 +44,36 @@ export function QuickCreateSuiteForm({
 
   // Fast-track initial test cases state
   const [showInitialCases, setShowInitialCases] = useState(false);
+  const [inputMode, setInputMode] = useState<"manual" | "ai">("manual");
+  const [showAiUnconfigured, setShowAiUnconfigured] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+
   const [initialCases, setInitialCases] = useState<InitialCaseItem[]>([
-    { id: "case-1", caseName: "", typeCase: "Positive", expectedResult: "" },
+    {
+      id: "case-1",
+      caseName: "",
+      typeCase: "Positive",
+      priority: "Medium",
+      expectedResult: "",
+    },
   ]);
 
+  const selectedPlan = plans.find((p) => String(p.id) === testPlanId);
+
   const addInitialCaseRow = () => {
-    if (initialCases.length >= 8) {
-      toast("Maximum 8 initial cases at once. You can add more later in the table.", "info");
+    if (initialCases.length >= 10) {
+      toast("Maximum 10 initial cases at once. You can add more later in the table.", "info");
       return;
     }
     setInitialCases((prev) => [
       ...prev,
-      { id: `case-${Date.now()}-${prev.length}`, caseName: "", typeCase: "Positive", expectedResult: "" },
+      {
+        id: `case-${Date.now()}-${prev.length}`,
+        caseName: "",
+        typeCase: "Positive",
+        priority: "Medium",
+        expectedResult: "",
+      },
     ]);
   };
 
@@ -72,6 +86,12 @@ export function QuickCreateSuiteForm({
       prev.map((c) => (c.id === id ? { ...c, [field]: val } : c)),
     );
   };
+
+  const handleAiGenerated = (generatedCases: InitialCaseItem[]) => {
+    setInitialCases(generatedCases);
+  };
+
+  const validCasesCount = initialCases.filter((c) => c.caseName.trim().length > 0).length;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -117,12 +137,12 @@ export function QuickCreateSuiteForm({
                 testSuiteId: newId,
                 tcId,
                 caseName: item.caseName.trim(),
-                typeCase: item.typeCase,
-                priority: "Medium",
+                typeCase: item.typeCase || "Positive",
+                priority: item.priority || "Medium",
                 status: "Pending",
-                testStep: "1. Follow test specifications and verification checklist",
+                testStep: item.testStep || "1. Follow test specifications and verification checklist",
                 expectedResult: item.expectedResult.trim() || "Passes acceptance criteria",
-                preCondition: "Application deployed in QA / Staging environment",
+                preCondition: item.preCondition || "Application deployed in QA / Staging environment",
               }),
             });
             if (caseRes.ok) createdCasesCount++;
@@ -149,162 +169,229 @@ export function QuickCreateSuiteForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-slate-700">
-          Suite Name <span className="text-rose-500">*</span>
-        </label>
-        <input
-          type="text"
-          required
-          autoFocus
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Authentication & Login Flow"
-          className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
-        />
-      </div>
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="mb-1 block text-xs font-semibold text-slate-700">
+            Suite Name <span className="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            required
+            autoFocus
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Authentication & Login Flow"
+            className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+          />
+        </div>
 
-      <div className={plans.length > 0 ? "grid grid-cols-1 gap-3 sm:grid-cols-2" : "space-y-3"}>
-        {plans.length > 0 && (
+        <div className={plans.length > 0 ? "grid grid-cols-1 gap-3 sm:grid-cols-2" : "space-y-3"}>
+          {plans.length > 0 && (
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-slate-700">
+                Test Plan (Optional)
+              </label>
+              <select
+                value={testPlanId}
+                onChange={(e) => setTestPlanId(e.target.value)}
+                className="h-10 w-full rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+              >
+                <option value="">No plan linked</option>
+                {(availablePlans.length > 0 ? availablePlans : plans).map((plan) => (
+                  <option key={plan.id} value={String(plan.id)}>
+                    {plan.project ? `${plan.project} — ${plan.title}` : plan.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-700">
-              Test Plan (Optional)
-            </label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700">Status</label>
             <select
-              value={testPlanId}
-              onChange={(e) => setTestPlanId(e.target.value)}
+              value={status}
+              onChange={(e) => setStatus(e.target.value as "active" | "draft")}
               className="h-10 w-full rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
             >
-              <option value="">No plan linked</option>
-              {(availablePlans.length > 0 ? availablePlans : plans).map((plan) => (
-                <option key={plan.id} value={String(plan.id)}>
-                  {plan.project ? `${plan.project} — ${plan.title}` : plan.title}
-                </option>
-              ))}
+              <option value="active">Active</option>
+              <option value="draft">Draft</option>
             </select>
           </div>
-        )}
+        </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700">Status</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as "active" | "draft")}
-            className="h-10 w-full rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
-          >
-            <option value="active">Active</option>
-            <option value="draft">Draft</option>
-          </select>
+          <label className="mb-1 block text-xs font-semibold text-slate-700">Goal / Notes</label>
+          <AutoResizeTextarea
+            rows={2}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Scope or objective of this test suite..."
+          />
         </div>
-      </div>
 
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-slate-700">Goal / Notes</label>
-        <AutoResizeTextarea
-          rows={2}
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Scope or objective of this test suite..."
-        />
-      </div>
-
-      {/* Fast-Track Initial Test Cases Accordion */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-3">
-        <button
-          type="button"
-          onClick={() => setShowInitialCases((prev) => !prev)}
-          className="flex w-full cursor-pointer items-center justify-between text-left"
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-800">
-              Add Initial Test Cases (Optional)
-            </span>
-            <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">
-              Fast-Track
-            </span>
-          </div>
-          {showInitialCases ? (
-            <CaretUp size={14} className="text-slate-500" />
-          ) : (
-            <CaretDown size={14} className="text-slate-500" />
-          )}
-        </button>
-
-        {showInitialCases && (
-          <div className="mt-3 space-y-2.5 pt-2 border-t border-slate-200/70">
-            <p className="text-[11px] text-slate-500">
-              Create suite and seed initial cases simultaneously without extra page hops.
-            </p>
-            {initialCases.map((tc, idx) => (
-              <div key={tc.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 rounded-md border border-slate-200 bg-white p-2 shadow-xs">
-                <span className="text-[11px] font-bold text-slate-400 font-mono w-6 text-center shrink-0">
-                  #{idx + 1}
+        {/* Fast-Track Initial Test Cases Accordion */}
+        <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+          <button
+            type="button"
+            onClick={() => setShowInitialCases((prev) => !prev)}
+            className="flex w-full cursor-pointer items-center justify-between text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-800">
+                Add Initial Test Cases (Optional)
+              </span>
+              <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">
+                Fast-Track
+              </span>
+              {validCasesCount > 0 && (
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                  {validCasesCount} case{validCasesCount > 1 ? "s" : ""} ready
                 </span>
-                <input
-                  type="text"
-                  placeholder="e.g. Verify login with valid credentials"
-                  value={tc.caseName}
-                  onChange={(e) => updateInitialCase(tc.id, "caseName", e.target.value)}
-                  className="h-8 flex-1 w-full text-xs rounded border border-slate-200 px-2.5 text-slate-900 outline-none focus:border-blue-500"
-                />
-                <select
-                  value={tc.typeCase}
-                  onChange={(e) => updateInitialCase(tc.id, "typeCase", e.target.value as "Positive" | "Negative")}
-                  className="h-8 w-24 text-xs rounded border border-slate-200 px-1.5 text-slate-700 outline-none"
+              )}
+            </div>
+            {showInitialCases ? (
+              <CaretUp size={14} className="text-slate-500" />
+            ) : (
+              <CaretDown size={14} className="text-slate-500" />
+            )}
+          </button>
+
+          {showInitialCases && (
+            <div className="mt-3 space-y-3 pt-2.5 border-t border-slate-200/70">
+              {/* Method Selector: Manual Input vs AI Generator */}
+              <div className="flex items-center gap-1.5 p-1 bg-slate-200/70 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setInputMode("manual")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold transition cursor-pointer ${
+                    inputMode === "manual"
+                      ? "bg-white text-slate-900 shadow-2xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
                 >
-                  <option value="Positive">Positive</option>
-                  <option value="Negative">Negative</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="Expected result (optional)"
-                  value={tc.expectedResult}
-                  onChange={(e) => updateInitialCase(tc.id, "expectedResult", e.target.value)}
-                  className="h-8 flex-1 w-full text-xs rounded border border-slate-200 px-2.5 text-slate-900 outline-none focus:border-blue-500"
+                  <PencilSimple size={13} weight="bold" />
+                  Manual Input
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInputMode("ai")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold transition cursor-pointer ${
+                    inputMode === "ai"
+                      ? "bg-white text-blue-700 shadow-2xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Sparkle size={13} weight="bold" className="text-blue-600" />
+                  Generate with AI
+                  <span className="rounded bg-blue-100 px-1.5 py-0.2 text-[9px] font-extrabold text-blue-700 uppercase tracking-wider">
+                    Copilot
+                  </span>
+                </button>
+              </div>
+
+              {/* AI Generator Panel */}
+              {inputMode === "ai" && (
+                <QuickCreateSuiteAiSection
+                  suiteTitle={title}
+                  suiteNotes={notes}
+                  selectedPlanTitle={selectedPlan?.title}
+                  selectedProject={selectedPlan?.project || defaultProject}
+                  existingCount={validCasesCount}
+                  onGenerated={handleAiGenerated}
+                  onRequestUnconfigured={() => setShowAiUnconfigured(true)}
                 />
-                {initialCases.length > 1 && (
+              )}
+
+              {/* Case Items List */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 px-0.5">
+                  <span>
+                    {inputMode === "ai"
+                      ? "Generated cases (editable before creating suite):"
+                      : "Enter test cases row-by-row:"}
+                  </span>
+                  {initialCases.length > 0 && validCasesCount > 0 && (
+                    <span className="font-medium text-slate-700">
+                      Total: {validCasesCount} valid
+                    </span>
+                  )}
+                </div>
+
+                {initialCases.map((tc, idx) => (
+                  <QuickCreateSuiteCaseRow
+                    key={tc.id}
+                    item={tc}
+                    index={idx}
+                    canRemove={initialCases.length > 1}
+                    isExpanded={expandedRowId === tc.id}
+                    onToggleExpand={() =>
+                      setExpandedRowId((prev) => (prev === tc.id ? null : tc.id))
+                    }
+                    onUpdate={(field, val) => updateInitialCase(tc.id, field, val)}
+                    onRemove={() => removeInitialCaseRow(tc.id)}
+                  />
+                ))}
+
+                <div className="flex items-center justify-between pt-1">
                   <button
                     type="button"
-                    onClick={() => removeInitialCaseRow(tc.id)}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 transition cursor-pointer"
-                    title="Remove case"
+                    onClick={addInitialCaseRow}
+                    className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700"
                   >
-                    <Trash size={14} />
+                    <Plus size={13} weight="bold" />
+                    Add another test case
                   </button>
-                )}
+
+                  {initialCases.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setInitialCases([
+                          {
+                            id: `case-${Date.now()}`,
+                            caseName: "",
+                            typeCase: "Positive",
+                            priority: "Medium",
+                            expectedResult: "",
+                          },
+                        ])
+                      }
+                      className="text-[11px] text-slate-500 hover:text-rose-600 transition cursor-pointer"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
               </div>
-            ))}
+            </div>
+          )}
+        </div>
 
-            <button
-              type="button"
-              onClick={addInitialCaseRow}
-              className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 pt-1"
-            >
-              <Plus size={13} weight="bold" />
-              Add another test case
-            </button>
-          </div>
-        )}
-      </div>
+        <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-9 cursor-pointer rounded-md border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="h-9 cursor-pointer rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving ? "Creating..." : "Create Suite"}
+          </button>
+        </div>
+      </form>
 
-      <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
-        <button
-          type="button"
-          onClick={onClose}
-          className="h-9 cursor-pointer rounded-md border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={saving}
-          className="h-9 cursor-pointer rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {saving ? "Creating..." : "Create Suite"}
-        </button>
-      </div>
-    </form>
+      <AiUnconfiguredModal
+        isOpen={showAiUnconfigured}
+        onClose={() => setShowAiUnconfigured(false)}
+        featureName="AI Test Case Generator"
+      />
+    </>
   );
 }
 
