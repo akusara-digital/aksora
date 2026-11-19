@@ -189,9 +189,12 @@ export async function getModuleRowsPage(module: ModuleKey, page: number, pageSiz
 
   switch (module) {
     case "test-plans": {
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "TestPlan" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as { total?: number } | undefined;
+      const [totalRow, rawRows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "TestPlan" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT "id", "uuid", "company", "publicToken", "title", "project", "sprint", "scope", "status", "startDate", "endDate", "notes", "assignee", "createdAt", "updatedAt", "deletedAt" FROM "TestPlan" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]),
+      ]);
       const total = Number(totalRow?.total ?? 0);
-      const rows = (await selectAll(`SELECT "id", "uuid", "company", "publicToken", "title", "project", "sprint", "scope", "status", "startDate", "endDate", "notes", "assignee", "createdAt", "updatedAt", "deletedAt" FROM "TestPlan" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams])).map((item) => {
+      const rows = rawRows.map((item) => {
         const normalized = normalizeTestPlanRow(item);
         return {
           ...normalized,
@@ -202,49 +205,57 @@ export async function getModuleRowsPage(module: ModuleKey, page: number, pageSiz
       return { rows, total };
     }
     case "test-sessions": {
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "TestSession" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const rows = await selectAll(`SELECT "id", "uuid", "company", "publicToken", "project", "date", "tester", "scope", "totalCases", "passed", "failed", "blocked", "result", "notes", "createdAt", "updatedAt", "deletedAt" FROM "TestSession" WHERE 1=1${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]);
-      return { rows, total };
+      const [totalRow, rows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "TestSession" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT "id", "uuid", "company", "publicToken", "project", "date", "tester", "scope", "totalCases", "passed", "failed", "blocked", "result", "notes", "createdAt", "updatedAt", "deletedAt" FROM "TestSession" WHERE 1=1${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]),
+      ]);
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "test-cases": {
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "TestCase" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const rows = (await selectAll(`SELECT "id", "uuid", "company", "publicToken", "testSuiteId", "tcId", "typeCase", "preCondition", "caseName", "assignee", "testStep", "expectedResult", "actualResult", "status", "evidence", "priority", "sortOrder", "createdAt", "updatedAt", "deletedAt" FROM "TestCase" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams])).map((item) => normalizeTestCaseRow(item));
-      return { rows, total };
+      const [totalRow, rawRows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "TestCase" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT "id", "uuid", "company", "publicToken", "testSuiteId", "tcId", "typeCase", "preCondition", "caseName", "assignee", "testStep", "expectedResult", "actualResult", "status", "evidence", "priority", "sortOrder", "createdAt", "updatedAt", "deletedAt" FROM "TestCase" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]),
+      ]);
+      const rows = rawRows.map((item) => normalizeTestCaseRow(item));
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "bugs": {
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "Bug" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const rows = await selectAll(`SELECT "id", "uuid", "company", "publicToken", "project", "module", "bugType", "title", "preconditions", "stepsToReproduce", "expectedResult", "actualResult", "severity", "priority", "status", "evidence", "relatedItems", "suggestedDev", "triageTier", "triageConfidence", "externalTicket", "sortOrder", "createdAt", "updatedAt", "deletedAt" FROM "Bug" WHERE "deletedAt" IS NULL${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]);
-      return { rows, total };
+      const [totalRow, rows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "Bug" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT "id", "uuid", "company", "publicToken", "project", "module", "bugType", "title", "preconditions", "stepsToReproduce", "expectedResult", "actualResult", "severity", "priority", "status", "evidence", "relatedItems", "suggestedDev", "triageTier", "triageConfidence", "externalTicket", "sortOrder", "createdAt", "updatedAt", "deletedAt" FROM "Bug" WHERE "deletedAt" IS NULL${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]),
+      ]);
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "tasks": {
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "Task" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const rows = await selectAll(`SELECT "id", "uuid", "company", "publicToken", "title", "project", "relatedFeature", "category", "status", "priority", "durationMinutes", "startDate", "endDate", "description", "acceptanceCriteria", "assignee", "evidence", "sortOrder", "createdAt", "updatedAt", "deletedAt" FROM "Task" WHERE "deletedAt" IS NULL${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]);
-      return { rows, total };
+      const [totalRow, rows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "Task" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT "id", "uuid", "company", "publicToken", "title", "project", "relatedFeature", "category", "status", "priority", "durationMinutes", "startDate", "endDate", "description", "acceptanceCriteria", "assignee", "evidence", "sortOrder", "createdAt", "updatedAt", "deletedAt" FROM "Task" WHERE "deletedAt" IS NULL${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]),
+      ]);
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "test-suites": {
       const suiteCompanyWhere = scope.getScopedAndClause("ts");
       const tcCompanyWhere = scope.getScopedAndClause("tc");
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "TestSuite" ts WHERE ts."deletedAt" IS NULL${suiteCompanyWhere}${searchClause}`, [...(isAdmin ? [] : qParams), ...searchParams]) as { total?: number } | undefined;
-      const rows = (await selectAll(
-        `WITH case_stats AS (
-          SELECT tc."testSuiteId" as suiteId,
-            SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) = 'passed' THEN 1 ELSE 0 END) as passed,
-            SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) = 'failed' THEN 1 ELSE 0 END) as failed,
-            SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) = 'blocked' THEN 1 ELSE 0 END) as blocked
-          FROM "TestCase" tc
-          WHERE tc."deletedAt" IS NULL${tcCompanyWhere}
-          GROUP BY tc."testSuiteId"
-        )
-        SELECT ts.*, COALESCE(cs.passed, 0) as passed, COALESCE(cs.failed, 0) as failed, COALESCE(cs.blocked, 0) as blocked
-         FROM "TestSuite" ts
-          LEFT JOIN case_stats cs ON CAST(cs.suiteId AS INTEGER) = ts.id
-         WHERE ts."deletedAt" IS NULL${suiteCompanyWhere}${searchClause}${orderClause}${limitClause}`,
-        isAdmin ? [...searchParams] : [...qParams, ...qParams, ...searchParams]
-      )).map((item) => ({
+      const [totalRow, rawRows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "TestSuite" ts WHERE ts."deletedAt" IS NULL${suiteCompanyWhere}${searchClause}`, [...(isAdmin ? [] : qParams), ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(
+          `WITH case_stats AS (
+            SELECT tc."testSuiteId" as suiteId,
+              SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) = 'passed' THEN 1 ELSE 0 END) as passed,
+              SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) = 'failed' THEN 1 ELSE 0 END) as failed,
+              SUM(CASE WHEN LOWER(COALESCE(tc."status", '')) = 'blocked' THEN 1 ELSE 0 END) as blocked
+            FROM "TestCase" tc
+            WHERE tc."deletedAt" IS NULL${tcCompanyWhere}
+            GROUP BY tc."testSuiteId"
+          )
+          SELECT ts.*, COALESCE(cs.passed, 0) as passed, COALESCE(cs.failed, 0) as failed, COALESCE(cs.blocked, 0) as blocked
+           FROM "TestSuite" ts
+            LEFT JOIN case_stats cs ON CAST(cs.suiteId AS INTEGER) = ts.id
+           WHERE ts."deletedAt" IS NULL${suiteCompanyWhere}${searchClause}${orderClause}${limitClause}`,
+          isAdmin ? [...searchParams] : [...qParams, ...qParams, ...searchParams]
+        ),
+      ]);
+      const rows = rawRows.map((item) => ({
         ...normalizeTestSuiteRow(item),
         code: codeFromId("SUITE", Number(item.id)),
         passed: Number(item.passed ?? 0),
@@ -254,46 +265,51 @@ export async function getModuleRowsPage(module: ModuleKey, page: number, pageSiz
       return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "assignees": {
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "User" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const rows = await selectAll(`SELECT id, name, role, email, '' as skills, 'active' as status, "createdAt", "updatedAt"
-        FROM "User" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]);
-      return { rows, total };
+      const [totalRow, rows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "User" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT id, name, role, email, '' as skills, 'active' as status, "createdAt", "updatedAt"
+          FROM "User" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]),
+      ]);
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "meeting-notes": {
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "MeetingNote" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const rows = (await selectAll(`SELECT "id", "uuid", "company", "title", "date", "project", "relatedItems", "summary", "actionItems", "publicToken", "createdAt", "updatedAt", "deletedAt" FROM "MeetingNote" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams])).map((item) => ({
+      const [totalRow, rawRows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "MeetingNote" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT "id", "uuid", "company", "title", "date", "project", "relatedItems", "summary", "actionItems", "publicToken", "createdAt", "updatedAt", "deletedAt" FROM "MeetingNote" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]),
+      ]);
+      const rows = rawRows.map((item) => ({
         ...item,
         code: codeFromId("MEET", Number(item.id)),
       }));
-      return { rows, total };
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "users": {
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "User" WHERE 1=1${andWhere}${searchClause}`, [...qParams, ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const rows = await selectAll(`SELECT id, uuid, name, email, role, company, "createdAt" FROM "User" WHERE 1=1${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]);
-      return { rows, total };
+      const [totalRow, rows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "User" WHERE 1=1${andWhere}${searchClause}`, [...qParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT id, uuid, name, email, role, company, "createdAt" FROM "User" WHERE 1=1${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]),
+      ]);
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "sprints": {
       const sprintWhere = scope.getScopedWhereClause("s");
       const sprintAndWhere = scope.getScopedAndClause("s");
       const tpCompanyFilter = scope.getScopedAndClause("tp2");
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "Sprint" s WHERE s."deletedAt" IS NULL${sprintAndWhere}${searchClause}`, [...(isAdmin ? [] : qParams), ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const sprintRows = await selectAll(`
-        SELECT s.*,
-          (SELECT tp2."title" || '|||' || tp2."project" FROM "TestPlan" tp2
-            WHERE (LOWER(TRIM(tp2."sprint")) = LOWER(TRIM(s."name"))
-              OR LOWER(TRIM(s."name")) LIKE LOWER(TRIM(tp2."sprint")) || '%'
-              OR LOWER(TRIM(tp2."sprint")) LIKE LOWER(TRIM(s."name")) || '%')
-            ${tpCompanyFilter}
-            AND tp2."deletedAt" IS NULL
-            ORDER BY tp2."updatedAt" DESC LIMIT 1) AS "_planInfo"
-        FROM "Sprint" s
-        ${sprintWhere}${isAdmin ? ' WHERE s."deletedAt" IS NULL' : ' AND s."deletedAt" IS NULL'}${searchClause}
-        ${sortBy ? orderClause : ' ORDER BY s."startDate" DESC'}${limitClause}
-      `, [...(isAdmin ? [] : [...qParams, ...qParams]), ...searchParams]);
+      const [totalRow, sprintRows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "Sprint" s WHERE s."deletedAt" IS NULL${sprintAndWhere}${searchClause}`, [...(isAdmin ? [] : qParams), ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`
+          SELECT s.*,
+            (SELECT tp2."title" || '|||' || tp2."project" FROM "TestPlan" tp2
+              WHERE (LOWER(TRIM(tp2."sprint")) = LOWER(TRIM(s."name"))
+                OR LOWER(TRIM(s."name")) LIKE LOWER(TRIM(tp2."sprint")) || '%'
+                OR LOWER(TRIM(tp2."sprint")) LIKE LOWER(TRIM(s."name")) || '%')
+              ${tpCompanyFilter}
+              AND tp2."deletedAt" IS NULL
+              ORDER BY tp2."updatedAt" DESC LIMIT 1) AS "_planInfo"
+          FROM "Sprint" s
+          ${sprintWhere}${isAdmin ? ' WHERE s."deletedAt" IS NULL' : ' AND s."deletedAt" IS NULL'}${searchClause}
+          ${sortBy ? orderClause : ' ORDER BY s."startDate" DESC'}${limitClause}
+        `, [...(isAdmin ? [] : [...qParams, ...qParams]), ...searchParams]),
+      ]);
       const rows = sprintRows.map((row) => {
         const info = String(row._planInfo ?? "");
         const sep = info.indexOf("|||");
@@ -305,23 +321,26 @@ export async function getModuleRowsPage(module: ModuleKey, page: number, pageSiz
           project: sep >= 0 ? info.slice(sep + 3) : null,
         };
       });
-      return { rows, total };
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "deployments": {
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "Deployment" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const rows = (await selectAll(`SELECT "id", "uuid", "company", "publicToken", "project", "date", "version", "environment", "developer", "changelog", "status", "notes", "createdAt", "updatedAt", "deletedAt" FROM "Deployment" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams])).map(hydrateDeploymentNotes);
-      return { rows, total };
+      const [totalRow, rawRows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "Deployment" WHERE "deletedAt" IS NULL${andWhere}${searchClause}`, [...qParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT "id", "uuid", "company", "publicToken", "project", "date", "version", "environment", "developer", "changelog", "status", "notes", "createdAt", "updatedAt", "deletedAt" FROM "Deployment" WHERE "deletedAt" IS NULL ${andWhere}${searchClause}${orderClause}${limitClause}`, [...qParams, ...searchParams]),
+      ]);
+      const rows = rawRows.map(hydrateDeploymentNotes);
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     case "work-logs": {
       const isWsAdmin = isWorkspaceAdmin(currentUser?.role);
       // Admin sees all company data, regular user sees only their own
       const userFilter = isAdmin || isWsAdmin ? "" : ' AND "assignee" = ?';
       const userParams = isAdmin || isWsAdmin ? [] : [String(currentUser?.name ?? "").trim()];
-      const totalRow = await db.get(`SELECT COUNT(*) as total FROM "WorkLog" WHERE "deletedAt" IS NULL${andWhere}${userFilter}${searchClause}`, [...qParams, ...userParams, ...searchParams]) as { total?: number } | undefined;
-      const total = Number(totalRow?.total ?? 0);
-      const rows = await selectAll(`SELECT "id", "uuid", "company", "publicToken", "date", "startTime", "endTime", "durationMinutes", "category", "project", "description", "output", "notes", "assignee", "sortOrder", "createdAt", "updatedAt", "deletedAt" FROM "WorkLog" WHERE "deletedAt" IS NULL ${andWhere}${userFilter}${searchClause}${orderClause}${limitClause}`, [...qParams, ...userParams, ...searchParams]);
-      return { rows, total };
+      const [totalRow, rows] = await Promise.all([
+        db.get(`SELECT COUNT(*) as total FROM "WorkLog" WHERE "deletedAt" IS NULL${andWhere}${userFilter}${searchClause}`, [...qParams, ...userParams, ...searchParams]) as Promise<{ total?: number } | undefined>,
+        selectAll(`SELECT "id", "uuid", "company", "publicToken", "date", "startTime", "endTime", "durationMinutes", "category", "project", "description", "output", "notes", "assignee", "sortOrder", "createdAt", "updatedAt", "deletedAt" FROM "WorkLog" WHERE "deletedAt" IS NULL ${andWhere}${userFilter}${searchClause}${orderClause}${limitClause}`, [...qParams, ...userParams, ...searchParams]),
+      ]);
+      return { rows, total: Number(totalRow?.total ?? 0) };
     }
     default:
       return { rows: [], total: 0 };

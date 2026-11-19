@@ -3,11 +3,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 const mocks = vi.hoisted(() => ({
   pageShell: vi.fn(({ children }: { children: React.ReactNode }) => <div>{children}</div>),
-  executionSuiteCards: vi.fn(({ inProgress, ready }: { inProgress: Array<{ planName: string }>; ready: Array<{ planName: string }> }) => (
+  executionSuiteCards: vi.fn(({ suites }: { suites?: Array<{ planName: string }> }) => (
     <div data-testid="execution-suite-cards">
-      {inProgress.map((suite) => (suite.planName === "Standalone" ? "Standalone Execution" : suite.planName)).join(" / ")}
-      {"|"}
-      {ready.map((suite) => (suite.planName === "Standalone" ? "Standalone Execution" : suite.planName)).join(" / ")}
+      {(suites || []).map((suite) => (suite.planName === "Standalone" ? "Standalone Execution" : suite.planName)).join(" / ")}
     </div>
   )),
   dbQuery: vi.fn(),
@@ -62,8 +60,8 @@ describe("test execution page", () => {
     expect(mocks.executionSuiteCards).toHaveBeenCalledTimes(1);
     const props = (mocks.pageShell as unknown as { mock: { calls: Array<[Record<string, unknown>]> } }).mock.calls[0]![0];
     expect(props).toEqual(expect.objectContaining({
-      title: "Execution Center",
-      description: "Start new runs, continue in-progress executions, or review past results.",
+      title: "Test Runs",
+      description: "Plan, execute, and monitor test runs in real time with live metrics, environment targeting, and QA sign-off.",
     }));
   });
 });

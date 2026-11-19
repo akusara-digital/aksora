@@ -21,42 +21,40 @@ export default async function TestExecutionPage({
   const companyFilter = isAdmin ? "" : ' AND s."company" = ?';
   const companyParams = isAdmin ? [] : [company];
 
-  // Get suites with their latest run info
-  const suites = await db.query<Record<string, unknown>>(
-    `SELECT s."id", s."title", s."status", s."assignee", s."notes", s."publicToken", s."testPlanId",
-            (SELECT COUNT(*) FROM "TestCase" tc WHERE tc."testSuiteId" = CAST(s."id" AS TEXT) AND tc."deletedAt" IS NULL) as "caseCount"
-     FROM "TestSuite" s
-     WHERE s."status" != 'archived' AND s."deletedAt" IS NULL${companyFilter}
-     ORDER BY s."updatedAt" DESC`,
-    [...companyParams]
-  );
+  const execCompanyFilter = isAdmin ? "" : ' AND "company" = ?';
 
-  // Get latest run for each suite
-  const suiteIds = suites.map(s => Number(s.id));
-  const latestRuns: Record<number, Record<string, unknown>> = {};
-
-  if (suiteIds.length > 0) {
-    // Get all runs and pick latest per suite in JS (avoids complex SQL)
-    const allRuns = await db.query<Record<string, unknown>>(
-      `SELECT * FROM "ExecutionRun"
-       WHERE "deletedAt" IS NULL${isAdmin ? "" : ' AND "company" = ?'}
-       ORDER BY "runNumber" DESC`,
+  // Fetch suites, latest runs per suite, and plans concurrently
+  const [suites, allRuns, plans] = await Promise.all([
+    db.query<Record<string, unknown>>(
+      `SELECT s."id", s."title", s."status", s."assignee", s."notes", s."publicToken", s."testPlanId",
+              (SELECT COUNT(*) FROM "TestCase" tc WHERE tc."testSuiteId" = CAST(s."id" AS TEXT) AND tc."deletedAt" IS NULL) as "caseCount"
+       FROM "TestSuite" s
+       WHERE s."status" != 'archived' AND s."deletedAt" IS NULL${companyFilter}
+       ORDER BY s."updatedAt" DESC`,
+      [...companyParams]
+    ),
+    db.query<Record<string, unknown>>(
+      `SELECT DISTINCT ON ("testSuiteId") "id", "testSuiteId", "runNumber", "status", "tester", "passed", "failed", "blocked", "totalCases", "startedAt", "completedAt"
+       FROM "ExecutionRun"
+       WHERE "deletedAt" IS NULL${execCompanyFilter}
+       ORDER BY "testSuiteId", "runNumber" DESC`,
       isAdmin ? [] : [company]
-    );
+    ),
+    db.query<Record<string, unknown>>(
+      `SELECT "id", "title", "project" FROM "TestPlan" WHERE "deletedAt" IS NULL${execCompanyFilter}`,
+      isAdmin ? [] : [company]
+    ),
+  ]);
 
-    for (const run of allRuns) {
-      const sid = Number(run.testSuiteId);
-      if (!latestRuns[sid]) {
-        latestRuns[sid] = run;
-      }
+  // Index latest run per suite
+  const latestRuns: Record<number, Record<string, unknown>> = {};
+  for (const run of allRuns) {
+    const sid = Number(run.testSuiteId ?? run.suiteId);
+    if (!latestRuns[sid]) {
+      latestRuns[sid] = run;
     }
   }
 
-  // Get plans for grouping
-  const plans = await db.query<Record<string, unknown>>(
-    `SELECT "id", "title", "project" FROM "TestPlan" WHERE "deletedAt" IS NULL${isAdmin ? "" : ' AND "company" = ?'}`,
-    isAdmin ? [] : [company]
-  );
   const planMap = new Map<string, Record<string, unknown>>();
   plans.forEach(p => planMap.set(String(p.id), p));
 

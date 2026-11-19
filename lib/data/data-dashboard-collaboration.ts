@@ -98,15 +98,23 @@ export async function createComment(
  * Upsert a presence heartbeat for a user.
  * Uses INSERT ON CONFLICT to update lastSeen.
  */
-export async function upsertHeartbeat(company: string, userId: number, userName: string): Promise<void> {
+export async function upsertHeartbeat(company: string, userId: number, userName: string, workspaceId?: number | null): Promise<void> {
+  let wsId = workspaceId ?? null;
+  if (!wsId && company) {
+    try {
+      const ws = await db.get<{ id: number }>('SELECT "id" FROM "Workspace" WHERE "name" = ? LIMIT 1', [company]);
+      if (ws) wsId = ws.id;
+    } catch { /* non-critical */ }
+  }
   await db.run(
-    `INSERT INTO "PresenceHeartbeat" ("company", "userId", "userName", "lastSeen")
-     VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+    `INSERT INTO "PresenceHeartbeat" ("company", "workspaceId", "userId", "userName", "lastSeen")
+     VALUES (?, CAST(? AS INTEGER), ?, ?, CURRENT_TIMESTAMP)
      ON CONFLICT ("userId") DO UPDATE SET
        "company" = EXCLUDED."company",
+       "workspaceId" = COALESCE(EXCLUDED."workspaceId", "PresenceHeartbeat"."workspaceId"),
        "userName" = EXCLUDED."userName",
        "lastSeen" = CURRENT_TIMESTAMP`,
-    [company, userId, userName],
+    [company, wsId, userId, userName],
   );
 }
 

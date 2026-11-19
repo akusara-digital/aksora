@@ -1,26 +1,47 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { GlobalSearch } from "@/components/shared/search/global-search";
 import { NotificationPanel } from "./sidebar";
 import { Bell, CaretUp, List } from "@phosphor-icons/react";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
 import { TrialBanner } from "@/components/layout/trial-banner";
 import { AnnouncementBanner } from "@/components/layout/announcement-banner";
-import { CommandPalette } from "@/components/shared/search/command-palette";
-import { OnboardingTour } from "@/components/layout/onboarding-tour";
 import { useAssignmentNotifications } from "@/hooks/use-assignment-notifications";
-import { WorkspaceOnboardingModal } from "@/components/layout/workspace-onboarding-modal";
 import { AppSplashScreen } from "@/components/layout/app-splash-screen";
-import { InstallPromptBanner } from "@/components/layout/install-prompt-banner";
 import { SectionSubNav } from "@/components/layout/section-sub-nav";
 import { AccountDropdown, type AppUser } from "@/components/layout/account-dropdown";
 import { isStandaloneRoute } from "@/lib/route-utils";
 import { toast } from "@/components/ui/toast";
+
+const ConfirmModal = dynamic(
+  () => import("@/components/ui/confirm-modal").then((m) => m.ConfirmModal),
+  { ssr: false }
+);
+
+const CommandPalette = dynamic(
+  () => import("@/components/shared/search/command-palette").then((m) => m.CommandPalette),
+  { ssr: false }
+);
+
+const OnboardingTour = dynamic(
+  () => import("@/components/layout/onboarding-tour").then((m) => m.OnboardingTour),
+  { ssr: false }
+);
+
+const WorkspaceOnboardingModal = dynamic(
+  () => import("@/components/layout/workspace-onboarding-modal").then((m) => m.WorkspaceOnboardingModal),
+  { ssr: false }
+);
+
+const InstallPromptBanner = dynamic(
+  () => import("@/components/layout/install-prompt-banner").then((m) => m.InstallPromptBanner),
+  { ssr: false }
+);
 
 type AppWrapperProps = {
   children: React.ReactNode;

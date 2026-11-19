@@ -191,7 +191,16 @@ export default async function ModulePage({
 
   const hiddenFields: string[] = [];
   try {
-    const firstPageData = await getModuleRowsPage(moduleKey as ModuleKey, currentPage, PAGE_SIZE, searchQuery, sortBy, sortDir);
+    const needsKanban = moduleKey === "tasks" || moduleKey === "bugs" || moduleKey === "test-cases" || moduleKey === "sprints";
+    const needsProjects = ["test-plans", "test-sessions", "meeting-notes", "tasks", "bugs", "deployments", "work-logs"].includes(moduleKey);
+
+    const [firstPageData, preloadedKanbanRows, preloadedProjects, teamOptionsRaw] = await Promise.all([
+      getModuleRowsPage(moduleKey as ModuleKey, currentPage, PAGE_SIZE, searchQuery, sortBy, sortDir),
+      needsKanban ? getModuleRows(moduleKey as ModuleKey, 500) : Promise.resolve(null),
+      needsProjects ? getProjectOptions() : Promise.resolve(null),
+      getAssigneeOptions() as Promise<AssigneeOption[]>,
+    ]);
+
     totalItems = firstPageData.total;
 
     const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
@@ -202,13 +211,7 @@ export default async function ModulePage({
         : firstPageData;
 
     rows = resolvedPageData.rows as Record<string, unknown>[];
-    kanbanRows = rows;
-
-    if (moduleKey === "tasks" || moduleKey === "bugs" || moduleKey === "test-cases" || moduleKey === "sprints") {
-      // ponytail: 500 is a soft cap, not real pagination — no team realistically has >500 open items in one status board. Add per-column virtualization if that ever changes.
-      const allRows = await getModuleRows(moduleKey as ModuleKey, 500);
-      kanbanRows = allRows as Record<string, unknown>[];
-    }
+    kanbanRows = preloadedKanbanRows ? (preloadedKanbanRows as Record<string, unknown>[]) : rows;
 
     if (moduleKey === "test-suites") {
       const plans = (await getTestPlanReferenceRows()) as PlanRow[];
@@ -362,8 +365,8 @@ export default async function ModulePage({
       rows = applyWorkLogsDateRowSpan(rows, isCustomSort, sortDir);
     }
 
-    if (["test-plans", "test-sessions", "meeting-notes", "tasks", "bugs", "deployments", "work-logs"].includes(moduleKey)) {
-      relatedOptions.project = await getProjectOptions();
+    if (needsProjects) {
+      relatedOptions.project = preloadedProjects || [];
       const projectFilter = Array.isArray(query.project) ? query.project[0] : query.project;
       if (projectFilter && !initialFormValues.project) {
         initialFormValues.project = String(projectFilter);
@@ -382,7 +385,7 @@ export default async function ModulePage({
       }
     }
 
-    if (!initialFormValues.priority) {
+    if (!initialFormValues.priority && ["tasks", "bugs", "test-cases"].includes(moduleKey)) {
       initialFormValues.priority = "Medium";
     }
 
@@ -401,7 +404,6 @@ export default async function ModulePage({
       }
     }
 
-    const teamOptionsRaw = (await getAssigneeOptions()) as AssigneeOption[];
     const devRoles = new Set(["fe", "be", "fullstack", "ai"]);
     const qaRoles = new Set(["qa"]);
     const qaPmRoles = new Set(["qa", "pm"]);

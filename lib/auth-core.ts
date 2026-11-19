@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "crypto";
+import { cache } from "react";
 import { syncAssigneeFromUser } from "@/lib/user-assignee-sync";
 import {
   hashPassword,
@@ -316,7 +317,7 @@ export async function verifySessionToken(token: string | undefined | null) {
   }
 }
 
-export async function getCurrentUser() {
+async function getCurrentUserUncached() {
   const apiUser = apiUserContext.getStore();
   if (apiUser) {
     return {
@@ -466,7 +467,7 @@ export async function getCurrentUser() {
       }
 
       let workspaceUuid = decoded.workspaceUuid || "";
-      if (activeWorkspaceId) {
+      if (activeWorkspaceId && !workspaceUuid) {
         try {
           const { db } = await import("./db");
           const wsRow = await db.get<{ uuid?: string }>('SELECT "uuid" FROM "Workspace" WHERE "id" = CAST(? AS INTEGER)', [activeWorkspaceId]);
@@ -546,6 +547,8 @@ export async function getCurrentUser() {
     return null;
   }
 }
+
+export const getCurrentUser = cache(getCurrentUserUncached);
 
 export function sessionCookieName() {
   return COOKIE_NAME;

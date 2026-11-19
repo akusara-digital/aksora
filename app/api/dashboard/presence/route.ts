@@ -46,11 +46,16 @@ export async function POST(request: Request) {
     return errorResponse("Too many requests", "RATE_LIMITED", 429);
   }
 
-  const { company } = getAccessScope(user);
+  const { company, workspaceId } = getAccessScope(user);
 
   try {
     if (body.action === "heartbeat") {
-      await upsertHeartbeat(company, user.id, user.name || user.email || `User ${user.id}`);
+      const displayName = user.name || user.email || `User ${user.id}`;
+      if (workspaceId) {
+        await upsertHeartbeat(company, user.id, displayName, workspaceId);
+      } else {
+        await upsertHeartbeat(company, user.id, displayName);
+      }
       // Opportunistically prune stale presence rows (cheap, indexed query)
       await removeStalePresence();
     } else {
