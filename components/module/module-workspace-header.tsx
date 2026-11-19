@@ -110,7 +110,7 @@ export function ModuleWorkspaceHeader({
                 />
               </div>
 
-              {module !== "bugs" && <QaCopilotButton />}
+              {module !== "bugs" && module !== "work-logs" && <QaCopilotButton />}
 
               {module === "test-sessions" && (
                 <>
@@ -134,7 +134,7 @@ export function ModuleWorkspaceHeader({
                 </>
               )}
 
-              {module === "bugs" ? (
+              {module === "bugs" || module === "work-logs" ? (
                 <ModuleMoreActionsMenu
                   module={module}
                   canAdd={canAdd}

@@ -18,6 +18,7 @@ import { WorkLogQuickModal } from "./work-log-quick-modal";
 import { WorkLogTimesheetAuditModal } from "./work-log-timesheet-audit-modal";
 import { WorkLogFillGapModal } from "./work-log-fill-gap-modal";
 import { WorkLogPullActivityModal } from "./work-log-pull-activity-modal";
+import { WorkLogToolsMenu } from "./work-log-tools-menu";
 import { getSicmundusAuthPayload } from "@/lib/sicmundus-client";
 
 interface WorkLogSuggestion {
@@ -179,7 +180,7 @@ export function WorkLogAiActions() {
         {todayMinutes !== null && (
           <div
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition",
+              "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition shrink-0 shadow-xs",
               isTodayTargetMet
                 ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                 : "border-amber-200 bg-amber-50 text-amber-800"
@@ -188,17 +189,17 @@ export function WorkLogAiActions() {
           >
             {isTodayTargetMet ? (
               <>
-                <CheckCircle size={14} weight="bold" className="text-emerald-600" />
+                <CheckCircle size={14} weight="bold" className="text-emerald-600 shrink-0" />
                 <span>Today: <strong>{todayHoursFormatted}h</strong> (Min 8h ✓)</span>
               </>
             ) : (
               <>
-                <WarningCircle size={14} weight="bold" className="text-amber-600" />
-                <span>Today: <strong>{todayHoursFormatted}h</strong> / 8h min</span>
+                <WarningCircle size={14} weight="bold" className="text-amber-600 shrink-0" />
+                <span>Today: <strong>{todayHoursFormatted}h</strong> / 8h</span>
                 <button
                   type="button"
                   onClick={() => setIsFillGapOpen(true)}
-                  className="ml-1 rounded bg-amber-600 hover:bg-amber-700 text-white px-1.5 py-0.5 text-[10px] font-bold transition"
+                  className="ml-1 rounded bg-amber-600 hover:bg-amber-700 text-white px-1.5 py-0.5 text-[10px] font-bold transition cursor-pointer"
                   title="Fill remaining work hours to meet 8h minimum"
                 >
                   +{todayRemainingHours}h
@@ -208,70 +209,27 @@ export function WorkLogAiActions() {
           </div>
         )}
 
-        {/* Active AI Model Pill */}
-        {activeModel && (
-          <span className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200/80 bg-blue-50 px-2.5 text-xs font-semibold text-blue-700">
-            <Sparkle size={12} weight="bold" className="text-blue-600" />
-            <span>{activeModel}</span>
-          </span>
-        )}
-
-        {/* Quick Log AI (1 Sentence) */}
+        {/* Quick Log AI */}
         <button
           type="button"
           onClick={() => setIsQuickLogOpen(true)}
           title="Quick natural language work log entry"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-bold text-blue-700 hover:bg-blue-100 transition active:scale-95"
+          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50/80 px-2.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-xs cursor-pointer shrink-0"
         >
-          <Sparkle size={14} weight="bold" className="text-blue-600" />
-          Quick Log (1 Sentence)
+          <Sparkle size={13} weight="bold" className="text-blue-600 shrink-0" />
+          <span>Quick Log</span>
         </button>
 
-        {/* Timesheet Audit */}
-        <button
-          type="button"
-          onClick={() => setIsAuditOpen(true)}
-          title="Open monthly timesheet calendar audit to fill missing work logs"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition active:scale-95"
-        >
-          <CalendarCheck size={14} weight="bold" className="text-emerald-600" />
-          Audit Timesheet
-        </button>
-
-        {/* Pull Today's QA Activity */}
-        <button
-          type="button"
-          onClick={() => setIsPullOpen(true)}
-          title="Automatically pull today's verified bugs, test sessions, and standup notes"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 text-xs font-bold text-violet-700 hover:bg-violet-100 transition active:scale-95"
-        >
-          <Clock size={14} weight="bold" className="text-violet-600" />
-          Pull QA Activity
-        </button>
-
-        {/* Copy Standup */}
-        <button
-          type="button"
-          onClick={handleCopyStandup}
-          disabled={copying}
-          title="Copy today's work logs in Slack or Teams standup format"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 text-xs font-bold text-gray-700 hover:bg-gray-100 transition active:scale-95 disabled:opacity-50"
-        >
-          <ClipboardText size={14} weight="bold" className="text-gray-600" />
-          {copying ? "Copying..." : "Copy Standup"}
-        </button>
-
-        {/* Sync Sicmundus */}
-        <button
-          type="button"
-          onClick={handleSyncSicmundus}
-          disabled={syncingSicmundus}
-          title="Bi-directional work log sync with Sicmundus"
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition active:scale-95 disabled:opacity-50"
-        >
-          <ArrowsClockwise size={14} weight="bold" className={cn("text-indigo-600", syncingSicmundus && "animate-spin")} />
-          {syncingSicmundus ? "Syncing..." : "Sync Sicmundus"}
-        </button>
+        {/* Unified Tools Dropdown Menu */}
+        <WorkLogToolsMenu
+          onOpenPull={() => setIsPullOpen(true)}
+          onCopyStandup={handleCopyStandup}
+          onOpenAudit={() => setIsAuditOpen(true)}
+          onSyncSicmundus={handleSyncSicmundus}
+          copying={copying}
+          syncingSicmundus={syncingSicmundus}
+          activeModel={activeModel}
+        />
       </div>
 
       {/* Submodal 1: Quick Log (1 Sentence) */}
