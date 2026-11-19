@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     }
 
     const ai = body.ai || {};
-    const provider = (ai.provider || "9router").toLowerCase().trim();
+    const provider = (ai.provider || "google").toLowerCase().trim();
     const model = ai.model || DEFAULT_AI_MODELS[provider as SupportedProvider]?.[0] || "gemini-2.0-flash";
     const apiKey = ai.apiKey || "";
     const publicBaseUrl = ai.publicUrl || "";

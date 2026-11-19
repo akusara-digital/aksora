@@ -1,9 +1,11 @@
 /**
  * Universal AI service for Aksora.
- * Supports Google Gemini, Anthropic Claude, OpenAI, Groq, DeepSeek, and 9Router.
+ * Supports Google Gemini, Anthropic Claude, OpenAI, Groq, DeepSeek, and 9Router (Local/Public).
  * Designed for task formatting, QA generation, and intelligent assistant workflows.
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import {
   SUPPORTED_PROVIDERS,
   DEFAULT_AI_MODELS,
@@ -26,7 +28,6 @@ const PROVIDER_TIMEOUT_MS = 45_000;
 
 function normalizeProvider(provider: string): SupportedProvider {
   const p = (provider || "").toLowerCase().trim();
-  if (p === "9router") return "9router-public";
   if (SUPPORTED_PROVIDERS.includes(p as SupportedProvider)) {
     return p as SupportedProvider;
   }

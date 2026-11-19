@@ -101,7 +101,7 @@ export function modelConfig(model) {
   return {
     MIDSCENE_MODEL_NAME: model.modelName,
     MIDSCENE_MODEL_BASE_URL: model.baseUrl,
-    MIDSCENE_MODEL_API_KEY: model.apiKey || (model.provider === "9router" ? "9router-local-key" : ""),
+    MIDSCENE_MODEL_API_KEY: model.apiKey || "",
     MIDSCENE_MODEL_FAMILY: model.family,
   };
 }

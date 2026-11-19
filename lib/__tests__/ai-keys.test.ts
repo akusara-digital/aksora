@@ -86,8 +86,8 @@ describe("ai-keys - client credential vault", () => {
     setApiKey("google", "test-key");
     expect(isAiConfigured()).toBe(true);
 
-    // If active is 9router-public -> configured with public url
-    set9RouterPublicConfig({ url: "https://router.example.com", key: "" });
+    // If active is 9router-public with URL set -> configured
+    set9RouterPublicConfig({ url: "https://router.example.com/v1", key: "" });
     setActiveAiConfig("9router-public", "custom-model");
     expect(isAiConfigured()).toBe(true);
   });

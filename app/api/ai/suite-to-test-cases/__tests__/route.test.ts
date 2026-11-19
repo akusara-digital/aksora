@@ -9,7 +9,6 @@ vi.mock("@/lib/ai-service", () => ({
   callLLM: vi.fn(),
   DEFAULT_AI_MODELS: {
     google: ["gemini-2.0-flash"],
-    "9router": ["gemini-2.0-flash"],
   },
 }));
 
@@ -74,7 +73,7 @@ describe("Suite to Test Cases API (/api/ai/suite-to-test-cases)", () => {
           },
         ],
       }),
-      provider: "9router",
+      provider: "google",
       model: "gemini-2.0-flash",
       totalTokens: 250,
     });

@@ -153,7 +153,9 @@ export function AIProviderCard({
           {/* API Key field */}
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-700">
-              {isPublicRouter ? "Bearer Key (Optional)" : "API Key"}
+              {isPublicRouter
+                ? "Bearer Key (Optional)"
+                : "API Key"}
             </label>
             <div className="relative flex items-center">
               <input

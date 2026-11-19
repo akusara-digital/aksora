@@ -48,14 +48,6 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-
-      if (/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])/i.test(publicUrl)) {
-        return NextResponse.json(
-          { valid: false, message: "Localhost is not supported. Please use a public URL or Cloudflare Tunnel (e.g. https://your-tunnel.example.com/v1)." },
-          { status: 400 }
-        );
-      }
-
       const ssrfError = await validateOutboundUrlAsync(publicUrl);
       if (ssrfError) {
         return NextResponse.json(

@@ -10,7 +10,6 @@ vi.mock("@/lib/ai-service", () => ({
   callLLM: vi.fn(),
   DEFAULT_AI_MODELS: {
     google: ["gemini-2.0-flash"],
-    "9router": ["gemini-2.0-flash"],
   },
 }));
 
@@ -63,7 +62,7 @@ describe("QA AI Agent API (/api/ai/qa-agent)", () => {
           },
         ],
       }),
-      provider: "9router",
+      provider: "google",
       model: "gemini-2.0-flash",
     });
 
@@ -72,7 +71,7 @@ describe("QA AI Agent API (/api/ai/qa-agent)", () => {
       body: JSON.stringify({
         action: "generate_cases",
         payload: { story: "Login with valid credentials", featureName: "Auth" },
-        ai: { provider: "9router" },
+        ai: { provider: "google" },
       }),
     });
 
@@ -141,7 +140,7 @@ describe("QA AI Agent API (/api/ai/qa-agent)", () => {
         suspectedCause: "Touch event listener passive flag",
         suggestedSeverity: "Major",
       }),
-      provider: "9router",
+      provider: "google",
       model: "gemini-2.0-flash",
     });
 
@@ -171,7 +170,7 @@ describe("QA AI Agent API (/api/ai/qa-agent)", () => {
         typeCase: "regression",
         priority: "high",
       }),
-      provider: "9router",
+      provider: "google",
       model: "gemini-2.0-flash",
     });
 
@@ -199,7 +198,7 @@ describe("QA AI Agent API (/api/ai/qa-agent)", () => {
         executiveSummary: "All critical regression and functional test cases have succeeded.",
         keyRisks: ["Minor cosmetic bug on dark mode toggle"],
       }),
-      provider: "9router",
+      provider: "google",
       model: "gemini-2.0-flash",
     });
 

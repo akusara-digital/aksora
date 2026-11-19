@@ -6,7 +6,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/lib/ai-keys", () => ({
-  getActiveAiCredentials: () => ({ provider: "9router" }),
+  getActiveAiCredentials: () => ({ provider: "9router-public", publicUrl: "https://router.example.com" }),
   isAiConfigured: () => true,
 }));
 

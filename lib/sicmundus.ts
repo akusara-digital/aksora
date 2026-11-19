@@ -805,7 +805,7 @@ Return ONLY a valid JSON object in this exact structure with no extra text or ma
 }`;
 
   // 1. Attempt using user-provided AI settings (SnapTest style)
-  if (aiOpts?.ai_provider && (aiOpts.api_key || aiOpts.ai_provider === "9router" || aiOpts.nine_router_public_url)) {
+  if (aiOpts?.ai_provider && (aiOpts.api_key || aiOpts.nine_router_public_url)) {
     try {
       const { callLLM } = await import("./ai-service");
       const res = await callLLM({
@@ -968,7 +968,7 @@ Return ONLY a valid JSON array in this exact schema with no extra text or markdo
 ]`;
 
   // 1. Try AI via callLLM if options provided
-  if (aiOpts?.ai_provider && (aiOpts.api_key || aiOpts.ai_provider === "9router" || aiOpts.nine_router_public_url)) {
+  if (aiOpts?.ai_provider && (aiOpts.api_key || aiOpts.nine_router_public_url)) {
     try {
       const { callLLM } = await import("./ai-service");
       const res = await callLLM({

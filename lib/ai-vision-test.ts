@@ -99,7 +99,7 @@ Respond ONLY with valid JSON in this exact structure with no extra prose or mark
   const userPrompt = `Perform image-based test verification on this attached screenshot for the test case "${testCase.caseName}". Viewport: ${viewport}. Notes: ${additionalNotes || "None"}.`;
 
   // If no API key configured or in test mode, provide an intelligent deterministic fallback
-  if (!apiKey && provider !== "9router") {
+  if (!apiKey && provider !== "9router-public") {
     return {
       verdict: "Passed",
       confidence: 88,

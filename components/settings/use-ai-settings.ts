@@ -58,7 +58,7 @@ export function useAISettings() {
         const json = await res.json();
         const catalogModels = json?.data?.providers || DEFAULT_AI_MODELS;
 
-        let resolvedActive = activeCfg.provider === "9router" ? "9router-public" : activeCfg.provider;
+        let resolvedActive = activeCfg.provider === "9router" ? "" : activeCfg.provider;
         let resolvedModel = activeCfg.provider === "9router" ? "" : activeCfg.model;
 
         const activeHasKey =

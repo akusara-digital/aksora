@@ -42,7 +42,7 @@ export async function triageBug(
   ai: TriageAi,
   usage: { workspaceId: number | null; userId: number | null },
 ): Promise<TriageResult> {
-  const provider = (ai.provider || "9router").toLowerCase().trim();
+  const provider = (ai.provider || "google").toLowerCase().trim();
   const model = ai.model || DEFAULT_AI_MODELS[provider as SupportedProvider]?.[0] || "gemini-2.0-flash";
   const userPrompt = [
     `Title: ${bug.title}`,
