@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useEffect } from "react";
 import {
+  Briefcase,
   Bug,
   Checks,
   FolderSimple,
@@ -30,9 +31,22 @@ export type SidebarGroup = { title: string; items: SidebarItem[] };
 export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
   return [
     {
-      title: "",
+      title: t.mySpace || "MY SPACE",
       items: [
-        { href: "/dashboard", label: t.dashboard || "Dashboard", icon: SquaresFour },
+        { href: "/my-work", label: t.myWork || "My Work", icon: Briefcase },
+      ],
+    },
+    {
+      title: t.groupWorkItems || t.groupWorkAndDefects || "Work Items",
+      items: [
+        { href: "/tasks", label: t.tasks || t.tasksAndSprints || "Tasks", icon: Kanban },
+        { href: "/bugs", label: t.bugs || t.bugsAndIssues || "Bugs", icon: Bug },
+        { href: "/work-logs", label: t.dailyWork || t.workLog || "Daily Work", icon: ClockCountdown },
+      ],
+    },
+    {
+      title: t.projects || "Projects",
+      items: [
         { href: "/projects", label: t.projects || "Projects", icon: FolderSimple },
       ],
     },
@@ -44,16 +58,9 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
       ],
     },
     {
-      title: t.groupWorkAndDefects || t.groupWorkTracking || "Work & Defects",
-      items: [
-        { href: "/tasks", label: t.tasks || t.tasksAndSprints || "Tasks", icon: Kanban },
-        { href: "/bugs", label: t.bugs || t.bugsAndIssues || "Bugs", icon: Bug },
-      ],
-    },
-    {
       title: t.groupReportsAnalytics || t.groupReports || "Reports",
       items: [
-        { href: "/reports", label: t.reports || "Reports", icon: ChartLineUp },
+        { href: "/weekly-report", label: t.weeklyReport || t.report || "Weekly Report", icon: ChartLineUp },
       ],
     },
   ];
@@ -61,7 +68,7 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
 
 export function getFooterItems(t: Dictionary["sidebar"]): SidebarItem[] {
   return [
-    { href: "/work-logs", label: t.notesAndVault || t.notes || "Notes & Vault", icon: NotePencil },
+    { href: "/notes", label: t.notesAndVault || t.notes || "Notes & Vault", icon: NotePencil },
     { href: "/settings", label: t.settings || "Settings", icon: Gear },
   ];
 }
@@ -71,6 +78,7 @@ export function getFooterItems(t: Dictionary["sidebar"]): SidebarItem[] {
 const FULL_ROLE_MENU = [
   "/",
   "/dashboard",
+  "/my-work",
   "/projects",
   "/test-cases",
   "/test-execution",
@@ -78,6 +86,7 @@ const FULL_ROLE_MENU = [
   "/bugs",
   "/work-logs",
   "/reports",
+  "/weekly-report",
   "/notes",
   "/settings",
 ];
@@ -85,11 +94,13 @@ const FULL_ROLE_MENU = [
 const DEV_ROLE_MENU = [
   "/",
   "/dashboard",
+  "/my-work",
   "/projects",
   "/tasks",
   "/bugs",
   "/work-logs",
   "/reports",
+  "/weekly-report",
   "/notes",
   "/settings",
 ];
@@ -110,6 +121,9 @@ function canSeeHref(role: string, href: string) {
   if (allowed.includes(href)) return true;
   if (href === "/reports" || href === "/weekly-report") {
     return allowed.some((r) => r.startsWith("/reports") || r === "/weekly-report" || r === "/deployments");
+  }
+  if (href === "/my-work" || href === "/dashboard") {
+    return allowed.includes("/my-work") || allowed.includes("/dashboard");
   }
   if (href === "/tasks") {
     return allowed.includes("/tasks") || allowed.includes("/gantt");
@@ -164,9 +178,13 @@ export function SidebarNavItem({
     pathname.startsWith("/recordings");
   const isProjectDetailRoute = pathname.startsWith("/test-plans/projects/");
 
-  const isDashboardGroup =
-    item.href === "/dashboard" &&
-    (pathname === "/dashboard" || pathname.startsWith("/my-work"));
+  const isMyWorkGroup =
+    (item.href === "/my-work" || item.href === "/dashboard") &&
+    (pathname === "/my-work" ||
+      pathname.startsWith("/my-work/") ||
+      pathname === "/dashboard" ||
+      pathname.startsWith("/dashboard/") ||
+      pathname === "/");
 
   const isTestCasesGroup =
     item.href === "/test-cases" &&
@@ -184,17 +202,22 @@ export function SidebarNavItem({
       pathname.startsWith("/gantt"));
 
   const isReportsGroup =
-    item.href === "/reports" &&
+    (item.href === "/reports" || item.href === "/weekly-report") &&
     (pathname === "/reports" ||
       pathname.startsWith("/reports/") ||
-      pathname.startsWith("/weekly-report") ||
+      pathname === "/weekly-report" ||
+      pathname.startsWith("/weekly-report/") ||
       pathname.startsWith("/deployments"));
 
+  const isWorkLogsGroup =
+    item.href === "/work-logs" &&
+    (pathname === "/work-logs" ||
+      pathname.startsWith("/work-logs/"));
+
   const isNotesGroup =
-    (item.href === "/work-logs" || item.href === "/notes") &&
+    item.href === "/notes" &&
     (pathname === "/notes" ||
       pathname.startsWith("/notes/") ||
-      pathname.startsWith("/work-logs") ||
       pathname.startsWith("/meeting-notes") ||
       pathname.startsWith("/vault"));
 
@@ -207,11 +230,12 @@ export function SidebarNavItem({
 
   const active =
     pathname === item.href ||
-    isDashboardGroup ||
+    isMyWorkGroup ||
     isTestCasesGroup ||
     isTestExecutionGroup ||
     isTasksGroup ||
     isReportsGroup ||
+    isWorkLogsGroup ||
     isNotesGroup ||
     isSettingsGroup ||
     isProjectsGroup ||
@@ -220,8 +244,10 @@ export function SidebarNavItem({
       item.href !== "/test-execution" &&
       item.href !== "/tasks" &&
       item.href !== "/reports" &&
+      item.href !== "/weekly-report" &&
       item.href !== "/notes" &&
       item.href !== "/work-logs" &&
+      item.href !== "/my-work" &&
       pathname.startsWith(`${item.href}/`));
 
   useEffect(() => {

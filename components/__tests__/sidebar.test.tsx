@@ -82,22 +82,24 @@ describe("Sidebar", () => {
     expect(html).toMatch(/href="\/test-execution"[^>]*bg-sky-50[\s\S]*?Test Sessions/);
     expect(html).not.toMatch(/href="\/test-suites"[^>]*bg-sky-50/);
     // Footer utility items render in the sidebar
-    expect(html).toContain('href="/work-logs"');
+    expect(html).toContain('href="/notes"');
     expect(html).toContain('href="/settings"');
   });
 
-  it("organizes main nav into 4 balanced groups (8 items) + compact footer utilities", () => {
+  it("organizes main nav into 5 balanced groups (8 items) + compact footer utilities", () => {
     const mockDict = {
-      dashboard: "Dashboard",
+      mySpace: "MY SPACE",
+      myWork: "My Work",
+      groupWorkItems: "Work Items",
+      tasks: "Tasks",
+      bugs: "Bugs",
+      dailyWork: "Daily Work",
       projects: "Projects",
       groupTestManagement: "Test Management",
       testCases: "Test Cases",
       testRuns: "Test Runs",
-      groupWorkAndDefects: "Work & Defects",
-      tasks: "Tasks",
-      bugs: "Bugs",
       groupReports: "Reports",
-      reports: "Reports",
+      weeklyReport: "Weekly Report",
       notesAndVault: "Notes & Vault",
       settings: "Settings",
     } as unknown as Parameters<typeof getGroups>[0];
@@ -105,32 +107,39 @@ describe("Sidebar", () => {
     const groups = getGroups(mockDict);
     const footerItems = getFooterItems(mockDict);
 
-    // Group 0: Main Overview (no header)
-    expect(groups[0].title).toBe("");
-    expect(groups[0].items.map((i) => i.href)).toEqual(["/dashboard", "/projects"]);
+    // Group 0: MY SPACE
+    expect(groups[0].title).toBe("MY SPACE");
+    expect(groups[0].items.map((i) => i.href)).toEqual(["/my-work"]);
 
-    // Group 1: Test Management (First-class QA pillar)
-    expect(groups[1].title).toBe("Test Management");
+    // Group 1: Work Items
+    expect(groups[1].title).toBe("Work Items");
     expect(groups[1].items.map((i) => i.href)).toEqual([
+      "/tasks",
+      "/bugs",
+      "/work-logs",
+    ]);
+
+    // Group 2: Projects
+    expect(groups[2].title).toBe("Projects");
+    expect(groups[2].items.map((i) => i.href)).toEqual([
+      "/projects",
+    ]);
+
+    // Group 3: Test Management
+    expect(groups[3].title).toBe("Test Management");
+    expect(groups[3].items.map((i) => i.href)).toEqual([
       "/test-cases",
       "/test-execution",
     ]);
 
-    // Group 2: Work & Defects
-    expect(groups[2].title).toBe("Work & Defects");
-    expect(groups[2].items.map((i) => i.href)).toEqual([
-      "/tasks",
-      "/bugs",
+    // Group 4: Reports
+    expect(groups[4].title).toBe("Reports");
+    expect(groups[4].items.map((i) => i.href)).toEqual([
+      "/weekly-report",
     ]);
 
-    // Group 3: Reports
-    expect(groups[3].title).toBe("Reports");
-    expect(groups[3].items.map((i) => i.href)).toEqual([
-      "/reports",
-    ]);
-
-    expect(groups).toHaveLength(4);
-    expect(footerItems.map((i) => i.href)).toEqual(["/work-logs", "/settings"]);
+    expect(groups).toHaveLength(5);
+    expect(footerItems.map((i) => i.href)).toEqual(["/notes", "/settings"]);
 
     // Ensure no duplicate routes across main nav + footer
     const allHrefs = [
@@ -138,7 +147,7 @@ describe("Sidebar", () => {
       ...footerItems.map((i) => i.href),
     ];
     expect(allHrefs.length).toBe(new Set(allHrefs).size);
-    expect(allHrefs.length).toBe(9);
+    expect(allHrefs.length).toBe(10);
   });
 
   it("exposes Settings footer utility to all roles (including non-admin QA/FE)", () => {
@@ -148,11 +157,11 @@ describe("Sidebar", () => {
     } as unknown as Parameters<typeof getFooterItems>[0];
 
     expect(filterFooterItems("qa", mockDict).map((i) => i.href)).toEqual([
-      "/work-logs",
+      "/notes",
       "/settings",
     ]);
     expect(filterFooterItems("fe", mockDict).map((i) => i.href)).toEqual([
-      "/work-logs",
+      "/notes",
       "/settings",
     ]);
   });

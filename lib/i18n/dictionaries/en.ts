@@ -16,6 +16,11 @@ const dict = {
   },
   sidebar: {
     dashboard: "Dashboard",
+    mySpace: "MY SPACE",
+    myWork: "My Work",
+    groupWorkItems: "Work Items",
+    dailyWork: "Daily Work",
+    weeklyReport: "Weekly Report",
     groupOverview: "Overview",
     groupTestManagement: "Test Management",
     projects: "Projects",

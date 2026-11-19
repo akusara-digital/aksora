@@ -18,6 +18,11 @@ const dict: Dictionary = {
   },
   sidebar: {
     dashboard: "Dashboard",
+    mySpace: "RUANG SAYA",
+    myWork: "Pekerjaan Saya",
+    groupWorkItems: "Item Pekerjaan",
+    dailyWork: "Kerja Harian",
+    weeklyReport: "Laporan Mingguan",
     groupOverview: "Ikhtisar",
     groupTestManagement: "Manajemen Pengujian",
     projects: "Proyek",
