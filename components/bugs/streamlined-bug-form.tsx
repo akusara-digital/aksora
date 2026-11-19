@@ -162,7 +162,10 @@ export function StreamlinedBugForm({
   const showProjectInBody = !selectedProject && projectOptions.length > 0;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 sm:p-5 text-xs text-slate-800">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col justify-between min-h-[480px] sm:min-h-[510px] p-4 sm:p-5 text-xs text-slate-800"
+    >
       <div className="space-y-3.5">
         {/* Row 0 (Fallback only if project not selected in header) */}
         {showProjectInBody && (
@@ -363,7 +366,7 @@ export function StreamlinedBugForm({
               type="checkbox"
               checked={createAnother}
               onChange={(e) => setCreateAnother(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 accent-blue-600 focus:ring-blue-500 cursor-pointer"
             />
             <span className="text-xs font-semibold text-slate-700">Create another</span>
           </label>

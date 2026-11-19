@@ -185,45 +185,46 @@ export function AiIssueAgentContent({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 sm:p-5 text-xs text-slate-800">
-      {/* Central Input Card Container */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs transition-all hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">
-        {/* Screenshot Attachment Preview */}
-        {imagePreview && (
-          <div className="relative mb-2.5 inline-block rounded-md border border-slate-200 bg-slate-50 p-1">
-            <img
-              src={imagePreview}
-              alt="Screenshot attachment"
-              className="h-20 w-auto rounded object-contain border border-slate-200"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                setImagePreview(null);
-                setImageBase64(null);
-              }}
-              className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-white shadow-xs hover:bg-rose-600 transition cursor-pointer"
-              title="Remove screenshot"
-            >
-              <X size={10} weight="bold" />
-            </button>
-          </div>
-        )}
+    <div className="flex flex-col justify-between min-h-[480px] sm:min-h-[510px] p-4 sm:p-5 text-xs text-slate-800">
+      <div className="flex flex-col gap-3">
+        {/* Central Input Card Container */}
+        <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs transition-all hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">
+          {/* Screenshot Attachment Preview */}
+          {imagePreview && (
+            <div className="relative mb-2.5 inline-block rounded-md border border-slate-200 bg-slate-50 p-1">
+              <img
+                src={imagePreview}
+                alt="Screenshot attachment"
+                className="h-20 w-auto rounded object-contain border border-slate-200"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setImagePreview(null);
+                  setImageBase64(null);
+                }}
+                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-white shadow-xs hover:bg-rose-600 transition cursor-pointer"
+                title="Remove screenshot"
+              >
+                <X size={10} weight="bold" />
+              </button>
+            </div>
+          )}
 
-        {/* Big Textarea */}
-        <textarea
-          ref={textareaRef}
-          value={inputNotes}
-          onChange={(e) => setInputNotes(e.target.value)}
-          onPaste={handlePaste}
-          rows={5}
-          placeholder="Describe the defect, paste stack trace / console log, or press Ctrl+V to drop a screenshot..."
-          className="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
-          disabled={loading || pending}
-        />
+          {/* Big Textarea */}
+          <textarea
+            ref={textareaRef}
+            value={inputNotes}
+            onChange={(e) => setInputNotes(e.target.value)}
+            onPaste={handlePaste}
+            rows={10}
+            placeholder="Describe the defect, paste stack trace / console log, or press Ctrl+V to drop a screenshot..."
+            className="w-full min-h-[220px] text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
+            disabled={loading || pending}
+          />
 
-        {/* Inner Action Bar */}
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2.5">
+          {/* Inner Action Bar */}
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2.5">
           {/* Left Action Buttons */}
           <div className="flex items-center gap-1.5">
             <input
@@ -316,6 +317,7 @@ export function AiIssueAgentContent({
 
         <span className="text-slate-400 font-medium">Auto-assigns Severity, Priority & Repro Steps</span>
       </div>
+      </div>
 
       {/* Footer Controls */}
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3.5">
@@ -325,7 +327,7 @@ export function AiIssueAgentContent({
             type="checkbox"
             checked={createAnother}
             onChange={(e) => setCreateAnother(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 accent-blue-600 focus:ring-blue-500 cursor-pointer"
           />
           <span className="text-xs font-semibold text-slate-700">Create another</span>
         </label>
