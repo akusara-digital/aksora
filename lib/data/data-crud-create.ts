@@ -31,6 +31,30 @@ function textOrEmpty(value: unknown) {
   return valueText === "undefined" || valueText === "null" ? "" : valueText;
 }
 
+async function resolveProjectId(
+  data: ModuleData,
+  workspaceId: number | null,
+  company: string,
+): Promise<number | null> {
+  if (typeof data.projectId === "number" && !isNaN(data.projectId) && data.projectId > 0) {
+    return data.projectId;
+  }
+  if (typeof data.projectId === "string" && data.projectId.trim() !== "") {
+    const parsed = parseInt(data.projectId, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  const projectName = textOrEmpty(data.project);
+  if (!projectName) return null;
+
+  const proj = await db.get<{ id: number }>(
+    workspaceId
+      ? `SELECT "id" FROM "Project" WHERE ("name" = ? OR "key" = ?) AND "deletedAt" IS NULL AND "workspaceId" = ? LIMIT 1`
+      : `SELECT "id" FROM "Project" WHERE ("name" = ? OR "key" = ?) AND "deletedAt" IS NULL${company ? ' AND "company" = ?' : ''} LIMIT 1`,
+    workspaceId ? [projectName, projectName, workspaceId] : (company ? [projectName, projectName, company] : [projectName, projectName]),
+  );
+  return proj?.id ?? null;
+}
+
 async function syncSearchIndex(module: ModuleKey, company: string, entityId: string | number, data: Record<string, unknown>, workspaceId?: number | null) {
   if (!shouldIndexModule(module)) return;
   try {
@@ -68,7 +92,8 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
           : `SELECT "id" FROM "Project" WHERE "name" = ? AND "deletedAt" IS NULL${company ? ' AND "company" = ?' : ''} LIMIT 1`,
         workspaceId ? [projectName, workspaceId] : (company ? [projectName, company] : [projectName]),
       );
-      if (!existingProj) {
+      let projectId: number | null = typeof data.projectId === "number" && data.projectId > 0 ? data.projectId : (existingProj?.id ?? null);
+      if (!existingProj && !projectId) {
         const words = projectName.replace(/[^a-zA-Z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
         let key = words.length >= 2 ? words.map((w) => w[0]).join("").slice(0, 4).toUpperCase() : (words[0]?.slice(0, 4).toUpperCase() || "PRJ");
         if (key.length < 2) key = "PRJ";
@@ -77,6 +102,13 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
            VALUES (?, ?, ?, ?, 'active', md5(random()::text || clock_timestamp()::text), ?)`,
           [projectName, key, company, workspaceId, randomUUID()],
         );
+        const createdProj = await db.get<{ id: number }>(
+          workspaceId
+            ? `SELECT "id" FROM "Project" WHERE "name" = ? AND "workspaceId" = ? ORDER BY "id" DESC LIMIT 1`
+            : `SELECT "id" FROM "Project" WHERE "name" = ?${company ? ' AND "company" = ?' : ''} ORDER BY "id" DESC LIMIT 1`,
+          workspaceId ? [projectName, workspaceId] : (company ? [projectName, company] : [projectName]),
+        );
+        projectId = createdProj?.id ?? null;
       }
 
       const publicToken = textOrEmpty(data.publicToken) || makePublicToken();
@@ -92,9 +124,9 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
         assignee: text(data.assignee),
       });
       const res = await runInsert(
-        `INSERT INTO "TestPlan" ("company", "workspaceId", "publicToken", "title", "project", "sprint", "scope", "status", "startDate", "endDate", "notes", "assignee", "uuid")
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [company, workspaceId, publicToken, data.title, projectName, data.sprint ?? "", data.scope ?? "", data.status, data.startDate ?? "", data.endDate ?? "", notes, data.assignee ?? "", randomUUID()]
+        `INSERT INTO "TestPlan" ("company", "workspaceId", "projectId", "publicToken", "title", "project", "sprint", "scope", "status", "startDate", "endDate", "notes", "assignee", "uuid")
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [company, workspaceId, projectId, publicToken, data.title, projectName, data.sprint ?? "", data.scope ?? "", data.status, data.startDate ?? "", data.endDate ?? "", notes, data.assignee ?? "", randomUUID()]
       );
       await logActivity(company, "TestPlan", String(data.title), "Created", `New test plan: ${data.title}`, actor, publicToken, workspaceId);
       invalidateDashboardCache(company);
@@ -133,12 +165,13 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
     }
     case "bugs": {
       const publicToken = makePublicToken();
+      const projectId = await resolveProjectId(data, workspaceId, company);
       const lastDevRes = await db.get<{ suggestedDev?: string }>('SELECT "suggestedDev" FROM "Bug" WHERE "module" = ? AND "company" = ? ORDER BY "id" DESC LIMIT 1', [data.module, company]);
       const suggestedDev = textOrEmpty(data.suggestedDev) || lastDevRes?.suggestedDev || "";
       const res = await runInsert(
-        `INSERT INTO "Bug" ("company", "workspaceId", "publicToken", "project", "module", "bugType", "title", "preconditions", "stepsToReproduce", "expectedResult", "actualResult", "severity", "priority", "status", "evidence", "relatedItems", "suggestedDev", "uuid")
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [company, workspaceId, publicToken, data.project, data.module ?? "", data.bugType, data.title, data.preconditions ?? "", data.stepsToReproduce, data.expectedResult, data.actualResult, data.severity, data.priority, data.status, data.evidence ?? "", data.relatedItems ?? "", suggestedDev, randomUUID()],
+        `INSERT INTO "Bug" ("company", "workspaceId", "projectId", "publicToken", "project", "module", "bugType", "title", "preconditions", "stepsToReproduce", "expectedResult", "actualResult", "severity", "priority", "status", "evidence", "relatedItems", "suggestedDev", "uuid")
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [company, workspaceId, projectId, publicToken, data.project, data.module ?? "", data.bugType, data.title, data.preconditions ?? "", data.stepsToReproduce, data.expectedResult, data.actualResult, data.severity, data.priority, data.status, data.evidence ?? "", data.relatedItems ?? "", suggestedDev, randomUUID()],
       );
       await logActivity(company, "Bug", String(data.title), "Created", `New bug recorded: ${data.title}`, actor, publicToken, workspaceId);
       void broadcastCriticalBug({
@@ -159,10 +192,11 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
     }
     case "tasks": {
       const publicToken = makePublicToken();
+      const projectId = await resolveProjectId(data, workspaceId, company);
       const res = await runInsert(
-        `INSERT INTO "Task" ("company", "workspaceId", "publicToken", "title", "project", "relatedFeature", "category", "status", "priority", "durationMinutes", "startDate", "endDate", "description", "acceptanceCriteria", "notes", "evidence", "relatedItems", "assignee", "uuid")
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [company, workspaceId, publicToken, data.title, data.project, data.relatedFeature ?? "", data.category, data.status, data.priority, data.durationMinutes ? Number(data.durationMinutes) || 0 : 0, data.startDate ?? "", data.endDate ?? "", data.description, data.acceptanceCriteria ?? "", data.notes ?? "", data.evidence ?? "", data.relatedItems ?? "", data.assignee ?? "", randomUUID()],
+        `INSERT INTO "Task" ("company", "workspaceId", "projectId", "publicToken", "title", "project", "relatedFeature", "category", "status", "priority", "durationMinutes", "startDate", "endDate", "description", "acceptanceCriteria", "notes", "evidence", "relatedItems", "assignee", "uuid")
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [company, workspaceId, projectId, publicToken, data.title, data.project, data.relatedFeature ?? "", data.category, data.status, data.priority, data.durationMinutes ? Number(data.durationMinutes) || 0 : 0, data.startDate ?? "", data.endDate ?? "", data.description, data.acceptanceCriteria ?? "", data.notes ?? "", data.evidence ?? "", data.relatedItems ?? "", data.assignee ?? "", randomUUID()],
       );
       await logActivity(company, "Task", String(data.title), "Created", `New task assigned: ${data.title}`, actor, publicToken, workspaceId);
       invalidateDashboardCache(company);
@@ -174,10 +208,11 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
     }
     case "test-sessions": {
       const publicToken = makePublicToken();
+      const projectId = await resolveProjectId(data, workspaceId, company);
       const res = await runInsert(
-        `INSERT INTO "TestSession" ("company", "workspaceId", "publicToken", "date", "project", "sprint", "tester", "scope", "totalCases", "passed", "failed", "blocked", "result", "notes", "evidence", "uuid")
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [company, workspaceId, publicToken, data.date, data.project, data.sprint ?? "", data.tester, data.scope ?? "", data.totalCases ?? "", data.passed ?? "", data.failed ?? "", data.blocked ?? "", data.result, data.notes ?? "", data.evidence ?? "", randomUUID()]
+        `INSERT INTO "TestSession" ("company", "workspaceId", "projectId", "publicToken", "date", "project", "sprint", "tester", "scope", "totalCases", "passed", "failed", "blocked", "result", "notes", "evidence", "uuid")
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [company, workspaceId, projectId, publicToken, data.date, data.project, data.sprint ?? "", data.tester, data.scope ?? "", data.totalCases ?? "", data.passed ?? "", data.failed ?? "", data.blocked ?? "", data.result, data.notes ?? "", data.evidence ?? "", randomUUID()]
       );
       await logActivity(company, "Session", text(data.date), "Executed", `Test execution session by ${data.tester} (${data.result})`, actor, publicToken, workspaceId);
       const created = await db.get<{ id?: number | string }>(`SELECT "id" FROM "TestSession" WHERE "company" = ? AND "publicToken" = ? ORDER BY "id" DESC LIMIT 1`, [company, publicToken]);
@@ -188,10 +223,18 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
     }
     case "test-suites": {
       const publicToken = textOrEmpty(data.publicToken) || makePublicToken();
+      let projectId = typeof data.projectId === "number" && data.projectId > 0 ? data.projectId : null;
+      if (!projectId && data.testPlanId) {
+        const tp = await db.get<{ projectId?: number }>(
+          `SELECT "projectId" FROM "TestPlan" WHERE ("id"::text = ? OR "publicToken" = ? OR "uuid" = ?) LIMIT 1`,
+          [String(data.testPlanId), String(data.testPlanId), String(data.testPlanId)],
+        );
+        projectId = tp?.projectId ?? null;
+      }
       const res = await runInsert(
-        `INSERT INTO "TestSuite" ("company", "workspaceId", "publicToken", "testPlanId", "title", "assignee", "status", "notes", "uuid")
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [company, workspaceId, publicToken, data.testPlanId ?? "", data.title, data.assignee ?? "", data.status, data.notes ?? "", randomUUID()]
+        `INSERT INTO "TestSuite" ("company", "workspaceId", "projectId", "publicToken", "testPlanId", "title", "assignee", "status", "notes", "uuid")
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [company, workspaceId, projectId, publicToken, data.testPlanId ?? "", data.title, data.assignee ?? "", data.status, data.notes ?? "", randomUUID()]
       );
       await logActivity(company, "TestSuite", String(data.title), "Created", `Suite created: ${data.title}`, actor, publicToken, workspaceId);
       invalidateDashboardCache(company);
@@ -247,10 +290,11 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
         throw new Error("A sprint with this name already exists. Please use a different name.");
       }
       const publicToken = makePublicToken();
+      const projectId = typeof data.projectId === "number" && data.projectId > 0 ? data.projectId : null;
       const res = await runInsert(
-        `INSERT INTO "Sprint" ("company", "workspaceId", "publicToken", "name", "startDate", "endDate", "status", "goal", "uuid")
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [company, workspaceId, publicToken, data.name, data.startDate ?? "", data.endDate ?? "", data.status, data.goal ?? "", randomUUID()]
+        `INSERT INTO "Sprint" ("company", "workspaceId", "projectId", "publicToken", "name", "startDate", "endDate", "status", "goal", "uuid")
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [company, workspaceId, projectId, publicToken, data.name, data.startDate ?? "", data.endDate ?? "", data.status, data.goal ?? "", randomUUID()]
       );
       await logActivity(company, "Sprint", String(data.name), "Created", `Sprint ${data.name} started`, actor, publicToken, workspaceId);
       invalidateDashboardCache(company);
@@ -295,6 +339,7 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
     }
     case "work-logs": {
       const publicToken = makePublicToken();
+      const projectId = await resolveProjectId(data, workspaceId, company);
       const assignee = data.assignee || actor;
       const rawDur = data.durationMinutes;
       let duration = 0;
@@ -313,9 +358,9 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
         endTime = addMinutesToTime(startTime, duration) ?? "";
       }
       const res = await runInsert(
-        `INSERT INTO "WorkLog" ("company", "workspaceId", "publicToken", "date", "startTime", "endTime", "durationMinutes", "category", "project", "description", "output", "notes", "assignee", "uuid")
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [company, workspaceId, publicToken, data.date, startTime, endTime, duration, data.category, data.project, data.description, data.output ?? "", data.notes ?? "", assignee, randomUUID()]
+        `INSERT INTO "WorkLog" ("company", "workspaceId", "projectId", "publicToken", "date", "startTime", "endTime", "durationMinutes", "category", "project", "description", "output", "notes", "assignee", "uuid")
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [company, workspaceId, projectId, publicToken, data.date, startTime, endTime, duration, data.category, data.project, data.description, data.output ?? "", data.notes ?? "", assignee, randomUUID()]
       );
       await logActivity(company, "WorkLog", String(data.date), "Created", `Work log: ${startTime || "Direct"}-${endTime || `${duration}m`} ${data.category} (${data.project})`, actor, publicToken, workspaceId);
       invalidateDashboardCache(company);

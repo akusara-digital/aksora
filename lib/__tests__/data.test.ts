@@ -366,7 +366,8 @@ describe("module data access", () => {
     expect(mocks.db.run.mock.calls[0][0]).toContain('INSERT INTO "TestPlan"');
     expect(mocks.db.run.mock.calls[0][1][0]).toBe("acme");
     expect(mocks.db.run.mock.calls[0][1][1]).toBeNull();
-    expect(mocks.db.run.mock.calls[0][1][2]).toBe("plan-token");
+    expect(mocks.db.run.mock.calls[0][1][2]).toBe(99);
+    expect(mocks.db.run.mock.calls[0][1][3]).toBe("plan-token");
     expect(mocks.db.run.mock.calls.some(([sql]) => sql.includes('UPDATE "Sprint" SET'))).toBe(true);
     expect(mocks.db.run.mock.calls.some(([, params]) => params?.[2] === "TestPlan" && params?.[3] === "Plan A" && params?.[4] === "Created")).toBe(true);
   });
@@ -536,7 +537,9 @@ describe("module data access", () => {
   });
 
   it("falls back to suggested developer from the latest bug", async () => {
-    mocks.db.get.mockResolvedValueOnce({ suggestedDev: "Tomo" });
+    mocks.db.get
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce({ suggestedDev: "Tomo" });
 
     await createModuleRecord("bugs", {
       project: "QA Hub",
@@ -559,8 +562,8 @@ describe("module data access", () => {
       ["Login", "acme"],
     );
     expect(mocks.db.run.mock.calls[0][0]).toContain('INSERT INTO "Bug"');
-    // suggestedDev is the last insert param (index 16: company, workspaceId, publicToken,...relatedItems,suggestedDev)
-    expect(mocks.db.run.mock.calls[0][1][16]).toBe("Tomo");
+    // suggestedDev is param index 17: company, workspaceId, projectId, publicToken, project, module, bugType, title, preconditions, stepsToReproduce, expectedResult, actualResult, severity, priority, status, evidence, relatedItems, suggestedDev
+    expect(mocks.db.run.mock.calls[0][1][17]).toBe("Tomo");
   });
 });
 

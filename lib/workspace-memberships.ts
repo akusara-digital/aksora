@@ -51,14 +51,41 @@ export async function ensureWorkspace(name: string, createdByUserId?: number | n
   );
 }
 
-export function isOwnerUser(email: string | null | undefined): boolean {
-  const norm = String(email ?? "").trim().toLowerCase();
-  if (!norm) return false;
-  return (
-    norm === "wahyu.priyono@magnusdigital.co.id" ||
-    norm === "wahyu@akusara.dev" ||
-    norm.startsWith("wahyu.priyono@")
-  );
+/**
+ * @deprecated Prefer checking user.role or explicit workspace ownership.
+ * Checks whether the user role represents an owner or administrator.
+ */
+export function isOwnerUser(
+  userOrRole?: { role?: string | null; email?: string | null } | string | null,
+  role?: string | null,
+): boolean {
+  if (!userOrRole && !role) return false;
+
+  let r = "";
+  if (typeof userOrRole === "object" && userOrRole !== null) {
+    r = String(userOrRole.role ?? "").trim().toLowerCase();
+  } else if (role) {
+    r = String(role).trim().toLowerCase();
+  } else if (typeof userOrRole === "string") {
+    r = userOrRole.trim().toLowerCase();
+  }
+
+  const ownerRoles = new Set(["owner", "superadmin", "admin"]);
+  return ownerRoles.has(r);
+}
+
+export async function isUserWorkspaceOwner(userId: number, workspaceId?: number | null): Promise<boolean> {
+  if (!userId) return false;
+  const row = workspaceId
+    ? await db.get<{ id: number }>(
+        'SELECT "id" FROM "Workspace" WHERE "id" = CAST(? AS INTEGER) AND "createdByUserId" = CAST(? AS INTEGER) LIMIT 1',
+        [workspaceId, userId],
+      )
+    : await db.get<{ id: number }>(
+        'SELECT "id" FROM "Workspace" WHERE "createdByUserId" = CAST(? AS INTEGER) LIMIT 1',
+        [userId],
+      );
+  return Boolean(row);
 }
 
 export async function ensurePersonalWorkspaceForUser(
@@ -69,31 +96,7 @@ export async function ensurePersonalWorkspaceForUser(
 ): Promise<{ id: number; name: string; slug: string; uuid?: string } | null> {
   const { randomUUID } = await import("crypto");
 
-  // 1. If this is primary owner Wahyu, preserve existing workspaces (VanApp / Akusara Project)
-  if (isOwnerUser(userEmail) || userId === 9) {
-    const wahyuWs = await db.get<{ id: number; name: string; slug: string; uuid?: string }>(
-      `SELECT w."id", w."name", w."slug", w."uuid"
-       FROM "Workspace" w
-       INNER JOIN "WorkspaceMembership" wm ON wm."workspaceId" = w."id"
-       WHERE wm."userId" = CAST(? AS INTEGER)
-       ORDER BY (CASE WHEN w."id" = 15 THEN 0 WHEN w."id" = 1 THEN 1 ELSE 2 END) ASC
-       LIMIT 1`,
-      [userId],
-    );
-    if (wahyuWs) {
-      if (!wahyuWs.uuid) {
-        wahyuWs.uuid = randomUUID();
-        await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [wahyuWs.uuid, wahyuWs.id]);
-      }
-      await db.run(
-        'UPDATE "User" SET "workspaceId" = CAST(? AS INTEGER), "activeWorkspaceId" = CAST(? AS INTEGER), "company" = ? WHERE "id" = CAST(? AS INTEGER)',
-        [wahyuWs.id, wahyuWs.id, wahyuWs.name, userId],
-      );
-      return wahyuWs;
-    }
-  }
-
-  // 2. Check if this user already created/owns a dedicated workspace
+  // 1. Check if this user already created/owns a dedicated workspace
   const ownedWs = await db.get<{ id: number; name: string; slug: string; uuid?: string }>(
     `SELECT w."id", w."name", w."slug", w."uuid"
      FROM "Workspace" w
@@ -109,13 +112,14 @@ export async function ensurePersonalWorkspaceForUser(
       await db.run('UPDATE "Workspace" SET "uuid" = ? WHERE "id" = CAST(? AS INTEGER)', [ownedWs.uuid, ownedWs.id]);
     }
     await ensureWorkspaceMembership(ownedWs.id, userId, "admin");
-    // Remove from default workspace 1 if accidentally joined
-    try {
-      await db.run(
-        'DELETE FROM "WorkspaceMembership" WHERE "workspaceId" = 1 AND "userId" = CAST(? AS INTEGER)',
-        [userId],
-      );
-    } catch { /* ignore non-critical */ }
+    if (ownedWs.id !== 1) {
+      try {
+        await db.run(
+          'DELETE FROM "WorkspaceMembership" WHERE "workspaceId" = 1 AND "userId" = CAST(? AS INTEGER)',
+          [userId],
+        );
+      } catch { /* ignore non-critical */ }
+    }
     await db.run(
       'UPDATE "User" SET "workspaceId" = CAST(? AS INTEGER), "activeWorkspaceId" = CAST(? AS INTEGER), "company" = ? WHERE "id" = CAST(? AS INTEGER)',
       [ownedWs.id, ownedWs.id, ownedWs.name, userId],
@@ -123,12 +127,12 @@ export async function ensurePersonalWorkspaceForUser(
     return ownedWs;
   }
 
-  // 2b. Check if this user already has active membership in another workspace (not workspace 1)
+  // 2. Check if this user already has active membership in another workspace
   const joinedWs = await db.get<{ id: number; name: string; slug: string; uuid?: string }>(
     `SELECT w."id", w."name", w."slug", w."uuid"
      FROM "Workspace" w
      INNER JOIN "WorkspaceMembership" wm ON wm."workspaceId" = w."id"
-     WHERE wm."userId" = CAST(? AS INTEGER) AND w."id" != 1
+     WHERE wm."userId" = CAST(? AS INTEGER)
      ORDER BY w."id" ASC
      LIMIT 1`,
     [userId],

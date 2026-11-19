@@ -446,11 +446,9 @@ async function getCurrentUserUncached() {
           }
         } catch { /* non-critical */ }
       }
-      const { isOwnerUser, ensurePersonalWorkspaceForUser } = await import("./workspace-memberships");
-      const isOwner = isOwnerUser(decoded.email) || validUserId === 9;
+      const { ensurePersonalWorkspaceForUser } = await import("./workspace-memberships");
 
-      // Non-owners must NEVER accidentally default to shared Workspace 1
-      if (!isOwner && (activeWorkspaceId === 1 || !activeWorkspaceId)) {
+      if (!activeWorkspaceId) {
         try {
           const personalWs = await ensurePersonalWorkspaceForUser(validUserId, decoded.name, decoded.email, effectiveCompany);
           if (personalWs) {
@@ -458,12 +456,6 @@ async function getCurrentUserUncached() {
             effectiveCompany = personalWs.name;
           }
         } catch { /* non-critical */ }
-      }
-      if (!activeWorkspaceId && isOwner) {
-        activeWorkspaceId = 1;
-      }
-      if (!effectiveCompany && isOwner) {
-        effectiveCompany = "Akusara Project";
       }
 
       let workspaceUuid = decoded.workspaceUuid || "";
@@ -509,10 +501,9 @@ async function getCurrentUserUncached() {
     let fallbackActiveWs = user.activeWorkspaceId;
     let fallbackCompany = user.company;
     let fallbackWsUuid = user.workspaceUuid || "";
-    const { isOwnerUser, ensurePersonalWorkspaceForUser } = await import("./workspace-memberships");
-    const isOwner = isOwnerUser(user.email) || user.id === 9;
+    const { ensurePersonalWorkspaceForUser } = await import("./workspace-memberships");
 
-    if (!isOwner && (fallbackActiveWs === 1 || !fallbackActiveWs)) {
+    if (!fallbackActiveWs) {
       try {
         const ws = await ensurePersonalWorkspaceForUser(user.id, user.name, user.email, user.company);
         if (ws) {
@@ -522,9 +513,6 @@ async function getCurrentUserUncached() {
         }
       } catch {}
     }
-
-    if (!fallbackActiveWs && isOwner) fallbackActiveWs = 1;
-    if (!fallbackCompany && isOwner) fallbackCompany = "Akusara Project";
 
     if (!fallbackWsUuid && fallbackActiveWs) {
       try {

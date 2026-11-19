@@ -28,16 +28,20 @@ beforeEach(() => {
 
 describe("workspace-memberships", () => {
   describe("isOwnerUser", () => {
-    it("identifies Wahyu as the primary owner", () => {
-      expect(isOwnerUser("wahyu.priyono@magnusdigital.co.id")).toBe(true);
-      expect(isOwnerUser("wahyu@akusara.dev")).toBe(true);
-      expect(isOwnerUser("wahyu.priyono@company.com")).toBe(true);
+    it("identifies owner, superadmin, and admin roles as owners", () => {
+      expect(isOwnerUser("owner")).toBe(true);
+      expect(isOwnerUser("superadmin")).toBe(true);
+      expect(isOwnerUser("admin")).toBe(true);
+      expect(isOwnerUser({ role: "owner" })).toBe(true);
+      expect(isOwnerUser({ role: "admin" })).toBe(true);
     });
 
-    it("returns false for regular external users", () => {
+    it("returns false for regular roles and non-privileged users", () => {
+      expect(isOwnerUser("user")).toBe(false);
+      expect(isOwnerUser("qa")).toBe(false);
+      expect(isOwnerUser("viewer")).toBe(false);
       expect(isOwnerUser("alice@example.com")).toBe(false);
-      expect(isOwnerUser("hendra@akusara.dev")).toBe(false);
-      expect(isOwnerUser("bob@acme.org")).toBe(false);
+      expect(isOwnerUser({ role: "qa", email: "alice@example.com" })).toBe(false);
       expect(isOwnerUser("")).toBe(false);
       expect(isOwnerUser(null)).toBe(false);
     });
@@ -61,20 +65,22 @@ describe("workspace-memberships", () => {
   });
 
   describe("ensurePersonalWorkspaceForUser", () => {
-    it("preserves Wahyu's existing workspace without creating a new one", async () => {
-      const wahyuWs = { id: 15, name: "VanApp", slug: "vanapp", uuid: "vanapp-uuid" };
-      mocks.db.get.mockResolvedValueOnce(wahyuWs);
+    it("preserves existing owned workspace without creating a new one", async () => {
+      const ownedWs = { id: 15, name: "VanApp", slug: "vanapp", uuid: "vanapp-uuid" };
+      mocks.db.get
+        .mockResolvedValueOnce(ownedWs)
+        .mockResolvedValueOnce(undefined); // ensureWorkspaceMembership existing check
 
-      const result = await ensurePersonalWorkspaceForUser(9, "Wahyu Priyono", "wahyu.priyono@magnusdigital.co.id");
+      const result = await ensurePersonalWorkspaceForUser(9, "Alex Developer", "alex@company.com");
 
-      expect(result).toEqual(wahyuWs);
+      expect(result).toEqual(ownedWs);
       expect(mocks.db.run).toHaveBeenCalledWith(
         'UPDATE "User" SET "workspaceId" = CAST(? AS INTEGER), "activeWorkspaceId" = CAST(? AS INTEGER), "company" = ? WHERE "id" = CAST(? AS INTEGER)',
         [15, 15, "VanApp", 9],
       );
     });
 
-    it("creates an isolated personal workspace with UUID for non-Wahyu users", async () => {
+    it("creates an isolated personal workspace with UUID for new users", async () => {
       // 1. Check if user already owns a workspace -> none
       mocks.db.get
         .mockResolvedValueOnce(undefined) // ownedWs -> none
