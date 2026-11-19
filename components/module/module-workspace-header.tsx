@@ -11,6 +11,7 @@ import { QaCopilotButton } from "@/components/shared/qa-copilot-button";
 import { AiReleaseNotesButton } from "@/components/test-sessions/ai-release-notes-button";
 import { AiStandupDigestButton } from "@/components/dashboard/ai-standup-digest-button";
 import { WorkLogAiActions } from "@/components/work-logs/work-log-ai-actions";
+import { ModuleMoreActionsMenu } from "@/components/module/module-more-actions-menu";
 
 type FilterOption = {
   key: string;
@@ -109,7 +110,7 @@ export function ModuleWorkspaceHeader({
                 />
               </div>
 
-              <QaCopilotButton />
+              {module !== "bugs" && <QaCopilotButton />}
 
               {module === "test-sessions" && (
                 <>
@@ -118,67 +119,80 @@ export function ModuleWorkspaceHeader({
                 </>
               )}
 
-
               {module === "work-logs" && <WorkLogAiActions />}
 
               {canAdd && (
                 <>
-                  {module === "bugs" && <QuickBugButton />}
                   <button
                     type="button"
                     onClick={onToggleForm}
-                    className="inline-flex h-8 cursor-pointer items-center gap-1.5 bg-blue-600 px-3 text-[13px] font-medium text-white transition hover:bg-blue-700"
+                    className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
                   >
                     <Plus size={14} weight="bold" className="shrink-0" />
                     New {shortTitle.replace(/s$/i, "")}
                   </button>
                 </>
               )}
-              <a
-                href={`/api/export/${module}`}
-                title="Export Excel"
-                aria-label="Export Excel"
-                className="inline-flex h-8 w-8 items-center justify-center border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-blue-600"
-              >
-                <FileXls size={15} weight="bold" />
-              </a>
 
-              <a
-                href={`/api/export/${module}?format=pdf`}
-                title="Print / Export PDF"
-                aria-label="Print / Export PDF"
-                className="inline-flex h-8 w-8 items-center justify-center border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-blue-600"
-              >
-                <FilePdf size={15} weight="bold" />
-              </a>
-
-              {canAdd && (
-                <label
-                  title="Import Excel"
-                  aria-label="Import Excel"
-                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-blue-600"
-                >
-                  <UploadSimple size={15} weight="bold" />
-                  <input
-                    type="file"
-                    accept=".xlsx,.xls"
-                    className="hidden"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) onImportFile(file);
-                      event.target.value = "";
-                    }}
-                  />
-                </label>
-              )}
-
-              {allColumns && visibleColumnKeys && onToggleColumn && onResetColumns && (
-                <ColumnVisibilityToggle
+              {module === "bugs" ? (
+                <ModuleMoreActionsMenu
+                  module={module}
+                  canAdd={canAdd}
+                  onImportFile={onImportFile}
                   allColumns={allColumns}
-                  visibleKeys={visibleColumnKeys}
-                  onToggle={onToggleColumn}
-                  onReset={onResetColumns}
+                  visibleColumnKeys={visibleColumnKeys}
+                  onToggleColumn={onToggleColumn}
+                  onResetColumns={onResetColumns}
                 />
+              ) : (
+                <>
+                  <a
+                    href={`/api/export/${module}`}
+                    title="Export Excel"
+                    aria-label="Export Excel"
+                    className="inline-flex h-8 w-8 items-center justify-center border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-blue-600"
+                  >
+                    <FileXls size={15} weight="bold" />
+                  </a>
+
+                  <a
+                    href={`/api/export/${module}?format=pdf`}
+                    title="Print / Export PDF"
+                    aria-label="Print / Export PDF"
+                    className="inline-flex h-8 w-8 items-center justify-center border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-blue-600"
+                  >
+                    <FilePdf size={15} weight="bold" />
+                  </a>
+
+                  {canAdd && (
+                    <label
+                      title="Import Excel"
+                      aria-label="Import Excel"
+                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-blue-600"
+                    >
+                      <UploadSimple size={15} weight="bold" />
+                      <input
+                        type="file"
+                        accept=".xlsx,.xls"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (file) onImportFile(file);
+                          event.target.value = "";
+                        }}
+                      />
+                    </label>
+                  )}
+
+                  {allColumns && visibleColumnKeys && onToggleColumn && onResetColumns && (
+                    <ColumnVisibilityToggle
+                      allColumns={allColumns}
+                      visibleKeys={visibleColumnKeys}
+                      onToggle={onToggleColumn}
+                      onReset={onResetColumns}
+                    />
+                  )}
+                </>
               )}
 
               {topContent ? <div className="flex w-full basis-full flex-col items-end">{topContent}</div> : null}

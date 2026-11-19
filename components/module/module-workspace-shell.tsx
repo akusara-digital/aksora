@@ -42,6 +42,11 @@ const AiIssueAgentContent = dynamic(
   { ssr: false }
 );
 
+const StreamlinedBugForm = dynamic(
+  () => import("@/components/bugs/streamlined-bug-form").then((module) => module.StreamlinedBugForm),
+  { ssr: false }
+);
+
 type Row = TableRow;
 
 type WorkspaceConfig = {
@@ -240,46 +245,24 @@ export function ModuleWorkspaceShell({
  void attachments;
  void setAttachments;
  void setSprintDuplicate;
- const [bugCreateMode, setBugCreateMode] = useState<BugCreateMode>("manual");
+ const [bugCreateMode, setBugCreateMode] = useState<BugCreateMode>("ai");
+ const [manualBugDraft, setManualBugDraft] = useState<Record<string, unknown> | null>(null);
 
  const handleSwitchToManual = (draft: IssueAgentTicketDraft) => {
+   setManualBugDraft({
+     title: draft.title,
+     project: draft.project,
+     module: draft.module,
+     bugType: draft.bugType,
+     preconditions: draft.preconditions,
+     stepsToReproduce: draft.stepsToReproduce,
+     expectedResult: draft.expectedResult,
+     actualResult: draft.actualResult,
+     severity: draft.severity,
+     priority: draft.priority,
+     evidence: draft.evidence,
+   });
    setBugCreateMode("manual");
-   setSelectValues((prev) => ({
-     ...prev,
-     ...(draft.project ? { project: draft.project } : {}),
-     ...(draft.bugType ? { bugType: draft.bugType } : {}),
-     ...(draft.severity ? { severity: draft.severity } : {}),
-     ...(draft.priority ? { priority: draft.priority } : {}),
-     status: "open",
-   }));
-   setTimeout(() => {
-     const form = document.getElementById(`${module}-form`) as HTMLFormElement | null;
-     if (!form) return;
-     const setVal = (selector: string, val?: string) => {
-       if (!val) return;
-       const el = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector);
-       if (!el) return;
-       const valueSetter = Object.getOwnPropertyDescriptor(el, "value")?.set;
-       const prototype = Object.getPrototypeOf(el);
-       const prototypeValueSetter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
-       if (prototypeValueSetter && valueSetter !== prototypeValueSetter) {
-         prototypeValueSetter.call(el, val);
-       } else if (valueSetter) {
-         valueSetter.call(el, val);
-       } else {
-         el.value = val;
-       }
-       el.dispatchEvent(new Event("input", { bubbles: true }));
-       el.dispatchEvent(new Event("change", { bubbles: true }));
-     };
-     setVal('input[name="title"], textarea[name="title"]', draft.title);
-     setVal('input[name="module"], textarea[name="module"]', draft.module);
-     setVal('textarea[name="preconditions"]', draft.preconditions);
-     setVal('textarea[name="stepsToReproduce"]', draft.stepsToReproduce);
-     setVal('textarea[name="expectedResult"]', draft.expectedResult);
-     setVal('textarea[name="actualResult"]', draft.actualResult);
-     setVal('input[name="evidence"], textarea[name="evidence"]', draft.evidence);
-   }, 50);
  };
 
  const handleDirectBugSubmit = (entry: Record<string, unknown>) => {
@@ -396,7 +379,9 @@ export function ModuleWorkspaceShell({
   editingRow
     ? "Update existing data."
     : module === "bugs" && bugCreateMode === "ai"
-    ? "Autonomous QA Issue Agent powered by AI (SnapTest rules)."
+    ? "Describe the issue or paste a screenshot — AI structures the rest."
+    : module === "bugs"
+    ? "Fill in core defect details quickly."
     : "Fill in new data with a consistent format."
  }
  headerAccessory={
@@ -404,16 +389,35 @@ export function ModuleWorkspaceShell({
     <BugModalModeSelector mode={bugCreateMode} onChange={setBugCreateMode} />
   ) : undefined
  }
- onClose={onCancelForm}
+ onClose={() => {
+   setManualBugDraft(null);
+   onCancelForm();
+ }}
  >
  {module === "bugs" && !editingRow && bugCreateMode === "ai" ? (
   <AiIssueAgentContent
     projectOptions={relatedOptions.project || []}
     defaultProject={selectValues.project || ""}
-    onCancel={onCancelForm}
+    onCancel={() => {
+      setManualBugDraft(null);
+      onCancelForm();
+    }}
     pending={pending}
     onDirectSubmit={handleDirectBugSubmit}
     onSwitchToManual={handleSwitchToManual}
+  />
+ ) : module === "bugs" ? (
+  <StreamlinedBugForm
+    projectOptions={relatedOptions.project || []}
+    defaultProject={selectValues.project || ""}
+    devOptions={relatedOptions.suggestedDev || relatedOptions.assignee || []}
+    initialData={editingRow || manualBugDraft}
+    pending={pending}
+    onCancel={() => {
+      setManualBugDraft(null);
+      onCancelForm();
+    }}
+    onSubmit={handleDirectBugSubmit}
   />
  ) : (
  <ModuleWorkspaceForm

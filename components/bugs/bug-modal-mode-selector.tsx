@@ -20,37 +20,37 @@ export function BugModalModeSelector({ mode, onChange }: BugModalModeSelectorPro
         className="h-7 rounded-md border border-gray-200 bg-white px-2 text-xs font-semibold text-gray-800 outline-none sm:hidden"
         aria-label="Creation Mode"
       >
-        <option value="manual">Manual</option>
-        <option value="ai">By AI (Issue Agent)</option>
+        <option value="ai">✨ By AI (Fast)</option>
+        <option value="manual">✍️ Manual</option>
       </select>
 
       {/* Desktop segmented buttons */}
       <div className="hidden sm:inline-flex rounded-lg border border-gray-200 bg-gray-100 p-0.5 text-xs font-semibold">
         <button
           type="button"
+          onClick={() => onChange("ai")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-2.5 py-1 transition cursor-pointer",
+            mode === "ai"
+              ? "bg-white text-blue-600 shadow-xs"
+              : "text-gray-500 hover:text-blue-600",
+          )}
+        >
+          <Sparkle size={13} weight="bold" className="text-blue-600" />
+          <span>By AI (Fast)</span>
+        </button>
+        <button
+          type="button"
           onClick={() => onChange("manual")}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-2.5 py-1 transition",
+            "flex items-center gap-1.5 rounded-md px-2.5 py-1 transition cursor-pointer",
             mode === "manual"
               ? "bg-white text-gray-900 shadow-xs"
-              : "text-gray-500 hover:text-gray-900"
+              : "text-gray-500 hover:text-gray-900",
           )}
         >
           <PencilSimple size={13} weight="bold" />
           <span>Manual</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange("ai")}
-          className={cn(
-            "flex items-center gap-1.5 rounded-md px-2.5 py-1 transition",
-            mode === "ai"
-              ? "bg-white text-blue-600 shadow-xs"
-              : "text-gray-500 hover:text-blue-600"
-          )}
-        >
-          <Sparkle size={13} weight="bold" className="text-blue-600" />
-          <span>By AI (Issue Agent)</span>
         </button>
       </div>
     </div>
