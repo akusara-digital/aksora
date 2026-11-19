@@ -123,10 +123,14 @@ export function ModuleWorkspaceCell({ module, row, column, value: rawValue, onIn
           />
           <span className="text-[11px] font-semibold text-blue-900 pr-1">Image Evidence</span>
         </div>
-      ) : column.link && value ? (
+      ) : column.link && value && /^https?:\/\//i.test(String(value)) ? (
         <a href={String(value)} target="_blank" rel="noreferrer" className="break-all text-blue-600 hover:underline">
           <HighlightText text={String(value)} query="" linkify={false} />
         </a>
+      ) : column.link && value ? (
+        <span className="text-gray-700 text-xs break-words">
+          <HighlightText text={String(value)} query="" linkify={true} />
+        </span>
       ) : (module === "users" || module === "assignees") && column.key === "role" ? (
         <Badge value={String(value)} displayValue={getRoleLabel(String(value))} />
       ) : column.tone === "status" && onInlineUpdate && statusOptions && canEdit ? (

@@ -242,5 +242,36 @@ describe("bugs module validation & mandatory rules", () => {
       expect((urlResult.data as Record<string, string>).evidence).toBe(urlEntry.evidence);
     }
   });
+
+  it("accepts base64 image data URLs and text descriptions in tasks and test-cases evidence", () => {
+    const taskEntry = {
+      title: "Fix Tailscale button",
+      project: "VanApp",
+      category: "Bug Fix",
+      status: "todo",
+      priority: "P1",
+      description: "Bug fix details",
+      evidence: "data:image/webp;base64,UklGRkAAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAA",
+    };
+    const taskResult = safeParseModuleEntry("tasks", taskEntry);
+    expect(taskResult.success).toBe(true);
+    if (taskResult.success) {
+      expect((taskResult.data as Record<string, string>).evidence).toBe(taskEntry.evidence);
+    }
+
+    const testCaseEntry = {
+      testSuiteId: "1",
+      tcId: "TC-01",
+      caseName: "Login Flow Test",
+      testStep: "1. Open app",
+      expectedResult: "Dashboard loads",
+      evidence: "data:image/webp;base64,UklGRkAAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAA",
+    };
+    const tcResult = safeParseModuleEntry("test-cases", testCaseEntry);
+    expect(tcResult.success).toBe(true);
+    if (tcResult.success) {
+      expect((tcResult.data as Record<string, string>).evidence).toBe(testCaseEntry.evidence);
+    }
+  });
 });
 

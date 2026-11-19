@@ -261,6 +261,31 @@ export function EditTextCell({
    }
  }
 
+  if (value && value.startsWith("data:image/")) {
+    return (
+      <td
+        style={{ width: w, minWidth: w, maxWidth: w }}
+        className={cn("relative border-b border-r border-gray-100 bg-transparent px-[6px] py-[4px] align-middle", cellClassName)}
+      >
+        <div className="flex items-center gap-1.5 rounded bg-blue-50 border border-blue-200 px-1.5 py-0.5 text-[10px] font-bold text-blue-700 w-fit">
+          <img src={value} alt="Evidence" className="h-4 w-5 rounded object-cover" />
+          <span>Image Attached</span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange("");
+            }}
+            className="ml-0.5 text-blue-400 hover:text-rose-600 font-bold"
+            title="Remove image"
+          >
+            ×
+          </button>
+        </div>
+      </td>
+    );
+  }
+
  return (
  <td
  style={{ width: w, minWidth: w, maxWidth: w }}

@@ -220,6 +220,7 @@ export const testCaseSchema = z.object({
   subModule: optionalText,
   deviceType: optionalText,
   rationale: optionalText,
+  evidence: urlField,
 });
 
 export const testPlanStatusOptions: Option[] = [
