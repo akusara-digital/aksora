@@ -182,15 +182,30 @@ export const taskSchema = z.object({
 export const bugSchema = z.object({
   project: requiredText("Project"),
   module: optionalText,
-  bugType: z.enum(["Functional", "UI/UX", "Performance", "Validation", "API", "Security", "Compatibility"]),
-  title: requiredText("Title"),
+  bugType: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "Functional" : v),
+    z.enum(["Functional", "UI/UX", "Performance", "Validation", "API", "Security", "Compatibility"]).default("Functional"),
+  ),
+  title: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "Untitled Bug" : String(v).trim()),
+    z.string().default("Untitled Bug"),
+  ),
   preconditions: optionalText,
-  stepsToReproduce: requiredText("Steps to Reproduce"),
-  expectedResult: requiredText("Expected Result"),
-  actualResult: requiredText("Actual Result"),
-  severity: z.enum(["low", "medium", "high", "critical"]),
-  priority: z.enum(["P0", "P1", "P2", "P3"]),
-  status: z.enum(["open", "in_progress", "ready_to_retest", "closed", "rejected"]),
+  stepsToReproduce: optionalText,
+  expectedResult: optionalText,
+  actualResult: optionalText,
+  severity: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "medium" : String(v).toLowerCase()),
+    z.enum(["low", "medium", "high", "critical"]).default("medium"),
+  ),
+  priority: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "P2" : String(v).toUpperCase()),
+    z.enum(["P0", "P1", "P2", "P3"]).default("P2"),
+  ),
+  status: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "open" : String(v).toLowerCase()),
+    z.enum(["open", "in_progress", "ready_to_retest", "closed", "rejected"]).default("open"),
+  ),
   suggestedDev: optionalText,
   relatedItems: optionalText,
   evidence: urlField,

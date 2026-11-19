@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getRequiredFieldErrors } from "@/lib/form-validation";
 import {
   formDataToEntry,
   formatModuleFieldValue,
@@ -162,3 +163,52 @@ describe("field formatting", () => {
     });
   });
 });
+
+describe("bugs module validation & mandatory rules", () => {
+  it("enforces project as the ONLY required field in module configuration", () => {
+    const bugFields = moduleConfigs.bugs.fields;
+    const requiredFields = bugFields.filter((f) => f.required);
+
+    expect(requiredFields.map((f) => f.name)).toEqual(["project"]);
+  });
+
+  it("validates successfully with ONLY project name provided and populates safe defaults", () => {
+    const entry = { project: "VanApp" };
+    const result = safeParseModuleEntry("bugs", entry);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toMatchObject({
+        project: "VanApp",
+        title: "Untitled Bug",
+        bugType: "Functional",
+        severity: "medium",
+        priority: "P2",
+        status: "open",
+        stepsToReproduce: "",
+        expectedResult: "",
+        actualResult: "",
+      });
+    }
+  });
+
+  it("fails schema validation if project is missing or empty", () => {
+    const result = safeParseModuleEntry("bugs", { project: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("flags ONLY project in client required field validation", () => {
+    const bugFields = moduleConfigs.bugs.fields;
+    const emptyForm = new FormData();
+    const emptyErrors = getRequiredFieldErrors(bugFields, emptyForm);
+
+    expect(Object.keys(emptyErrors)).toEqual(["project"]);
+
+    const projectOnlyForm = new FormData();
+    projectOnlyForm.set("project", "VanApp");
+    const validErrors = getRequiredFieldErrors(bugFields, projectOnlyForm);
+
+    expect(Object.keys(validErrors)).toEqual([]);
+  });
+});
+

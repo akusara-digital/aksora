@@ -192,9 +192,9 @@ export function ModuleWorkspaceFormText({
          <AutoResizeTextarea
            name={field.name}
            defaultValue={initialValue}
-           rows={1}
-           minHeight={40}
-           maxHeight={260}
+           rows={field.rows ?? 1}
+           minHeight={field.rows && field.rows >= 3 ? 96 : field.rows === 2 ? 64 : 40}
+           maxHeight={280}
            required={field.required}
            placeholder={field.placeholder ?? `Enter ${field.label}`}
            disabled={module === "test-plans" && field.name === "scope"}
