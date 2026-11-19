@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Globe, Check, LockKey, X } from "@phosphor-icons/react";
+import { Check, LockKey, X } from "@phosphor-icons/react";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import {
   CONFIGURABLE_PROVIDERS,
@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AIProviderCard } from "./ai-provider-card";
 import { AIStatusCard } from "./ai-status-card";
+import { AIProviderIcon } from "./ai-provider-icon";
 import { useAISettings } from "./use-ai-settings";
 
 export function AISettingsClient() {
@@ -111,7 +112,6 @@ export function AISettingsClient() {
             const pConfigured = state?.status === "connected" || state?.status === "saved";
             const pActive = activeProvider === p && pConfigured;
             const isSelected = selectedProvider === p;
-            const isPublicRouter = p === "9router-public";
 
             return (
               <button
@@ -125,18 +125,7 @@ export function AISettingsClient() {
                     : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60 text-slate-600",
                 )}
               >
-                <span
-                  className={cn(
-                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
-                    meta.color,
-                  )}
-                >
-                  {isPublicRouter ? (
-                    <Globe size={14} weight="bold" />
-                  ) : (
-                    p.slice(0, 2).toUpperCase()
-                  )}
-                </span>
+                <AIProviderIcon provider={p} size="md" />
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">

@@ -1,11 +1,12 @@
 "use client";
 
-import { Robot, CheckCircle, XCircle } from "@phosphor-icons/react";
+import { Robot } from "@phosphor-icons/react";
 import {
   CONFIGURABLE_PROVIDERS,
   AI_PROVIDER_LABELS,
   type SupportedProvider,
 } from "@/lib/ai-types";
+import { AIProviderIcon } from "./ai-provider-icon";
 import type { ProviderCardState } from "./ai-provider-card";
 
 interface AIStatusCardProps {
@@ -40,11 +41,15 @@ export function AIStatusCard({
           <div
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition ${
               isConfigured
-                ? "bg-blue-50 text-blue-600 border border-blue-100"
+                ? "bg-slate-50 border border-slate-200"
                 : "bg-slate-100 text-slate-400 border border-slate-200"
             }`}
           >
-            <Robot size={22} weight="bold" />
+            {isConfigured ? (
+              <AIProviderIcon provider={activeProvider} size="md" className="border-0 bg-transparent p-0 scale-125" />
+            ) : (
+              <Robot size={22} weight="bold" />
+            )}
           </div>
 
           <div>

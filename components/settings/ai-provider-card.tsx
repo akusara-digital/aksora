@@ -10,12 +10,12 @@ import {
   ArrowSquareOut,
   Trash,
   Check,
-  Globe,
 } from "@phosphor-icons/react";
 import {
   AI_PROVIDER_LABELS,
   type SupportedProvider,
 } from "@/lib/ai-types";
+import { AIProviderIcon } from "./ai-provider-icon";
 
 export interface ProviderCardState {
   status: "connected" | "saved" | "disconnected";
@@ -80,15 +80,7 @@ export function AIProviderCard({
         {/* Card Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <span
-              className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${meta.color}`}
-            >
-              {isPublicRouter ? (
-                <Globe size={16} weight="bold" />
-              ) : (
-                provider.slice(0, 2).toUpperCase()
-              )}
-            </span>
+            <AIProviderIcon provider={provider} size="lg" />
             <div>
               <div className="flex items-center gap-2">
                 <h4 className="text-sm font-bold text-slate-900">{meta.label}</h4>
