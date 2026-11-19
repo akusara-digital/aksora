@@ -22,7 +22,6 @@ describe("route-utils", () => {
     expect(isStandaloneRoute("/contact")).toBe(true);
     expect(isStandaloneRoute("/privacy")).toBe(true);
     expect(isStandaloneRoute("/security")).toBe(true);
-    expect(isStandaloneRoute("/demo")).toBe(true);
   });
 
   it("identifies auth and account recovery standalone pages", () => {

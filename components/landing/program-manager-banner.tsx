@@ -54,12 +54,6 @@ export function ProgramManagerBanner() {
               >
                 Start Free Trial
               </Link>
-              <Link
-                href="/demo"
-                className="rounded-full border border-slate-300 bg-white px-6 py-3 text-xs font-semibold text-slate-800 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
-              >
-                View Live Demo
-              </Link>
             </div>
           </div>
 

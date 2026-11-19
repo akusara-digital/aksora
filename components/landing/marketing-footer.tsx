@@ -38,7 +38,6 @@ export function MarketingFooter() {
               <FooterLink href="/#features" label="Features" />
               <FooterLink href="/#platform" label="Platform" />
               <FooterLink href="/#pricing" label="Pricing" />
-              <FooterLink href="/demo" label="Interactive Demo" />
             </div>
           </nav>
 

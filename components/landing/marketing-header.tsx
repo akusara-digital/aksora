@@ -29,15 +29,9 @@ export function MarketingHeader() {
           <LanguageSwitcher />
           <Link
             href="/login"
-            className="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-xs font-semibold text-slate-800 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+            className="rounded-full bg-blue-600 px-5 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow cursor-pointer dark:bg-blue-600 dark:hover:bg-blue-500"
           >
             {t.signIn}
-          </Link>
-          <Link
-            href="/demo"
-            className="rounded-full bg-[#a3e635] px-5 py-1.5 text-xs font-bold text-slate-950 shadow-sm transition-all hover:bg-[#bef264] hover:shadow cursor-pointer"
-          >
-            Demo
           </Link>
 
           {/* Mobile Menu Hamburger Button */}

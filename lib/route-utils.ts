@@ -10,7 +10,6 @@ const STANDALONE_EXACT: Record<string, true> = {
   "/register": true,
   "/reset-password": true,
   "/onboarding": true,
-  "/demo": true,
 };
 
 const STANDALONE_PREFIXES = [

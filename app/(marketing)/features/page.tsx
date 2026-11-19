@@ -186,9 +186,6 @@ export default function FeaturesPage() {
             <Link href="/login" className="rounded-full bg-[#a3e635] px-7 py-3 text-xs font-bold text-slate-950 shadow-md transition hover:bg-[#bef264]">
               Start Free — Takes 2 Minutes
             </Link>
-            <Link href="/demo" className="rounded-full border border-white/20 bg-white/10 px-6 py-3 text-xs font-semibold text-white hover:bg-white/20 transition">
-              Try Live Demo
-            </Link>
           </div>
         </div>
       </section>
