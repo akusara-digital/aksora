@@ -320,6 +320,7 @@ export function TestCaseLibrary({
       <QuickCreateSuiteModal
         isOpen={showNewSuiteModal}
         plans={plans}
+        defaultProject={filterProject !== ALL ? filterProject : undefined}
         onClose={() => setShowNewSuiteModal(false)}
         onCreated={(newSuiteId) => setSelectedKey(newSuiteId)}
       />

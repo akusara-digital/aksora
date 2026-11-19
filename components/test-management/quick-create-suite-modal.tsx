@@ -16,6 +16,7 @@ export type PlanOption = {
 export type QuickCreateSuiteModalProps = {
   isOpen: boolean;
   plans: PlanOption[];
+  defaultProject?: string;
   onClose: () => void;
   onCreated?: (suiteId: string) => void;
 };
@@ -29,12 +30,18 @@ type InitialCaseItem = {
 
 export function QuickCreateSuiteForm({
   plans,
+  defaultProject,
   onClose,
   onCreated,
 }: Omit<QuickCreateSuiteModalProps, "isOpen">) {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [testPlanId, setTestPlanId] = useState(() => (plans.length === 1 ? String(plans[0].id) : ""));
+  const availablePlans = defaultProject
+    ? plans.filter((p) => p.project.toLowerCase() === defaultProject.toLowerCase())
+    : plans;
+  const [testPlanId, setTestPlanId] = useState(() =>
+    availablePlans.length === 1 ? String(availablePlans[0].id) : "",
+  );
   const [status, setStatus] = useState<"active" | "draft">("active");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
@@ -170,7 +177,7 @@ export function QuickCreateSuiteForm({
               className="h-10 w-full rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
             >
               <option value="">No plan linked</option>
-              {plans.map((plan) => (
+              {(availablePlans.length > 0 ? availablePlans : plans).map((plan) => (
                 <option key={plan.id} value={String(plan.id)}>
                   {plan.project ? `${plan.project} — ${plan.title}` : plan.title}
                 </option>
@@ -314,6 +321,7 @@ export function QuickCreateSuiteModal(props: QuickCreateSuiteModalProps) {
     >
       <QuickCreateSuiteForm
         plans={props.plans}
+        defaultProject={props.defaultProject}
         onClose={props.onClose}
         onCreated={props.onCreated}
       />
