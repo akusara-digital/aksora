@@ -11,6 +11,7 @@ import {
   actionDetectFlakyTests,
   actionGenerateReleaseNotes,
   actionQaCopilotQuery,
+  actionIssueAgent,
   parseJsonSafe,
 } from "@/lib/ai-qa-actions";
 
@@ -178,6 +179,27 @@ Respond ONLY with valid JSON in this exact structure with no extra markdown:
       });
 
       return NextResponse.json({ data: { enhanced: parsed, provider, model } });
+    }
+
+    // 2b. Action: Autonomous Issue & Bug Agent (SnapTest style)
+    if (body.action === "issue_agent") {
+      const result = await actionIssueAgent(
+        (body.payload || {}) as Parameters<typeof actionIssueAgent>[0],
+        {
+          provider,
+          model,
+          apiKey,
+          publicUrl: publicBaseUrl,
+          usage,
+        }
+      );
+      return NextResponse.json({
+        data: {
+          ...result,
+          provider,
+          model,
+        },
+      });
     }
 
     // 3. Action: Convert Bug to Regression Test Case

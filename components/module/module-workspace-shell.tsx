@@ -7,10 +7,12 @@ import { ModuleWorkspaceTable } from"@/components/module/module-workspace-table"
 import { ModuleWorkspaceForm } from"@/components/module/module-workspace-form";
 import type { FormField } from"@/components/module/module-workspace-form-field";
 import { ModuleMobileCards } from"@/components/module/module-mobile-cards";
-import type { Dispatch, ReactNode, SetStateAction } from"react";
+import { useState, type Dispatch, type ReactNode, type SetStateAction } from"react";
 import { getModuleWorkspaceIcon } from"@/components/module/module-workspace-utils";
 import type { Column, TableRow } from"@/components/module/module-workspace-table-row";
 import type { ModuleKey } from"@/lib/modules";
+import { BugModalModeSelector, type BugCreateMode } from "@/components/bugs/bug-modal-mode-selector";
+import type { IssueAgentTicketDraft } from "@/lib/ai-issue-agent";
 
 const KanbanBoard = dynamic(() => import("@/components/module/kanban-board").then((module) => module.KanbanBoard), {
  ssr: false,
@@ -34,6 +36,11 @@ const FormDrawer = dynamic(() => import("@/components/shared/form-drawer").then(
  ssr: false,
  loading: () => <div className="fixed inset-y-0 right-0 w-full max-w-lg border-l border-gray-200 bg-white" />,
 });
+
+const AiIssueAgentContent = dynamic(
+  () => import("@/components/bugs/ai-issue-agent-content").then((module) => module.AiIssueAgentContent),
+  { ssr: false }
+);
 
 type Row = TableRow;
 
@@ -233,6 +240,58 @@ export function ModuleWorkspaceShell({
  void attachments;
  void setAttachments;
  void setSprintDuplicate;
+ const [bugCreateMode, setBugCreateMode] = useState<BugCreateMode>("manual");
+
+ const handleSwitchToManual = (draft: IssueAgentTicketDraft) => {
+   setBugCreateMode("manual");
+   setSelectValues((prev) => ({
+     ...prev,
+     ...(draft.project ? { project: draft.project } : {}),
+     ...(draft.bugType ? { bugType: draft.bugType } : {}),
+     ...(draft.severity ? { severity: draft.severity } : {}),
+     ...(draft.priority ? { priority: draft.priority } : {}),
+     status: "open",
+   }));
+   setTimeout(() => {
+     const form = document.getElementById(`${module}-form`) as HTMLFormElement | null;
+     if (!form) return;
+     const setVal = (selector: string, val?: string) => {
+       if (!val) return;
+       const el = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector);
+       if (!el) return;
+       const valueSetter = Object.getOwnPropertyDescriptor(el, "value")?.set;
+       const prototype = Object.getPrototypeOf(el);
+       const prototypeValueSetter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
+       if (prototypeValueSetter && valueSetter !== prototypeValueSetter) {
+         prototypeValueSetter.call(el, val);
+       } else if (valueSetter) {
+         valueSetter.call(el, val);
+       } else {
+         el.value = val;
+       }
+       el.dispatchEvent(new Event("input", { bubbles: true }));
+       el.dispatchEvent(new Event("change", { bubbles: true }));
+     };
+     setVal('input[name="title"], textarea[name="title"]', draft.title);
+     setVal('input[name="module"], textarea[name="module"]', draft.module);
+     setVal('textarea[name="preconditions"]', draft.preconditions);
+     setVal('textarea[name="stepsToReproduce"]', draft.stepsToReproduce);
+     setVal('textarea[name="expectedResult"]', draft.expectedResult);
+     setVal('textarea[name="actualResult"]', draft.actualResult);
+     setVal('input[name="evidence"], textarea[name="evidence"]', draft.evidence);
+   }, 50);
+ };
+
+ const handleDirectBugSubmit = (entry: Record<string, unknown>) => {
+   const formData = new FormData();
+   for (const [key, val] of Object.entries(entry)) {
+     if (val !== undefined && val !== null) {
+       formData.set(key, String(val));
+     }
+   }
+   onSubmit(formData);
+ };
+
  return (
  <>
  <section className="overflow-hidden bg-white border border-gray-200">
@@ -333,9 +392,30 @@ export function ModuleWorkspaceShell({
  <FormDrawer
  open={showForm}
  title={editingRow ? `Edit ${config.shortTitle}` : `Create ${config.shortTitle}`}
- subtitle={editingRow ? "Update existing data." : "Fill in new data with a consistent format."}
+ subtitle={
+  editingRow
+    ? "Update existing data."
+    : module === "bugs" && bugCreateMode === "ai"
+    ? "Autonomous QA Issue Agent powered by AI (SnapTest rules)."
+    : "Fill in new data with a consistent format."
+ }
+ headerAccessory={
+  module === "bugs" && !editingRow ? (
+    <BugModalModeSelector mode={bugCreateMode} onChange={setBugCreateMode} />
+  ) : undefined
+ }
  onClose={onCancelForm}
  >
+ {module === "bugs" && !editingRow && bugCreateMode === "ai" ? (
+  <AiIssueAgentContent
+    projectOptions={relatedOptions.project || []}
+    defaultProject={selectValues.project || ""}
+    onCancel={onCancelForm}
+    pending={pending}
+    onDirectSubmit={handleDirectBugSubmit}
+    onSwitchToManual={handleSwitchToManual}
+  />
+ ) : (
  <ModuleWorkspaceForm
  key={`${module}-${editingRow?.id ??"new"}`}
  module={module}
@@ -368,6 +448,7 @@ export function ModuleWorkspaceShell({
  versionSequenceLabel={versionSequenceLabel}
  versionSequenceDefaultValue={versionSequenceDefaultValue}
  />
+ )}
  </FormDrawer>
 
  <ModuleWorkspaceModals

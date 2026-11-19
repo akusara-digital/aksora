@@ -1,4 +1,11 @@
 import { callLLM } from "@/lib/ai-service";
+export {
+  actionIssueAgent,
+  type IssueAgentChatMessage,
+  type IssueAgentPayload,
+  type IssueAgentResult,
+  type IssueAgentTicketDraft,
+} from "@/lib/ai-issue-agent";
 
 export interface ActionAiContext {
   provider: string;
