@@ -209,6 +209,8 @@ export const testCaseSchema = z.object({
   status: z.preprocess((v) => (v === "" || v === undefined ? undefined : v), z.enum(["Pending", "Passed", "Failed", "Blocked"]).default("Pending")),
   priority: z.preprocess((v) => (v === "" || v === undefined ? undefined : v), z.enum(["Critical", "High", "Medium", "Low"]).default("Medium")),
   category: z.enum(["", "positive", "negative", "edge"]).default(""),
+  subModule: optionalText,
+  deviceType: optionalText,
   rationale: optionalText,
 });
 

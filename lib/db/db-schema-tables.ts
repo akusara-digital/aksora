@@ -134,6 +134,8 @@ export const tables = [
       "lastRunAt" TEXT,
       "relatedItems" TEXT DEFAULT '',
       "category" TEXT DEFAULT '',
+      "subModule" TEXT DEFAULT '',
+      "deviceType" TEXT DEFAULT 'Desktop Web',
       "rationale" TEXT DEFAULT '',
       "maturity" TEXT DEFAULT 'draft',
       "automationScript" TEXT DEFAULT '',

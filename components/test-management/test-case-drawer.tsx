@@ -11,6 +11,7 @@ import {
 } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import { MaturityBadge } from "@/components/test-management/maturity-badge";
+import { formatStepScenario } from "@/lib/test-step-utils";
 import {
   TestCaseMetadataBar,
   TestCaseDetailFields,
@@ -33,6 +34,8 @@ export function TestCaseDrawer({
   const [status, setStatus] = useState("Pending");
   const [priority, setPriority] = useState("Medium");
   const [typeCase, setTypeCase] = useState("Positive");
+  const [deviceType, setDeviceType] = useState("Desktop Web");
+  const [subModule, setSubModule] = useState("");
   const [preCondition, setPreCondition] = useState("");
   const [testStep, setTestStep] = useState("");
   const [expectedResult, setExpectedResult] = useState("");
@@ -45,6 +48,8 @@ export function TestCaseDrawer({
       setStatus(testCase.status || "Pending");
       setPriority(testCase.priority || "Medium");
       setTypeCase(testCase.typeCase || "Positive");
+      setDeviceType(testCase.deviceType || "Desktop Web");
+      setSubModule(testCase.subModule || testCase.category || "");
       setPreCondition(testCase.preCondition || "");
       setTestStep(testCase.testStep || "");
       setExpectedResult(testCase.expectedResult || "");
@@ -75,6 +80,7 @@ export function TestCaseDrawer({
       return;
     }
     setSaving(true);
+    const formattedSteps = formatStepScenario(testStep.trim()) || testStep.trim();
     try {
       const res = await fetch("/api/items/test-cases", {
         method: "PATCH",
@@ -86,8 +92,10 @@ export function TestCaseDrawer({
             status,
             priority,
             typeCase,
+            deviceType,
+            subModule: subModule.trim(),
             preCondition,
-            testStep,
+            testStep: formattedSteps,
             expectedResult,
             actualResult,
           },
@@ -104,8 +112,10 @@ export function TestCaseDrawer({
         status,
         priority,
         typeCase,
+        deviceType,
+        subModule: subModule.trim(),
         preCondition,
-        testStep,
+        testStep: formattedSteps,
         expectedResult,
         actualResult,
       };
@@ -214,9 +224,13 @@ export function TestCaseDrawer({
             status={status}
             priority={priority}
             typeCase={typeCase}
+            deviceType={deviceType}
+            subModule={subModule}
             onStatusChange={handleQuickStatusChange}
             onPriorityChange={setPriority}
             onTypeCaseChange={setTypeCase}
+            onDeviceTypeChange={setDeviceType}
+            onSubModuleChange={setSubModule}
           />
 
           <TestCaseDetailFields

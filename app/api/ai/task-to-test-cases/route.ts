@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { callLLM, DEFAULT_AI_MODELS, type SupportedProvider } from "@/lib/ai-service";
 import { parseJsonSafe } from "@/lib/ai-qa-actions";
+import { formatStepScenario } from "@/lib/test-step-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -96,7 +97,7 @@ ${task.feature ? `Feature Area: ${task.feature}\n` : ""}${task.project ? `Projec
     const testCases = (Array.isArray(parsed.testCases) ? parsed.testCases : []).map((tc, idx) => ({
       caseName: tc.caseName || `Verify ${task.title} - Scenario #${idx + 1}`,
       preCondition: tc.preCondition || "Application is running and user is authenticated",
-      testStep: tc.testStep || "1. Perform action specified in acceptance criteria\n2. Observe result",
+      testStep: formatStepScenario(tc.testStep || "1. Perform action specified in acceptance criteria\n2. Observe result"),
       expectedResult: tc.expectedResult || "System behaves according to acceptance criteria",
       typeCase: tc.typeCase === "Negative" ? "Negative" : "Positive",
       priority: ["Critical", "High", "Medium", "Low"].includes(tc.priority || "")

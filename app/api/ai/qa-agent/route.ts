@@ -14,6 +14,7 @@ import {
   actionIssueAgent,
   parseJsonSafe,
 } from "@/lib/ai-qa-actions";
+import { formatStepScenario } from "@/lib/test-step-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -110,6 +111,7 @@ Respond ONLY with valid JSON in this exact structure with no extra prose or mark
         const category = String(tc.category || "").toLowerCase();
         return {
           ...tc,
+          testStep: formatStepScenario(String(tc.testStep || "")),
           category: categories.includes(category) ? category : "positive",
           rationale: String(tc.rationale || ""),
           suggested: tc.suggested === true || tc.suggested === "true",

@@ -104,6 +104,8 @@ export function normalizeTestCaseRow(item: Record<string, unknown>) {
     priority: String(item.priority ?? "Medium"),
     evidence: String(item.evidence ?? ""),
     status: String(item.status ?? "Pending"),
+    deviceType: String(item.deviceType ?? "Desktop Web"),
+    subModule: String(item.subModule ?? item.category ?? ""),
   };
 }
 
