@@ -8,14 +8,13 @@ import {
   PencilSimple,
   Check,
   CircleNotch,
-  CheckCircle,
-  XCircle,
-  Warning,
-  Clock,
 } from "@phosphor-icons/react";
-import { cn, formatDisplayText } from "@/lib/utils";
 import { toast } from "@/components/ui/toast";
 import { MaturityBadge } from "@/components/test-management/maturity-badge";
+import {
+  TestCaseMetadataBar,
+  TestCaseDetailFields,
+} from "@/components/test-management/test-case-drawer-fields";
 import type { TestCase } from "@/components/test-management/test-case-table";
 
 interface TestCaseDrawerProps {
@@ -23,13 +22,6 @@ interface TestCaseDrawerProps {
   onClose: () => void;
   onCaseUpdated: (updatedCase: TestCase) => void;
 }
-
-const STATUS_ICONS: Record<string, React.ReactNode> = {
-  Passed: <CheckCircle size={14} weight="fill" className="text-emerald-500" />,
-  Failed: <XCircle size={14} weight="fill" className="text-rose-500" />,
-  Blocked: <Warning size={14} weight="fill" className="text-amber-500" />,
-  Pending: <Clock size={14} weight="fill" className="text-slate-400" />,
-};
 
 export function TestCaseDrawer({
   testCase,
@@ -178,12 +170,13 @@ export function TestCaseDrawer({
               )}
               {testCase.maturity && <MaturityBadge maturity={testCase.maturity} />}
             </div>
+
             {editing ? (
               <input
                 type="text"
                 value={caseName}
                 onChange={(e) => setCaseName(e.target.value)}
-                className="mt-2 w-full text-base font-bold text-slate-900 border border-slate-300 rounded px-2.5 py-1 outline-none focus:border-blue-500"
+                className="mt-2 w-full text-base font-bold text-slate-900 border border-slate-300 rounded px-2.5 py-1 outline-none focus:border-blue-500 bg-white"
               />
             ) : (
               <h2 className="mt-1 text-base font-bold text-slate-900 leading-snug">
@@ -205,7 +198,7 @@ export function TestCaseDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-slate-700 transition"
+              className="p-1.5 text-slate-400 hover:text-slate-700 transition cursor-pointer"
               aria-label="Close drawer"
             >
               <X size={18} weight="bold" />
@@ -215,157 +208,29 @@ export function TestCaseDrawer({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-          {/* Metadata quick bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-            <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                Status
-              </span>
-              <select
-                value={status}
-                onChange={(e) => handleQuickStatusChange(e.target.value)}
-                className="h-8 w-full text-xs font-semibold rounded border border-slate-200 bg-white px-2 text-slate-800 outline-none focus:border-blue-500"
-              >
-                <option value="Pending">Pending</option>
-                <option value="Passed">Passed</option>
-                <option value="Failed">Failed</option>
-                <option value="Blocked">Blocked</option>
-              </select>
-            </div>
+          <TestCaseMetadataBar
+            testCase={testCase}
+            editing={editing}
+            status={status}
+            priority={priority}
+            typeCase={typeCase}
+            onStatusChange={handleQuickStatusChange}
+            onPriorityChange={setPriority}
+            onTypeCaseChange={setTypeCase}
+          />
 
-            <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                Priority
-              </span>
-              {editing ? (
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="h-8 w-full text-xs font-semibold rounded border border-slate-200 bg-white px-2 text-slate-800 outline-none"
-                >
-                  <option value="Critical">Critical</option>
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              ) : (
-                <span className="inline-flex items-center h-8 text-xs font-semibold text-slate-700">
-                  {testCase.priority || "Medium"}
-                </span>
-              )}
-            </div>
-
-            <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                Type
-              </span>
-              {editing ? (
-                <select
-                  value={typeCase}
-                  onChange={(e) => setTypeCase(e.target.value)}
-                  className="h-8 w-full text-xs font-semibold rounded border border-slate-200 bg-white px-2 text-slate-800 outline-none"
-                >
-                  <option value="Positive">Positive</option>
-                  <option value="Negative">Negative</option>
-                </select>
-              ) : (
-                <span className="inline-flex items-center h-8 text-xs font-semibold text-teal-700">
-                  {testCase.typeCase || "Positive"}
-                </span>
-              )}
-            </div>
-
-            <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                Assignee
-              </span>
-              <span className="inline-flex items-center h-8 text-xs font-medium text-slate-600 truncate">
-                {testCase.assignee || "Unassigned"}
-              </span>
-            </div>
-          </div>
-
-          {/* Pre-conditions */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-              Pre-Condition
-            </h3>
-            {editing ? (
-              <textarea
-                rows={2}
-                value={preCondition}
-                onChange={(e) => setPreCondition(e.target.value)}
-                className="w-full text-xs rounded border border-slate-200 p-2.5 outline-none focus:border-blue-500"
-                placeholder="Prerequisites needed before executing..."
-              />
-            ) : (
-              <div className="rounded-lg bg-amber-50/60 border border-amber-100 p-3 text-xs text-amber-900 leading-relaxed">
-                {testCase.preCondition || "None specified."}
-              </div>
-            )}
-          </div>
-
-          {/* Test Steps */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-              Test Steps
-            </h3>
-            {editing ? (
-              <textarea
-                rows={4}
-                value={testStep}
-                onChange={(e) => setTestStep(e.target.value)}
-                className="w-full text-xs rounded border border-slate-200 p-2.5 outline-none focus:border-blue-500 font-mono"
-                placeholder="1. Step one\n2. Step two..."
-              />
-            ) : (
-              <div className="rounded-lg bg-slate-50 border border-slate-200/70 p-3.5 text-xs text-slate-800 leading-relaxed whitespace-pre-line font-sans">
-                {testCase.testStep || "No steps provided."}
-              </div>
-            )}
-          </div>
-
-          {/* Expected Result */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-              Expected Result
-            </h3>
-            {editing ? (
-              <textarea
-                rows={3}
-                value={expectedResult}
-                onChange={(e) => setExpectedResult(e.target.value)}
-                className="w-full text-xs rounded border border-slate-200 p-2.5 outline-none focus:border-blue-500"
-                placeholder="Expected outcome..."
-              />
-            ) : (
-              <div className="rounded-lg bg-emerald-50/60 border border-emerald-100 p-3 text-xs text-emerald-900 leading-relaxed whitespace-pre-line">
-                {testCase.expectedResult || "Expected outcome not documented."}
-              </div>
-            )}
-          </div>
-
-          {/* Actual Result (if any) */}
-          {(testCase.actualResult || editing) && (
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                Actual Result
-              </h3>
-              {editing ? (
-                <textarea
-                  rows={2}
-                  value={actualResult}
-                  onChange={(e) => setActualResult(e.target.value)}
-                  className="w-full text-xs rounded border border-slate-200 p-2.5 outline-none focus:border-blue-500"
-                  placeholder="Actual outcome observed during execution..."
-                />
-              ) : (
-                <div className="rounded-lg bg-rose-50/60 border border-rose-100 p-3 text-xs text-rose-900 leading-relaxed whitespace-pre-line">
-                  {testCase.actualResult}
-                </div>
-              )}
-            </div>
-          )}
+          <TestCaseDetailFields
+            testCase={testCase}
+            editing={editing}
+            preCondition={preCondition}
+            testStep={testStep}
+            expectedResult={expectedResult}
+            actualResult={actualResult}
+            onPreConditionChange={setPreCondition}
+            onTestStepChange={setTestStep}
+            onExpectedResultChange={setExpectedResult}
+            onActualResultChange={setActualResult}
+          />
         </div>
 
         {/* Footer */}

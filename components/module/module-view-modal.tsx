@@ -182,7 +182,7 @@ export function ViewModal({ row, config, fieldIcons, onClose, onEdit, canEdit, m
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4  animate-in fade-in duration-150 sm:items-center"
+      className="fixed inset-0 z-50 overflow-hidden bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -190,13 +190,14 @@ export function ViewModal({ row, config, fieldIcons, onClose, onEdit, canEdit, m
       {/* Lightbox */}
       {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
 
-      <div
-        ref={ref}
-        className={cn(
-          "relative flex max-h-[85vh] w-full flex-col bg-white shadow-md animate-in slide-in-from-bottom-4 duration-150 rounded-t-xl sm:rounded-xl overflow-hidden sm:slide-in-from-bottom-0",
-          modalMaxWidth,
-        )}
-      >
+      <div className="fixed inset-y-0 right-0 flex max-w-full pl-6 sm:pl-10">
+        <div
+          ref={ref}
+          className={cn(
+            "relative flex h-full w-screen flex-col border-l border-slate-200 bg-white shadow-2xl animate-in slide-in-from-right duration-200",
+            modalMaxWidth,
+          )}
+        >
         {/* Header */}
         <div className={cn(
           "flex items-center justify-between border-b border-gray-200/60 px-5 py-3.5 transition-shadow duration-150",
@@ -375,6 +376,7 @@ export function ViewModal({ row, config, fieldIcons, onClose, onEdit, canEdit, m
             </button>
           )}
         </div>
+      </div>
       </div>
 
       {showSicmundusModal && (
