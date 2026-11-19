@@ -195,7 +195,7 @@ export function WeeklyReportClient({ initialReport }: { initialReport: WeeklyRep
 
   if (loading && !report) {
     return (
-      <PageShell icon={<TrendUp size={22} weight="bold" />} title="Report" description="Track bugs, tasks, sessions, and sprint activity for the selected period." crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Report" }]}>
+      <PageShell icon={<TrendUp size={22} weight="bold" />} title="Weekly Report" description="Track bugs, tasks, sessions, and sprint activity for the selected period." crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Weekly Report" }]}>
         <div className="space-y-4 animate-pulse">
           <div className="h-24  bg-gray-100" />
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -212,7 +212,7 @@ export function WeeklyReportClient({ initialReport }: { initialReport: WeeklyRep
 
   if (error || !report) {
     return (
-      <PageShell icon={<TrendUp size={22} weight="bold" />} title="Report" description="Track bugs, tasks, sessions, and sprint activity for the selected period." crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Report" }]}>
+      <PageShell icon={<TrendUp size={22} weight="bold" />} title="Weekly Report" description="Track bugs, tasks, sessions, and sprint activity for the selected period." crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Weekly Report" }]}>
         <div className="glass-card p-8">
           <p className="text-sm font-semibold text-gray-900">Failed to load report.</p>
           <p className="mt-1 text-sm text-gray-500">{error ?? "No data available."}</p>
@@ -232,9 +232,9 @@ export function WeeklyReportClient({ initialReport }: { initialReport: WeeklyRep
   return (
     <PageShell
       icon={<TrendUp size={22} weight="bold" />}
-      title="Report"
+      title="Weekly Report"
       description="Track bugs, tasks, sessions, and sprint activity for the selected period."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Report" }]}
+      crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Weekly Report" }]}
       actions={
         <button onClick={() => window.print()} className="flex h-9 items-center gap-2  border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 transition hover:bg-gray-50 print:hidden">
           <Printer size={15} weight="bold" />

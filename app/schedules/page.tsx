@@ -23,7 +23,7 @@ export default async function SchedulesPage() {
       icon={<CalendarCheck size={22} weight="bold" />}
       title="Run Schedules"
       description="Queue AI test runs for a suite on a fixed timetable, using your workspace time zone."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Schedules" }]}
+      crumbs={[{ label: "Test Management", href: "/test-cases" }, { label: "Schedules" }]}
     >
       <SchedulesClient suites={JSON.parse(JSON.stringify(suites))} />
     </PageShell>

@@ -23,7 +23,7 @@ export default async function RecordingsPage() {
       icon={<RecordIcon size={22} weight="bold" />}
       title="Recordings"
       description="Browser sessions captured with the Aksora recorder extension. Turn one into a test case with an automation script."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Recordings" }]}
+      crumbs={[{ label: "Test Management", href: "/test-cases" }, { label: "Recordings" }]}
     >
       <RecordingsClient suites={JSON.parse(JSON.stringify(suites))} />
     </PageShell>

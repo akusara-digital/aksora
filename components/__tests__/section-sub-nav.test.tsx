@@ -82,22 +82,28 @@ describe("SectionSubNav", () => {
     expect(html).toContain("Work Logs");
   });
 
-  it("renders clean single-row Reports navigation tabs without nested sub-rows", () => {
+  it("renders all individual Reports navigation tabs", () => {
     currentPathname = "/reports/test-coverage";
     let html = renderToStaticMarkup(<SectionSubNav />);
-    expect(html).toContain("Quality &amp; Coverage");
+    expect(html).toContain("Test Coverage");
+    expect(html).toContain("Test Gap");
     expect(html).toContain("Flaky Tests");
-    expect(html).toContain("Delivery &amp; Sprints");
+    expect(html).toContain("Sprint Burndown");
+    expect(html).toContain("Workload Heatmap");
+    expect(html).toContain("Deployments");
     expect(html).toContain("Weekly Report");
     expect(html).toContain('href="/reports/test-coverage"');
+    expect(html).toContain('href="/reports/test-gap"');
     expect(html).toContain('href="/reports/flaky-tests"');
     expect(html).toContain('href="/reports/sprint-burndown"');
+    expect(html).toContain('href="/reports/workload"');
+    expect(html).toContain('href="/deployments"');
     expect(html).toContain('href="/weekly-report"');
 
     // Test on another reports page
     currentPathname = "/reports/flaky-tests";
     html = renderToStaticMarkup(<SectionSubNav />);
-    expect(html).toContain("Quality &amp; Coverage");
+    expect(html).toContain("Test Coverage");
     expect(html).toContain("Flaky Tests");
   });
 

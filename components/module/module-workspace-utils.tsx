@@ -48,14 +48,26 @@ export function getModuleWorkspacePermissions(userRole: string) {
 }
 
 export function getModuleWorkspaceCrumbs(module: ModuleKey, title: string) {
-  const scopeCrumb =
-    module === "assignees" || module === "users"
-      ? { label: "System Settings", href: "/settings" }
-      : null;
+  let rootCrumb: { label: string; href: string } = { label: "Dashboard", href: "/dashboard" };
+
+  if (module === "tasks" || module === "sprints") {
+    rootCrumb = { label: "Tasks", href: "/tasks" };
+  } else if (module === "bugs") {
+    rootCrumb = { label: "Bugs", href: "/bugs" };
+  } else if (module === "test-cases" || module === "test-plans" || module === "test-suites") {
+    rootCrumb = { label: "Test Management", href: "/test-cases" };
+  } else if (module === "test-sessions") {
+    rootCrumb = { label: "Test Management", href: "/test-execution" };
+  } else if (module === "meeting-notes" || module === "work-logs") {
+    rootCrumb = { label: "Notes & Vault", href: "/notes" };
+  } else if (module === "assignees" || module === "users") {
+    rootCrumb = { label: "Settings", href: "/settings" };
+  } else if (module === "deployments") {
+    rootCrumb = { label: "Reports", href: "/reports/test-coverage" };
+  }
 
   return [
-    { label: "Dashboard", href: "/dashboard" },
-    ...(scopeCrumb ? [scopeCrumb] : []),
+    rootCrumb,
     { label: title },
   ];
 }

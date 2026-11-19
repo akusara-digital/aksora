@@ -108,7 +108,7 @@ export function TestCoverageDashboard({ initialData }: { initialData: CoverageDa
           Export
         </Link>
       }
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Test Coverage" }]}
+      crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Test Coverage" }]}
       controls={
         projects.length > 1 ? (
           <div className="flex items-center gap-2">

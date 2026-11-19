@@ -96,8 +96,7 @@ export default function SprintBurndownPage() {
       title="Sprint Analytics & Burndown"
       description="Track sprint progress, ideal vs. actual burndown, and task completion velocity."
       crumbs={[
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Reports" },
+        { label: "Reports", href: "/reports/test-coverage" },
         { label: "Sprint Burndown" },
       ]}
     >

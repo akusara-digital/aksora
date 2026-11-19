@@ -89,7 +89,7 @@ export function FlakyTestsClient({ initialData }: { initialData: FlakyData }) {
       icon={<ShuffleAngular size={22} weight="bold" />}
       title="Flaky Test Tracker"
       description="Identify and monitor test cases with inconsistent results across execution runs."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Flaky Tests" }]}
+      crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Flaky Tests" }]}
       actions={
         <Link
           href="/api/reports/flaky-tests/export"

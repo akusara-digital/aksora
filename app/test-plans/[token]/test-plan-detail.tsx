@@ -213,7 +213,7 @@ export function TestPlanDetail({
  <div className="space-y-6">
 
  <Breadcrumb crumbs={[
- { label:"Dashboard", href:"/dashboard" },
+ { label:"Test Management", href:"/test-cases" },
  { label:"Test Plans", href:"/test-plans" },
  { label: plan.title ||"Untitled Plan" },
  ]} />

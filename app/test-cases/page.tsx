@@ -31,7 +31,7 @@ export default async function TestCasesPage({
       icon={<Checks size={22} weight="bold" />}
       title="Test Case Library"
       description="Organize test suites on the left and author or execute test cases on the right."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cases & Suites" }]}
+      crumbs={[{ label: "Test Management", href: "/test-cases" }, { label: "Cases & Suites" }]}
       actions={
         <SuitesHeaderActions
           initialSearch={initialSearch}

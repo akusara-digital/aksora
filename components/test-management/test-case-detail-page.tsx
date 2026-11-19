@@ -33,7 +33,7 @@ export function TestCaseDetailPage({
   void suiteToken;
 
   const crumbs = [
-    { label: "Dashboard", href: "/dashboard" },
+    { label: "Test Management", href: "/test-cases" },
     { label: "Test Cases", href: "/test-cases" },
   ] as { label: string; href?: string }[];
 

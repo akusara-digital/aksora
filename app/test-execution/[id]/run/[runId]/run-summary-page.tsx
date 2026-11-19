@@ -29,7 +29,7 @@ export function RunSummaryPage({ run, suite }: { run: RunData; suite: SuiteData 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Breadcrumb crumbs={[
-        { label: "Dashboard", href: "/dashboard" },
+        { label: "Test Management", href: "/test-cases" },
         { label: "Test Runs", href: "/test-execution" },
         { label: suite.title, href: `/test-execution/${suite.publicToken}` },
         { label: `Run #${run.runNumber} - Summary` },

@@ -150,7 +150,7 @@ export function SuiteDetail({
  <div className="space-y-6">
 
  <Breadcrumb crumbs={[
- { label:"Dashboard", href:"/dashboard" },
+ { label:"Test Management", href:"/test-cases" },
  { label:"Test Suites", href:"/test-suites" },
  { label: suite.title },
  ]} />

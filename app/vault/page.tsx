@@ -12,7 +12,7 @@ export default function VaultPage() {
       icon={<LockKey size={22} weight="bold" />}
       title="Password Manager"
       description="Your private password vault. Only you can see and decrypt these entries."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Password Manager" }]}
+      crumbs={[{ label: "Notes & Vault", href: "/notes" }, { label: "Password Manager" }]}
     >
       <Suspense fallback={<Skeleton className="h-72 w-full" />}>
         <VaultClient />

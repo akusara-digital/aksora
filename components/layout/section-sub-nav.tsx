@@ -86,7 +86,7 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       { href: "/gantt", label: "Gantt Timeline", icon: Rows },
     ],
   },
-  // 4. Reports (Single-row clean analytics hub)
+  // 4. Reports
   {
     match: (p) =>
       p.startsWith("/reports") ||
@@ -95,9 +95,15 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
     tabs: [
       {
         href: "/reports/test-coverage",
-        label: "Quality & Coverage",
+        label: "Test Coverage",
         icon: ChartPieSlice,
-        matchPaths: ["/reports", "/reports/test-coverage", "/reports/test-gap", "/reports/quality"],
+        matchPaths: ["/reports", "/reports/test-coverage", "/reports/quality"],
+      },
+      {
+        href: "/reports/test-gap",
+        label: "Test Gap",
+        icon: MagnifyingGlass,
+        matchPaths: ["/reports/test-gap"],
       },
       {
         href: "/reports/flaky-tests",
@@ -107,9 +113,21 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       },
       {
         href: "/reports/sprint-burndown",
-        label: "Delivery & Sprints",
+        label: "Sprint Burndown",
         icon: ChartLineUp,
-        matchPaths: ["/reports/sprint-burndown", "/reports/workload", "/deployments", "/reports/delivery"],
+        matchPaths: ["/reports/sprint-burndown", "/reports/delivery"],
+      },
+      {
+        href: "/reports/workload",
+        label: "Workload Heatmap",
+        icon: Users,
+        matchPaths: ["/reports/workload"],
+      },
+      {
+        href: "/deployments",
+        label: "Deployments",
+        icon: RocketLaunch,
+        matchPaths: ["/deployments"],
       },
       {
         href: "/weekly-report",

@@ -106,7 +106,7 @@ export default function WorkloadPage() {
  icon={<TrendUp size={22} weight="bold" />}
  title={t.title}
  description={t.description}
- crumbs={[{ label:"Dashboard", href:"/dashboard" }, { label:"Workload Heatmap" }]}
+ crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Workload Heatmap" }]}
   actions={
   <div className="flex items-center gap-2">
   <Link

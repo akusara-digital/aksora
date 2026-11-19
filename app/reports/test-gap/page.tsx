@@ -120,7 +120,7 @@ export default function TestGapPage() {
       icon={<MagnifyingGlass size={22} weight="bold" />}
       title="Test Gap Analysis"
       description="Identify features and resolved bugs that lack test case coverage."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Test Gap Analysis" }]}
+      crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Test Gap Analysis" }]}
       actions={
         <Link
           href="/api/reports/test-gap/export"

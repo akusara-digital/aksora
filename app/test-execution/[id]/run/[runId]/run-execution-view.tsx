@@ -414,7 +414,7 @@ export function RunExecutionView({
       )}
 
       <Breadcrumb crumbs={[
-        { label: "Dashboard", href: "/dashboard" },
+        { label: "Test Management", href: "/test-cases" },
         { label: "Test Runs", href: "/test-execution" },
         { label: suite.title, href: `/test-execution/${suite.publicToken}` },
         { label: `Run #${run.runNumber}` },
