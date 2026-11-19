@@ -59,7 +59,7 @@ export function getModuleWorkspaceCrumbs(module: ModuleKey, title: string) {
   } else if (module === "test-sessions") {
     rootCrumb = { label: "Test Management", href: "/test-execution" };
   } else if (module === "meeting-notes" || module === "work-logs") {
-    rootCrumb = { label: "Notes & Vault", href: "/notes" };
+    rootCrumb = { label: "Notes & Vault", href: "/work-logs" };
   } else if (module === "assignees" || module === "users") {
     rootCrumb = { label: "Settings", href: "/settings" };
   } else if (module === "deployments") {

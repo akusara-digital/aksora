@@ -11,6 +11,7 @@ import {
   isAiConfigured,
   getStoredProviderModels,
   setStoredProviderModels,
+  set9RouterPublicConfig,
 } from "@/lib/ai-keys";
 
 const storageMap = new Map<string, string>();
@@ -65,12 +66,12 @@ describe("ai-keys - client credential vault", () => {
   });
 
   it("stores and retrieves dynamically discovered provider models", () => {
-    expect(getStoredProviderModels("9router")).toEqual([]);
+    expect(getStoredProviderModels("9router-public")).toEqual([]);
 
     const dynamicModels = ["qwen-2.5-coder", "llama-3.3-70b-instruct"];
-    setStoredProviderModels("9router", dynamicModels);
+    setStoredProviderModels("9router-public", dynamicModels);
 
-    expect(getStoredProviderModels("9router")).toEqual(dynamicModels);
+    expect(getStoredProviderModels("9router-public")).toEqual(dynamicModels);
   });
 
   it("checks whether AI is configured based on active provider credentials", () => {
@@ -85,8 +86,9 @@ describe("ai-keys - client credential vault", () => {
     setApiKey("google", "test-key");
     expect(isAiConfigured()).toBe(true);
 
-    // If active is 9router local -> configured without external key
-    setActiveAiConfig("9router", "custom-model");
+    // If active is 9router-public -> configured with public url
+    set9RouterPublicConfig({ url: "https://router.example.com", key: "" });
+    setActiveAiConfig("9router-public", "custom-model");
     expect(isAiConfigured()).toBe(true);
   });
 });

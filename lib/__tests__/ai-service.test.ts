@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import {
   extractModelsFromPayload,
-  queryLocal9Router,
   queryPublic9Router,
   fetchProviderModels,
   DEFAULT_AI_MODELS,
@@ -77,51 +76,6 @@ describe("ai-service - 9Router model parsing & discovery", () => {
       expect(extractModelsFromPayload({})).toEqual([]);
       expect(extractModelsFromPayload({ data: null })).toEqual([]);
       expect(extractModelsFromPayload("not-json")).toEqual([]);
-    });
-  });
-
-  describe("queryLocal9Router", () => {
-    it("returns connected and parsed models when 127.0.0.1 responds successfully", async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          data: [{ id: "local-llama-3" }, { id: "local-qwen-2.5" }],
-        }),
-      } as unknown as Response);
-
-      const result = await queryLocal9Router();
-      expect(result.connected).toBe(true);
-      expect(result.models).toEqual(["local-llama-3", "local-qwen-2.5"]);
-    });
-
-    it("falls back to localhost when 127.0.0.1 fails", async () => {
-      const fetchMock = vi.fn();
-      // First call (127.0.0.1:20128/v1/models) fails
-      fetchMock.mockRejectedValueOnce(new Error("ECONNREFUSED 127.0.0.1"));
-      // Second call (localhost:20128/v1/models) succeeds
-      fetchMock.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          models: ["router-model-v1"],
-        }),
-      } as unknown as Response);
-
-      globalThis.fetch = fetchMock;
-
-      const result = await queryLocal9Router();
-      expect(result.connected).toBe(true);
-      expect(result.models).toEqual(["router-model-v1"]);
-      expect(fetchMock).toHaveBeenCalledTimes(2);
-    });
-
-    it("returns connected: false when all local endpoints fail", async () => {
-      globalThis.fetch = vi.fn().mockRejectedValue(new Error("ECONNREFUSED"));
-
-      const result = await queryLocal9Router();
-      expect(result.connected).toBe(false);
-      expect(result.models).toEqual([]);
     });
   });
 

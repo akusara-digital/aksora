@@ -93,7 +93,6 @@ export function isAiConfigured(): boolean {
   if (typeof window === "undefined") return false;
   const config = getActiveAiConfig();
   if (!config.provider) return false;
-  if (config.provider === "9router") return true;
   if (config.provider === "9router-public") {
     const pub = get9RouterPublicConfig();
     return Boolean(pub.url);

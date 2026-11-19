@@ -8,7 +8,6 @@ export const SUPPORTED_PROVIDERS = [
   "anthropic",
   "groq",
   "deepseek",
-  "9router",
   "9router-public",
 ] as const;
 
@@ -50,7 +49,6 @@ export const DEFAULT_AI_MODELS: Record<SupportedProvider, string[]> = {
     "deepseek-chat",
     "deepseek-reasoner",
   ],
-  "9router": [],
   "9router-public": [],
 };
 
@@ -87,12 +85,6 @@ export const AI_PROVIDER_LABELS: Record<
     placeholder: "sk-...",
     docUrl: "https://platform.deepseek.com/api_keys",
     color: "bg-cyan-600 text-white",
-  },
-  "9router": {
-    label: "9Router (Local)",
-    placeholder: "sk-... (Optional if local router has auth disabled)",
-    docUrl: "http://localhost:20128",
-    color: "bg-indigo-600 text-white",
   },
   "9router-public": {
     label: "9Router",

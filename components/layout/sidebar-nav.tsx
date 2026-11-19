@@ -61,7 +61,7 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
 
 export function getFooterItems(t: Dictionary["sidebar"]): SidebarItem[] {
   return [
-    { href: "/notes", label: t.notesAndVault || t.notes || "Notes & Vault", icon: NotePencil },
+    { href: "/work-logs", label: t.notesAndVault || t.notes || "Notes & Vault", icon: NotePencil },
     { href: "/settings", label: t.settings || "Settings", icon: Gear },
   ];
 }
@@ -120,10 +120,7 @@ function canSeeHref(role: string, href: string) {
   if (href === "/test-execution") {
     return allowed.includes("/test-execution") || allowed.includes("/exploratory") || allowed.includes("/schedules") || allowed.includes("/recordings");
   }
-  if (href === "/work-logs") {
-    return allowed.includes("/work-logs") || allowed.includes("/meeting-notes") || allowed.includes("/activity-log");
-  }
-  if (href === "/notes") {
+  if (href === "/work-logs" || href === "/notes") {
     return allowed.includes("/notes") || allowed.includes("/vault") || allowed.includes("/work-logs") || allowed.includes("/meeting-notes");
   }
   if (href === "/settings") return true;
@@ -194,7 +191,7 @@ export function SidebarNavItem({
       pathname.startsWith("/deployments"));
 
   const isNotesGroup =
-    item.href === "/notes" &&
+    (item.href === "/work-logs" || item.href === "/notes") &&
     (pathname === "/notes" ||
       pathname.startsWith("/notes/") ||
       pathname.startsWith("/work-logs") ||
@@ -224,6 +221,7 @@ export function SidebarNavItem({
       item.href !== "/tasks" &&
       item.href !== "/reports" &&
       item.href !== "/notes" &&
+      item.href !== "/work-logs" &&
       pathname.startsWith(`${item.href}/`));
 
   useEffect(() => {

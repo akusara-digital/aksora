@@ -1,11 +1,9 @@
 /**
  * Universal AI service for Aksora.
- * Supports Google Gemini, Anthropic Claude, OpenAI, Groq, DeepSeek, and 9Router (Local/Public).
+ * Supports Google Gemini, Anthropic Claude, OpenAI, Groq, DeepSeek, and 9Router.
  * Designed for task formatting, QA generation, and intelligent assistant workflows.
  */
 
-import fs from "node:fs";
-import path from "node:path";
 import {
   SUPPORTED_PROVIDERS,
   DEFAULT_AI_MODELS,
@@ -28,6 +26,7 @@ const PROVIDER_TIMEOUT_MS = 45_000;
 
 function normalizeProvider(provider: string): SupportedProvider {
   const p = (provider || "").toLowerCase().trim();
+  if (p === "9router") return "9router-public";
   if (SUPPORTED_PROVIDERS.includes(p as SupportedProvider)) {
     return p as SupportedProvider;
   }
@@ -102,76 +101,6 @@ export function extractModelsFromPayload(data: unknown): string[] {
   }
 
   return [];
-}
-
-/**
- * Auto-resolves the local 9Router API key if available on host.
- */
-function getAutoLocal9RouterKey(): string {
-  if (process.env.NINEROUTER_API_KEY) return process.env.NINEROUTER_API_KEY.trim();
-  try {
-    const appData = process.env.APPDATA || (process.platform === "win32" ? path.join(process.env.USERPROFILE || "", "AppData", "Roaming") : "");
-    const candidates = [
-      appData ? path.join(appData, "9router", "db", "data.sqlite") : "",
-      path.join(process.env.HOME || process.env.USERPROFILE || "", ".9router", "db", "data.sqlite"),
-    ].filter(Boolean);
-
-    for (const dbPath of candidates) {
-      if (fs.existsSync(dbPath)) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { DatabaseSync } = require("node:sqlite");
-        const db = new DatabaseSync(dbPath, { readOnly: true });
-        const row = db.prepare("SELECT key FROM apiKeys WHERE name = ? OR name = ? ORDER BY id ASC LIMIT 1").get("api-local", "default");
-        db.close?.();
-        if (row && typeof row === "object" && "key" in row && typeof (row as { key: string }).key === "string") {
-          return (row as { key: string }).key.trim();
-        }
-      }
-    }
-  } catch {
-    // fallback
-  }
-  return "";
-}
-
-/**
- * Resilient discovery for local 9Router instance.
- * Checks IPv4 (127.0.0.1) and localhost (IPv6/IPv4), /v1/models and /models.
- */
-export async function queryLocal9Router(
-  apiKey?: string,
-  timeoutMs = 2500
-): Promise<{ connected: boolean; models: string[] }> {
-  const endpoints = [
-    "http://127.0.0.1:20128/v1/models",
-    "http://localhost:20128/v1/models",
-    "http://127.0.0.1:20128/models",
-    "http://localhost:20128/models",
-  ];
-
-  const resolvedKey = apiKey?.trim() || getAutoLocal9RouterKey();
-  const headers: Record<string, string> = {};
-  if (resolvedKey) {
-    headers.Authorization = `Bearer ${resolvedKey}`;
-  }
-
-  for (const endpoint of endpoints) {
-    try {
-      const res = await fetchWithTimeout(endpoint, { headers }, timeoutMs);
-      if (res.ok) {
-        const json = await res.json();
-        const models = extractModelsFromPayload(json);
-        return {
-          connected: true,
-          models: models.length > 0 ? models : DEFAULT_AI_MODELS["9router"],
-        };
-      }
-    } catch {
-      // Continue to next local candidate endpoint
-    }
-  }
-
-  return { connected: false, models: [] };
 }
 
 /**
@@ -306,11 +235,6 @@ export async function fetchProviderModels(
         const data = await res.json();
         const models = extractModelsFromPayload(data);
         if (models.length > 0) return models;
-      }
-    } else if (p === "9router") {
-      const result = await queryLocal9Router(cleanKey, 3_000);
-      if (result.connected && result.models.length > 0) {
-        return result.models;
       }
     } else if (p === "9router-public" && publicUrl) {
       const result = await queryPublic9Router(publicUrl, cleanKey, 8_000);
@@ -488,9 +412,6 @@ async function callProvider(opts: CallLLMOptions): Promise<CallLLMResult> {
     case "deepseek":
       baseURL = "https://api.deepseek.com/v1/chat/completions";
       break;
-    case "9router":
-      baseURL = "http://127.0.0.1:20128/v1/chat/completions";
-      break;
     case "9router-public": {
       const pubUrl = (opts.publicBaseUrl || "").replace(/\/v1\/?$/, "").replace(/\/$/, "");
       if (!pubUrl) throw new Error("Public 9Router URL is not configured");
@@ -499,11 +420,11 @@ async function callProvider(opts: CallLLMOptions): Promise<CallLLMResult> {
     }
   }
 
-  if (p !== "9router" && p !== "9router-public" && !apiKey) {
+  if (p !== "9router-public" && !apiKey) {
     throw new Error(`API key is required for ${p}`);
   }
 
-  const effectiveKey = p === "9router" && !apiKey ? (getAutoLocal9RouterKey() || "9router-local-key") : apiKey;
+  const effectiveKey = apiKey;
 
   const messages: Array<{ role: "system" | "user"; content: unknown }> = [];
   if (opts.systemPrompt) {
@@ -542,25 +463,11 @@ async function callProvider(opts: CallLLMOptions): Promise<CallLLMResult> {
     headers.Authorization = `Bearer ${effectiveKey}`;
   }
 
-  let res: Response;
-  try {
-    res = await fetchWithTimeout(baseURL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(payload),
-    });
-  } catch (err) {
-    if (p === "9router" && baseURL.includes("127.0.0.1")) {
-      const fallbackUrl = baseURL.replace("127.0.0.1", "localhost");
-      res = await fetchWithTimeout(fallbackUrl, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(payload),
-      });
-    } else {
-      throw err;
-    }
-  }
+  const res = await fetchWithTimeout(baseURL, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  });
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");

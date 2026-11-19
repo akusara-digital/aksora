@@ -82,7 +82,7 @@ describe("Sidebar", () => {
     expect(html).toMatch(/href="\/test-execution"[^>]*bg-sky-50[\s\S]*?Test Sessions/);
     expect(html).not.toMatch(/href="\/test-suites"[^>]*bg-sky-50/);
     // Footer utility items render in the sidebar
-    expect(html).toContain('href="/notes"');
+    expect(html).toContain('href="/work-logs"');
     expect(html).toContain('href="/settings"');
   });
 
@@ -130,7 +130,7 @@ describe("Sidebar", () => {
     ]);
 
     expect(groups).toHaveLength(4);
-    expect(footerItems.map((i) => i.href)).toEqual(["/notes", "/settings"]);
+    expect(footerItems.map((i) => i.href)).toEqual(["/work-logs", "/settings"]);
 
     // Ensure no duplicate routes across main nav + footer
     const allHrefs = [
@@ -148,11 +148,11 @@ describe("Sidebar", () => {
     } as unknown as Parameters<typeof getFooterItems>[0];
 
     expect(filterFooterItems("qa", mockDict).map((i) => i.href)).toEqual([
-      "/notes",
+      "/work-logs",
       "/settings",
     ]);
     expect(filterFooterItems("fe", mockDict).map((i) => i.href)).toEqual([
-      "/notes",
+      "/work-logs",
       "/settings",
     ]);
   });

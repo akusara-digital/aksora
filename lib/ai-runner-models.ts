@@ -30,7 +30,7 @@ export function midsceneBaseUrl(provider: string, publicUrl?: string): string {
     case "anthropic": return "https://api.anthropic.com/v1/";
     case "groq": return "https://api.groq.com/openai/v1";
     case "deepseek": return "https://api.deepseek.com/v1";
-    case "9router": return "http://127.0.0.1:20128/v1";
+    case "9router":
     case "9router-public": return `${String(publicUrl || "").replace(/\/v1\/?$/, "").replace(/\/$/, "")}/v1`;
     default: return "";
   }

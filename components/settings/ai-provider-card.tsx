@@ -11,7 +11,6 @@ import {
   Trash,
   Check,
   Globe,
-  Cpu,
 } from "@phosphor-icons/react";
 import {
   AI_PROVIDER_LABELS,
@@ -65,7 +64,6 @@ export function AIProviderCard({
   onSetActive,
 }: AIProviderCardProps) {
   const meta = AI_PROVIDER_LABELS[provider];
-  const isLocal = provider === "9router";
   const isPublicRouter = provider === "9router-public";
   const isConfigured = state.status === "connected" || state.status === "saved";
   const isCardActive = isActive && isConfigured;
@@ -85,9 +83,7 @@ export function AIProviderCard({
             <span
               className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${meta.color}`}
             >
-              {isLocal ? (
-                <Cpu size={16} weight="bold" />
-              ) : isPublicRouter ? (
+              {isPublicRouter ? (
                 <Globe size={16} weight="bold" />
               ) : (
                 provider.slice(0, 2).toUpperCase()
@@ -109,7 +105,7 @@ export function AIProviderCard({
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:underline"
               >
-                {isLocal ? "Local Dashboard (port 20128)" : "Get API Key"}
+                Get API Key
                 <ArrowSquareOut size={11} />
               </a>
             </div>
@@ -157,11 +153,7 @@ export function AIProviderCard({
           {/* API Key field */}
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-700">
-              {isLocal
-                ? "Local Token (Optional)"
-                : isPublicRouter
-                ? "Bearer Key (Optional)"
-                : "API Key"}
+              {isPublicRouter ? "Bearer Key (Optional)" : "API Key"}
             </label>
             <div className="relative flex items-center">
               <input
@@ -187,7 +179,7 @@ export function AIProviderCard({
             <div className="mb-1 flex items-center justify-between">
               <label className="text-xs font-semibold text-slate-700">Default Model</label>
               <div className="flex items-center gap-2">
-                {(state.keyInput.trim() || isLocal || isPublicRouter) && (
+                {(state.keyInput.trim() || isPublicRouter) && (
                   <button
                     type="button"
                     disabled={isFetchingModels}

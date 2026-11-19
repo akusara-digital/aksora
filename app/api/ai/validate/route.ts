@@ -4,7 +4,6 @@ import {
   callLLM,
   DEFAULT_AI_MODELS,
   fetchProviderModels,
-  queryLocal9Router,
   queryPublic9Router,
   type SupportedProvider,
 } from "@/lib/ai-service";
@@ -34,7 +33,7 @@ export async function POST(req: Request) {
     const apiKey = (body.api_key || "").trim();
     const publicUrl = (body.public_url || "").trim();
 
-    if (provider !== "9router" && provider !== "9router-public" && !apiKey) {
+    if (provider !== "9router-public" && !apiKey) {
       return NextResponse.json(
         { valid: false, message: "API key is required for this provider" },
         { status: 400 }
@@ -49,6 +48,14 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
+
+      if (/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])/i.test(publicUrl)) {
+        return NextResponse.json(
+          { valid: false, message: "Localhost is not supported. Please use a public URL or Cloudflare Tunnel (e.g. https://your-tunnel.example.com/v1)." },
+          { status: 400 }
+        );
+      }
+
       const ssrfError = await validateOutboundUrlAsync(publicUrl);
       if (ssrfError) {
         return NextResponse.json(
@@ -69,23 +76,6 @@ export async function POST(req: Request) {
       return NextResponse.json({
         valid: false,
         message: `Cannot reach 9Router endpoint: ${result.error || "Connection failed"}`,
-      });
-    }
-
-    // For local 9Router: query models across localhost / 127.0.0.1
-    if (provider === "9router") {
-      const result = await queryLocal9Router(apiKey, 3000);
-      if (result.connected) {
-        return NextResponse.json({
-          valid: true,
-          message: `Local 9Router reachable (${result.models.length} model${result.models.length === 1 ? "" : "s"} found)`,
-          models: result.models,
-        });
-      }
-
-      return NextResponse.json({
-        valid: false,
-        message: "Local 9Router is not running on port 20128. Start 9Router locally first.",
       });
     }
 
