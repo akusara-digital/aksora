@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { GlobalSearch } from "@/components/shared/search/global-search";
 import { NotificationPanel } from "./sidebar";
-import { Bell, CaretUp, List } from "@phosphor-icons/react";
+import { Bell, CaretUp, List, Plus } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
 import { TrialBanner } from "@/components/layout/trial-banner";
@@ -20,30 +20,12 @@ import { AccountDropdown, type AppUser } from "@/components/layout/account-dropd
 import { isStandaloneRoute } from "@/lib/route-utils";
 import { toast } from "@/components/ui/toast";
 
-const ConfirmModal = dynamic(
-  () => import("@/components/ui/confirm-modal").then((m) => m.ConfirmModal),
-  { ssr: false }
-);
-
-const CommandPalette = dynamic(
-  () => import("@/components/shared/search/command-palette").then((m) => m.CommandPalette),
-  { ssr: false }
-);
-
-const OnboardingTour = dynamic(
-  () => import("@/components/layout/onboarding-tour").then((m) => m.OnboardingTour),
-  { ssr: false }
-);
-
-const WorkspaceOnboardingModal = dynamic(
-  () => import("@/components/layout/workspace-onboarding-modal").then((m) => m.WorkspaceOnboardingModal),
-  { ssr: false }
-);
-
-const InstallPromptBanner = dynamic(
-  () => import("@/components/layout/install-prompt-banner").then((m) => m.InstallPromptBanner),
-  { ssr: false }
-);
+const ConfirmModal = dynamic(() => import("@/components/ui/confirm-modal").then((m) => m.ConfirmModal), { ssr: false });
+const CommandPalette = dynamic(() => import("@/components/shared/search/command-palette").then((m) => m.CommandPalette), { ssr: false });
+const OnboardingTour = dynamic(() => import("@/components/layout/onboarding-tour").then((m) => m.OnboardingTour), { ssr: false });
+const WorkspaceOnboardingModal = dynamic(() => import("@/components/layout/workspace-onboarding-modal").then((m) => m.WorkspaceOnboardingModal), { ssr: false });
+const InstallPromptBanner = dynamic(() => import("@/components/layout/install-prompt-banner").then((m) => m.InstallPromptBanner), { ssr: false });
+const GlobalCreateModal = dynamic(() => import("@/components/shared/global-create-modal").then((m) => m.GlobalCreateModal), { ssr: false });
 
 type AppWrapperProps = {
   children: React.ReactNode;
@@ -57,6 +39,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
   const [loggingOut, setLoggingOut] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [user, setUser] = useState<AppUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -196,6 +179,26 @@ export function AppWrapper({ children }: AppWrapperProps) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  // Global shortcut: pressing 'c' or 'C' opens the Create Modal (Linear/Jira style)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "c" || e.key === "C") {
+        const target = e.target as HTMLElement | null;
+        if (!target) return;
+        const tagName = target.tagName?.toLowerCase();
+        const isEditable = target.isContentEditable || target.getAttribute("contenteditable") === "true";
+        if (tagName === "input" || tagName === "textarea" || tagName === "select" || isEditable) {
+          return;
+        }
+        e.preventDefault();
+        setCreateModalOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleLogout = async () => {
     if (loggingOut) return;
     setLoggingOut(true);
@@ -284,6 +287,16 @@ export function AppWrapper({ children }: AppWrapperProps) {
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCreateModalOpen(true)}
+                title="Create Task or Bug (C)"
+                aria-label="Create Task or Bug"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded flex items-center gap-1.5 shadow-sm transition"
+              >
+                <Plus size={14} weight="bold" />
+                <span>Create</span>
+              </button>
               <div ref={notifRef} className="relative">
                 {notifOpen && <NotificationPanel anchorRef={notifRef} onClose={() => setNotifOpen(false)} />}
                 <button
@@ -356,6 +369,12 @@ export function AppWrapper({ children }: AppWrapperProps) {
         type="danger"
         onConfirm={handleLogout}
         onCancel={() => !loggingOut && setShowLogoutConfirm(false)}
+      />
+
+      <GlobalCreateModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        user={user}
       />
     </div>
     </BreadcrumbProvider>
