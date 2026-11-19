@@ -29,11 +29,7 @@ export function PageShell({
 }) {
   return (
     <section suppressHydrationWarning className={cn("space-y-4 pb-4", className)}>
-      {crumbs && (
-        <div suppressHydrationWarning className="mb-1">
-          <Breadcrumb crumbs={crumbs} />
-        </div>
-      )}
+      {crumbs && <Breadcrumb crumbs={crumbs} />}
       <header className="border border-slate-200 bg-white px-5 py-4 shadow-sm sm:px-6 sm:py-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0 max-w-3xl">

@@ -14,6 +14,8 @@ import { AnnouncementBanner } from "@/components/layout/announcement-banner";
 import { useAssignmentNotifications } from "@/hooks/use-assignment-notifications";
 import { AppSplashScreen } from "@/components/layout/app-splash-screen";
 import { SectionSubNav } from "@/components/layout/section-sub-nav";
+import { BreadcrumbProvider } from "@/components/layout/breadcrumb-context";
+import { TopBreadcrumbs } from "@/components/layout/breadcrumb";
 import { AccountDropdown, type AppUser } from "@/components/layout/account-dropdown";
 import { isStandaloneRoute } from "@/lib/route-utils";
 import { toast } from "@/components/ui/toast";
@@ -237,7 +239,8 @@ export function AppWrapper({ children }: AppWrapperProps) {
   }
 
   return (
-    <div suppressHydrationWarning className="flex min-h-screen bg-[var(--bg-app)] overflow-x-hidden">
+    <BreadcrumbProvider>
+      <div suppressHydrationWarning className="flex min-h-screen bg-[var(--bg-app)] overflow-x-hidden">
       {mounted && user && !user.activeWorkspaceId && (user.memberships?.length ?? 0) === 0 && (
         <WorkspaceOnboardingModal />
       )}
@@ -311,6 +314,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
             <TrialBanner />
             <AnnouncementBanner />
             <div key={pathname} className="mx-auto max-w-7xl animate-in fade-in duration-150">
+              <TopBreadcrumbs />
               <SectionSubNav />
               {children}
             </div>
@@ -354,5 +358,6 @@ export function AppWrapper({ children }: AppWrapperProps) {
         onCancel={() => !loggingOut && setShowLogoutConfirm(false)}
       />
     </div>
+    </BreadcrumbProvider>
   );
 }
