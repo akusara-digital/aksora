@@ -23,7 +23,7 @@ export default async function AISettingsPage() {
     <PageShell
       icon={<Robot size={22} weight="bold" />}
       title="AI & Models"
-      description="Manage AI providers (Google Gemini, Claude, OpenAI, Groq, DeepSeek, 9Router) and client API keys for task formatting and automation."
+      description="Configure AI providers and credentials for automated testing, defect triage, and agent workflows."
       crumbs={crumbs}
     >
       <AISettingsClient />

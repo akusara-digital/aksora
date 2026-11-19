@@ -145,7 +145,7 @@ export function AIProviderCard({
                 value={state.urlInput || ""}
                 onChange={(e) => onUrlChange(e.target.value)}
                 placeholder="https://your-tunnel.example.com/v1"
-                className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
               />
             </div>
           )}
@@ -163,15 +163,15 @@ export function AIProviderCard({
                 value={state.keyInput}
                 onChange={(e) => onKeyChange(e.target.value)}
                 placeholder={meta.placeholder}
-                className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-3 pr-9 font-mono text-xs outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="h-9 w-full rounded-md border border-slate-200 bg-white pl-3 pr-9 font-mono text-xs text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
               />
               <button
                 type="button"
                 onClick={onToggleShowSecret}
-                className="absolute right-2.5 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
                 title={state.showSecret ? "Hide secret" : "Show secret"}
               >
-                {state.showSecret ? <EyeSlash size={14} /> : <Eye size={14} />}
+                {state.showSecret ? <EyeSlash size={14} weight="bold" /> : <Eye size={14} weight="bold" />}
               </button>
             </div>
           </div>
@@ -186,7 +186,7 @@ export function AIProviderCard({
                     type="button"
                     disabled={isFetchingModels}
                     onClick={onFetchModels}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 transition"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 transition cursor-pointer disabled:opacity-50"
                     title="Fetch live models directly from provider API"
                   >
                     <ArrowsClockwise
@@ -200,7 +200,7 @@ export function AIProviderCard({
                 <button
                   type="button"
                   onClick={onToggleCustomMode}
-                  className="text-[11px] font-medium text-slate-500 hover:text-slate-700 transition"
+                  className="text-[11px] font-medium text-slate-500 hover:text-slate-700 transition cursor-pointer"
                 >
                   {isCustom ? "Select from list" : "Custom model"}
                 </button>
@@ -213,13 +213,13 @@ export function AIProviderCard({
                 value={state.selectedModel}
                 onChange={(e) => onModelChange(e.target.value)}
                 placeholder="e.g. gpt-4.5-preview, gemini-2.5-pro"
-                className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 font-mono text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 font-mono text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
               />
             ) : state.models.length > 0 ? (
               <select
                 value={state.selectedModel}
                 onChange={(e) => onModelChange(e.target.value)}
-                className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 cursor-pointer"
               >
                 {state.models.map((m) => (
                   <option key={m} value={m}>
@@ -233,7 +233,7 @@ export function AIProviderCard({
                 value={state.selectedModel}
                 onChange={(e) => onModelChange(e.target.value)}
                 placeholder={isFetchingModels ? "Fetching available models..." : "Input API key to load models, or type here..."}
-                className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
               />
             )}
           </div>
