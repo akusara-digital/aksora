@@ -1,6 +1,6 @@
 "use client";
 
-import { Link as LinkIcon } from "@phosphor-icons/react";
+import { Link as LinkIcon, X } from "@phosphor-icons/react";
 
 interface BugCollapsibleDetailsProps {
   devOptions: Array<{ label: string; value: string }>;
@@ -79,16 +79,37 @@ export function BugCollapsibleDetails({
           <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
             Evidence URL / Screenshot Link
           </label>
-          <div className="relative">
-            <LinkIcon size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={evidence}
-              onChange={(e) => setEvidence(e.target.value)}
-              placeholder="https://..."
-              className="h-8 w-full rounded border border-slate-200 bg-white pl-7 pr-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
-            />
-          </div>
+          {evidence.startsWith("data:image/") ? (
+            <div className="flex items-center gap-2 rounded border border-slate-200 bg-white p-1 h-8">
+              <img
+                src={evidence}
+                alt="Evidence preview"
+                className="h-6 w-10 rounded object-cover border border-slate-100"
+              />
+              <span className="text-[11px] text-slate-600 font-medium truncate flex-1">
+                Screenshot attached
+              </span>
+              <button
+                type="button"
+                onClick={() => setEvidence("")}
+                className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-rose-600"
+                title="Remove attached image"
+              >
+                <X size={12} weight="bold" />
+              </button>
+            </div>
+          ) : (
+            <div className="relative">
+              <LinkIcon size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={evidence}
+                onChange={(e) => setEvidence(e.target.value)}
+                placeholder="https://..."
+                className="h-8 w-full rounded border border-slate-200 bg-white pl-7 pr-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
+              />
+            </div>
+          )}
         </div>
 
         <div>

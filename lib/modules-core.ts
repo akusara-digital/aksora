@@ -80,14 +80,7 @@ export const requiredText = (label: string) =>
 
 export const optionalText = z.string().trim().optional().default("");
 
-export const urlField = z
-  .string()
-  .trim()
-  .optional()
-  .default("")
-  .refine((value) => !value || /^https?:\/\//.test(value) || value.startsWith("/"), {
-    message: "Evidence must be an http/https URL or local file path",
-  });
+export const urlField = z.string().trim().optional().default("");
 
 export const priorityOptions: Option[] = ["P0", "P1", "P2", "P3"].map((value) => ({
   label: value,

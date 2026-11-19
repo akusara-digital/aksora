@@ -146,9 +146,14 @@ export function AiIssueAgentContent({
         actualResult: inputNotes.trim(),
       };
 
+      const finalEvidence = imageBase64 || ticket.evidence || "";
+
       if (targetAction === "review") {
         toast("Draft structured. Review and tweak before saving.", "success");
-        onSwitchToManual(ticket);
+        onSwitchToManual({
+          ...ticket,
+          evidence: finalEvidence,
+        });
       } else {
         // Direct auto-create
         const payload: Record<string, unknown> = {
@@ -161,7 +166,7 @@ export function AiIssueAgentContent({
           expectedResult: ticket.expectedResult || "",
           actualResult: ticket.actualResult || "",
           module: ticket.module || "",
-          evidence: ticket.evidence || imageBase64 || "",
+          evidence: finalEvidence,
           preconditions: ticket.preconditions || "",
           status: "open",
         };

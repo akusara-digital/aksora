@@ -210,5 +210,37 @@ describe("bugs module validation & mandatory rules", () => {
 
     expect(Object.keys(validErrors)).toEqual([]);
   });
+
+  it("accepts base64 image data URLs, text descriptions, and web links as evidence", () => {
+    const base64Entry = {
+      project: "VanApp",
+      evidence: "data:image/webp;base64,UklGRkAAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAA",
+    };
+    const base64Result = safeParseModuleEntry("bugs", base64Entry);
+    expect(base64Result.success).toBe(true);
+    if (base64Result.success) {
+      expect((base64Result.data as Record<string, string>).evidence).toBe(base64Entry.evidence);
+    }
+
+    const textEvidenceEntry = {
+      project: "VanApp",
+      evidence: "Screenshot halaman Endpoint & Key (area Tailscale ditandai merah)",
+    };
+    const textResult = safeParseModuleEntry("bugs", textEvidenceEntry);
+    expect(textResult.success).toBe(true);
+    if (textResult.success) {
+      expect((textResult.data as Record<string, string>).evidence).toBe(textEvidenceEntry.evidence);
+    }
+
+    const urlEntry = {
+      project: "VanApp",
+      evidence: "https://example.com/screenshot.png",
+    };
+    const urlResult = safeParseModuleEntry("bugs", urlEntry);
+    expect(urlResult.success).toBe(true);
+    if (urlResult.success) {
+      expect((urlResult.data as Record<string, string>).evidence).toBe(urlEntry.evidence);
+    }
+  });
 });
 
