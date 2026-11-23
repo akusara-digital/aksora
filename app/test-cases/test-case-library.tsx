@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Checks,
@@ -59,6 +59,30 @@ export function TestCaseLibrary({
   const [showNewCaseModal, setShowNewCaseModal] = useState(false);
   const [planCases, setPlanCases] = useState<TestCase[] | null>(null);
   const [startingRun, setStartingRun] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("aksora-show-suite-sidebar");
+      if (saved !== null) {
+        setShowSidebar(saved === "true");
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  const toggleSidebar = () => {
+    setShowSidebar((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem("aksora-show-suite-sidebar", String(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  };
 
   const projectOptions = useMemo(() => {
     const set = new Set<string>();
@@ -227,23 +251,28 @@ export function TestCaseLibrary({
         suitesCount={filteredGroups.length}
         onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
         allConstant={ALL}
+        showSidebar={showSidebar}
+        onToggleSidebar={toggleSidebar}
       />
 
       <div>
         <div className="flex flex-col gap-4 lg:h-[calc(100vh-310px)] lg:min-h-[500px] lg:flex-row">
           {/* Left Pane: Test Suites */}
-          <SuiteSidebarList
-            filteredGroups={filteredGroups}
-            allGroupsCount={groups.length}
-            selectedKey={selectedKey}
-            onSelectKey={(key) => setSelectedKey(key)}
-            onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
-            onRunSuite={handleRunSuite}
-            filterStatus={filterStatus}
-            filterAssignee={filterAssignee}
-            search={search}
-            allConstant={ALL}
-          />
+          {showSidebar && (
+            <SuiteSidebarList
+              filteredGroups={filteredGroups}
+              allGroupsCount={groups.length}
+              selectedKey={selectedKey}
+              onSelectKey={(key) => setSelectedKey(key)}
+              onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
+              onRunSuite={handleRunSuite}
+              onToggleSidebar={toggleSidebar}
+              filterStatus={filterStatus}
+              filterAssignee={filterAssignee}
+              search={search}
+              allConstant={ALL}
+            />
+          )}
 
           {/* Right Pane: Test Cases */}
           <div className="flex min-h-[520px] flex-1 flex-col overflow-hidden">
@@ -278,6 +307,8 @@ export function TestCaseLibrary({
                   onAddCase={() => setShowNewCaseModal(true)}
                   onRunSuite={() => handleRunSuite(selected)}
                   startingRun={startingRun}
+                  showSidebar={showSidebar}
+                  onToggleSidebar={toggleSidebar}
                 />
 
                 {displayCases.length === 0 ? (

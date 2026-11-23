@@ -4,6 +4,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
+}));
+
 vi.mock("next/link", () => ({
   default: ({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) => (
     <a href={href} onClick={onClick}>
@@ -38,6 +42,9 @@ vi.mock("@phosphor-icons/react", () => ({
   Play: (props: Record<string, unknown>) => <svg data-testid="play" {...props} />,
   FolderSimple: (props: Record<string, unknown>) => <svg data-testid="folder" {...props} />,
   FolderPlus: (props: Record<string, unknown>) => <svg data-testid="folder-plus" {...props} />,
+  SidebarSimple: (props: Record<string, unknown>) => <svg data-testid="sidebar-simple" {...props} />,
+  CaretDown: (props: Record<string, unknown>) => <svg data-testid="caret-down" {...props} />,
+  ClockCounterClockwise: (props: Record<string, unknown>) => <svg data-testid="clock-counter-clockwise" {...props} />,
 }));
 
 import { TestCaseLibrary } from "@/app/test-cases/test-case-library";
@@ -165,5 +172,51 @@ describe("TestCaseLibrary menu", () => {
     expect(screen.getAllByText("Onboarding Smoke Suite").length).toBeGreaterThan(0);
     expect(screen.getByText("No test cases in this suite yet")).not.toBeNull();
     expect(screen.getByRole("button", { name: /add first test case/i })).not.toBeNull();
+  });
+
+  it("allows hiding and unhiding the suites left panel", () => {
+    render(
+      <TestCaseLibrary
+        cases={[
+          {
+            id: 1,
+            tcId: "TS-001",
+            caseName: "Registration Flow",
+            typeCase: "Positive",
+            preCondition: "",
+            testStep: "",
+            expectedResult: "",
+            actualResult: "",
+            evidence: "",
+            status: "Passed",
+            priority: "High",
+            suiteTitle: "User Registration",
+            suiteToken: "suite-1",
+            suiteStatus: "active",
+            planTitle: "Sprint 1",
+            planProject: "ECOSHOP WEB",
+            testSuiteId: 1,
+          },
+        ]}
+      />,
+    );
+
+    // Initial state: Hide button is present, suites panel is visible
+    expect(screen.getAllByRole("button", { name: /hide test suites/i }).length).toBeGreaterThan(0);
+    expect(screen.getByText("Suites (1)")).not.toBeNull();
+
+    // Click Hide
+    fireEvent.click(screen.getAllByRole("button", { name: /hide test suites/i })[0]);
+
+    // Now suites panel is hidden, Show button is present
+    expect(screen.queryByText("Suites (1)")).toBeNull();
+    const showBtn = screen.getAllByRole("button", { name: /show test suites/i })[0];
+    expect(showBtn).not.toBeNull();
+
+    // Click Show
+    fireEvent.click(showBtn);
+
+    // Panel is restored
+    expect(screen.getByText("Suites (1)")).not.toBeNull();
   });
 });
