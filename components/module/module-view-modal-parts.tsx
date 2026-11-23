@@ -5,6 +5,7 @@ import { ArrowSquareOut } from "@phosphor-icons/react";
 import { HighlightText } from "@/components/shared/highlight-text";
 import { ActivityTimeline } from "@/components/activity/activity-timeline";
 import { MediaLightbox } from "@/components/shared/media-lightbox";
+import { LinkPreviewPill } from "@/components/shared/link-preview-pill";
 
 /** Image file extensions for evidence preview */
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp"];
@@ -112,12 +113,7 @@ export function renderEvidence(
     );
   }
 
-  return (
-    <a href={displayValue} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 break-all text-xs text-blue-600 hover:underline">
-      {displayValue}
-      <ArrowSquareOut size={12} weight="bold" className="shrink-0" />
-    </a>
-  );
+  return <LinkPreviewPill url={displayValue} />;
 }
 
 export function renderRoleField(row: Record<string, string | number>, getRoleLabel: (role: string) => string) {
