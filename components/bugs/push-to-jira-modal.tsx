@@ -151,7 +151,7 @@ export function PushToJiraModal({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer disabled:opacity-50"
+              className="rounded-sm border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition active:scale-95 cursor-pointer disabled:opacity-50 shadow-2xs"
             >
               Cancel
             </button>
@@ -160,7 +160,7 @@ export function PushToJiraModal({
                 type="button"
                 onClick={onSaveWithoutPush}
                 disabled={submitting}
-                className="rounded-xl border border-slate-200 bg-slate-100/70 hover:bg-slate-200/60 px-3 py-2 text-xs font-semibold text-slate-700 transition cursor-pointer disabled:opacity-50"
+                className="rounded-sm border border-slate-200 bg-slate-50 hover:bg-slate-100 px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition active:scale-95 cursor-pointer disabled:opacity-50 shadow-2xs"
                 title="Save bug in Aksora without uploading to Jira"
               >
                 Save in Aksora
@@ -172,7 +172,7 @@ export function PushToJiraModal({
             type="button"
             onClick={handlePushClick}
             disabled={submitting}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] px-4 sm:px-5 py-2 text-xs font-bold text-white shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 rounded-sm bg-[#4F46E5] hover:bg-[#4338CA] px-4 sm:px-5 py-1.5 text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer disabled:opacity-50"
           >
             {submitting ? (
               <>

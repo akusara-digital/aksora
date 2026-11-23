@@ -207,7 +207,7 @@ export function ProjectHubBugsTab({
                   </span>
                   <Link
                     href={`/bugs?view=${bug.publicToken || bug.id}`}
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 transition"
+                    className="inline-flex items-center gap-1 rounded-sm border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-100 hover:text-gray-900"
                   >
                     View
                     <ArrowSquareOut size={12} weight="bold" />

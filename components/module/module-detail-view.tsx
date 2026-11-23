@@ -113,7 +113,7 @@ export function ModuleDetailView({
         <button
           type="button"
           onClick={onClose}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 transition hover:text-gray-800"
+          className="inline-flex items-center gap-1.5 rounded-sm border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 active:scale-95 cursor-pointer shadow-2xs"
         >
           <ArrowLeft size={14} weight="bold" />
           Back
@@ -126,7 +126,7 @@ export function ModuleDetailView({
             <button
               type="button"
               onClick={onDelete}
-              className="inline-flex h-8 items-center gap-1.5 rounded border border-rose-200 bg-rose-50 px-3 text-xs font-bold text-rose-600 transition hover:bg-rose-100 hover:text-rose-700"
+              className="inline-flex items-center gap-1.5 rounded-sm border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 active:scale-95 cursor-pointer shadow-2xs"
             >
               <Trash size={12} weight="bold" />
               Delete
@@ -136,7 +136,7 @@ export function ModuleDetailView({
             <button
               type="button"
               onClick={onEdit}
-              className="inline-flex h-8 items-center gap-1.5 rounded bg-emerald-600 px-4 text-xs font-bold text-white transition hover:bg-emerald-500"
+              className="inline-flex items-center gap-1.5 rounded-sm border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50 active:scale-95 cursor-pointer shadow-2xs"
             >
               <PencilSimple size={12} weight="bold" />
               Edit

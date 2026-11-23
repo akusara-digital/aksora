@@ -178,13 +178,13 @@ export function ProjectHubTestsTab({
                   </span>
                   <Link
                     href={`/test-suites/${suite.publicToken || suite.id}`}
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                    className="inline-flex items-center gap-1 rounded-sm border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-100 hover:text-gray-900"
                   >
                     Details
                   </Link>
                   <Link
                     href={`/test-execution/${suite.publicToken || suite.id}`}
-                    className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition"
+                    className="inline-flex items-center gap-1 rounded-sm bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition"
                   >
                     <Play size={12} weight="bold" />
                     Run
