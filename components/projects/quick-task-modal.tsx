@@ -6,6 +6,7 @@ import { Plus, Kanban } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { ProjectMemberItem } from "./project-hub-types";
 
 interface QuickTaskModalProps {
@@ -129,54 +130,44 @@ export function QuickTaskModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Implement user profile avatar upload"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
           />
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">Category</label>
-            <select
+            <CustomSelect
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 focus:border-blue-500 focus:outline-none"
-            >
-              {CATEGORY_OPTIONS.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+              onChange={setCategory}
+              options={CATEGORY_OPTIONS.map((c) => ({ value: c, label: c }))}
+              className="py-1.5 rounded-xl"
+            />
           </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">Status</label>
-            <select
+            <CustomSelect
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 focus:border-blue-500 focus:outline-none"
-            >
-              {STATUS_OPTIONS.map((st) => (
-                <option key={st.value} value={st.value}>
-                  {st.label}
-                </option>
-              ))}
-            </select>
+              onChange={setStatus}
+              options={STATUS_OPTIONS}
+              className="py-1.5 rounded-xl"
+            />
           </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">Priority</label>
-            <select
+            <CustomSelect
               value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 focus:border-blue-500 focus:outline-none"
-            >
-              {PRIORITY_OPTIONS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
+              onChange={setPriority}
+              options={[
+                { value: "P0", label: "P0", dot: "bg-rose-600" },
+                { value: "P1", label: "P1", dot: "bg-orange-500" },
+                { value: "P2", label: "P2", dot: "bg-blue-500" },
+                { value: "P3", label: "P3", dot: "bg-slate-400" },
+              ]}
+              className="py-1.5 rounded-xl"
+            />
           </div>
         </div>
 
@@ -188,32 +179,33 @@ export function QuickTaskModal({
               value={relatedFeature}
               onChange={(e) => setRelatedFeature(e.target.value)}
               placeholder="e.g. Authentication"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">Assignee</label>
             {members.length > 0 ? (
-              <select
+              <CustomSelect
                 value={assignee}
-                onChange={(e) => setAssignee(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Unassigned</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.name || m.email}>
-                    {m.name || m.email} ({m.role.toUpperCase()})
-                  </option>
-                ))}
-              </select>
+                onChange={setAssignee}
+                options={[
+                  { value: "", label: "Unassigned" },
+                  ...members.map((m) => ({
+                    value: m.name || m.email,
+                    label: `${m.name || m.email} (${m.role.toUpperCase()})`,
+                  })),
+                ]}
+                placeholder="Unassigned"
+                className="py-1.5 rounded-xl"
+              />
             ) : (
               <input
                 type="text"
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value)}
                 placeholder="Assignee name"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
               />
             )}
           </div>
@@ -226,7 +218,7 @@ export function QuickTaskModal({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Detailed description, requirements, or steps..."
             rows={3}
-            className="w-full rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
           />
         </div>
 
@@ -234,14 +226,14 @@ export function QuickTaskModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+            className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 transition"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 transition cursor-pointer"
           >
             <Plus size={14} weight="bold" />
             {submitting ? "Creating..." : "Create Task"}

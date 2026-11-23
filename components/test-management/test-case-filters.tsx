@@ -37,7 +37,7 @@ export function TestCaseFilters({
             type="button"
             onClick={onToggleSidebar}
             className={cn(
-              "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition select-none shadow-2xs",
+              "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border px-2.5 text-xs font-semibold transition select-none shadow-2xs",
               showSidebar
                 ? "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 : "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold",
@@ -62,10 +62,10 @@ export function TestCaseFilters({
               value={filterProject}
               onChange={(e) => setFilterProject(e.target.value)}
               className={cn(
-                "h-8 border px-2.5 text-xs font-semibold outline-none transition max-w-[140px] sm:max-w-none truncate touch-manipulation",
+                "h-8 rounded-lg border px-2.5 text-xs font-semibold outline-none transition max-w-[140px] sm:max-w-none truncate touch-manipulation",
                 filterProject !== allConstant
-                  ? "border-blue-300 bg-blue-50 text-blue-700"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300",
+                  ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
+                  : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
               )}
             >
               <option value={allConstant}>All Projects</option>
@@ -84,10 +84,10 @@ export function TestCaseFilters({
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className={cn(
-              "h-8 border px-2.5 text-xs font-semibold outline-none transition touch-manipulation",
+              "h-8 rounded-lg border px-2.5 text-xs font-semibold outline-none transition touch-manipulation",
               filterStatus !== allConstant
-                ? "border-blue-300 bg-blue-50 text-blue-700"
-                : "border-gray-200 bg-white text-gray-600 hover:border-gray-300",
+                ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
+                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
             )}
           >
             <option value={allConstant}>All Statuses</option>
@@ -105,7 +105,7 @@ export function TestCaseFilters({
               setFilterProject(allConstant);
               setFilterStatus(allConstant);
             }}
-            className="inline-flex h-8 items-center gap-1 bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200"
+            className="inline-flex h-8 items-center gap-1 rounded-xl bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
           >
             <X size={11} weight="bold" />
             Clear
@@ -120,7 +120,7 @@ export function TestCaseFilters({
         <button
           type="button"
           onClick={onOpenNewSuiteModal}
-          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700"
+          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700 shadow-xs"
         >
           <Plus size={13} weight="bold" />
           New Suite

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   X,
@@ -16,6 +16,7 @@ import {
   Flame,
 } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { cn } from "@/lib/utils";
 import type { AppUser } from "@/components/layout/account-dropdown";
 
@@ -111,6 +112,50 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
   if (!open) return null;
 
   const activeProject = project === "__custom__" || projects.length === 0 ? customProject.trim() : project;
+
+  const projectOptions = useMemo(() => {
+    return projects.map((p) => ({
+      value: p.name,
+      label: `${p.name}${p.key ? ` (${p.key})` : ""}`,
+    }));
+  }, [projects]);
+
+  const priorityOptions = useMemo(() => {
+    return PRIORITIES.map((p) => ({
+      value: p.value,
+      label: p.label,
+      dot:
+        p.value === "P0"
+          ? "bg-rose-600"
+          : p.value === "P1"
+          ? "bg-orange-500"
+          : p.value === "P2"
+          ? "bg-blue-500"
+          : "bg-slate-400",
+    }));
+  }, []);
+
+  const severityOptions = useMemo(() => {
+    return SEVERITIES.map((s) => ({
+      value: s.value,
+      label: s.label,
+      dot:
+        s.value === "critical"
+          ? "bg-rose-600"
+          : s.value === "high"
+          ? "bg-orange-500"
+          : s.value === "medium"
+          ? "bg-amber-500"
+          : "bg-emerald-500",
+    }));
+  }, []);
+
+  const assigneeOptions = useMemo(() => {
+    return [
+      { value: "", label: "Unassigned" },
+      ...assignees.map((a) => ({ value: a.value, label: a.label })),
+    ];
+  }, [assignees]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -228,24 +273,45 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
               <span className="text-rose-500">*</span>
             </label>
             {loadingOptions ? (
-              <div className="h-9 w-full bg-slate-100 rounded-lg animate-pulse" />
+              <div className="h-9 w-full bg-slate-100 rounded-xl animate-pulse" />
             ) : projects.length > 0 ? (
               <div className="space-y-1.5">
-                <select id="create-item-project" value={project} onChange={(e) => setProject(e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                  {projects.map((p) => (<option key={p.id} value={p.name}>{p.name} {p.key ? `(${p.key})` : ""}</option>))}
-                  <option value="__custom__">+ Enter custom project name...</option>
-                </select>
+                <CustomSelect
+                  id="create-item-project"
+                  value={project}
+                  onChange={(val) => setProject(val)}
+                  options={projectOptions}
+                  placeholder="Select a project..."
+                  allowCustom
+                  customOptionLabel="+ Enter custom project name..."
+                  customOptionValue="__custom__"
+                  className="rounded-xl py-2"
+                />
                 {project === "__custom__" && (
-                  <input type="text" value={customProject} onChange={(e) => setCustomProject(e.target.value)} placeholder="Enter project name..." className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input
+                    type="text"
+                    value={customProject}
+                    onChange={(e) => setCustomProject(e.target.value)}
+                    placeholder="Enter custom project name..."
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    autoFocus
+                  />
                 )}
               </div>
             ) : (
               <div className="space-y-1.5">
-                <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
+                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
                   <WarningCircle size={15} weight="bold" className="text-amber-600 shrink-0" />
                   <span>No existing projects found in this workspace. Enter a name to proceed.</span>
                 </div>
-                <input id="create-item-project" type="text" value={customProject} onChange={(e) => setCustomProject(e.target.value)} placeholder="e.g. Aksora Core" className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                <input
+                  id="create-item-project"
+                  type="text"
+                  value={customProject}
+                  onChange={(e) => setCustomProject(e.target.value)}
+                  placeholder="e.g. Aksora Core"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                />
               </div>
             )}
           </div>
@@ -262,7 +328,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={type === "tasks" ? "e.g. Implement user export button" : "e.g. Checkout button unresponsive on mobile Safari"}
-              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               required
             />
           </div>
@@ -278,7 +344,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={type === "tasks" ? "Add context, acceptance criteria, or technical details..." : "1. Navigate to page\n2. Click button\n3. Observe error..."}
-              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-y"
+              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-y"
             />
           </div>
 
@@ -289,9 +355,13 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                 <Flag size={13} weight="bold" className="text-slate-500" />
                 <span>Priority</span>
               </label>
-              <select id="create-item-priority" value={priority} onChange={(e) => setPriority(e.target.value as "P0" | "P1" | "P2" | "P3")} className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                {PRIORITIES.map((p) => (<option key={p.value} value={p.value}>{p.label}</option>))}
-              </select>
+              <CustomSelect
+                id="create-item-priority"
+                value={priority}
+                onChange={(val) => setPriority(val as "P0" | "P1" | "P2" | "P3")}
+                options={priorityOptions}
+                className="rounded-xl py-1.5"
+              />
             </div>
 
             {type === "tasks" ? (
@@ -300,9 +370,13 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                   <Tag size={13} weight="bold" className="text-slate-500" />
                   <span>Category</span>
                 </label>
-                <select id="create-item-category" value={category} onChange={(e) => setCategory(e.target.value as (typeof TASK_CATEGORIES)[number])} className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                  {TASK_CATEGORIES.map((cat) => (<option key={cat} value={cat}>{cat}</option>))}
-                </select>
+                <CustomSelect
+                  id="create-item-category"
+                  value={category}
+                  onChange={(val) => setCategory(val as (typeof TASK_CATEGORIES)[number])}
+                  options={TASK_CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
+                  className="rounded-xl py-1.5"
+                />
               </div>
             ) : (
               <div>
@@ -310,9 +384,13 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                   <Flame size={13} weight="bold" className="text-rose-500" />
                   <span>Severity</span>
                 </label>
-                <select id="create-item-severity" value={severity} onChange={(e) => setSeverity(e.target.value as (typeof SEVERITIES)[number]["value"])} className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition">
-                  {SEVERITIES.map((s) => (<option key={s.value} value={s.value}>{s.label}</option>))}
-                </select>
+                <CustomSelect
+                  id="create-item-severity"
+                  value={severity}
+                  onChange={(val) => setSeverity(val as (typeof SEVERITIES)[number]["value"])}
+                  options={severityOptions}
+                  className="rounded-xl py-1.5"
+                />
               </div>
             )}
 
@@ -321,31 +399,25 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                 <User size={13} weight="bold" className="text-slate-500" />
                 <span>Assignee</span>
               </label>
-              <select id="create-item-assignee" value={assignee} onChange={(e) => setAssignee(e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                <option value="">Unassigned</option>
-                {assignees.map((a) => (<option key={a.value} value={a.value}>{a.label}</option>))}
-              </select>
+              <CustomSelect
+                id="create-item-assignee"
+                value={assignee}
+                onChange={(val) => setAssignee(val)}
+                options={assigneeOptions}
+                placeholder="Unassigned"
+                className="rounded-xl py-1.5"
+              />
             </div>
           </div>
 
           {/* Footer actions */}
           <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-            <div className="text-[11px] text-slate-400 hidden sm:flex items-center gap-2">
-              <span>
-                <kbd className="px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-[10px] text-slate-500 font-mono">⌘</kbd> + <kbd className="px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-[10px] text-slate-500 font-mono">Enter</kbd> to save
-              </span>
-              <span>•</span>
-              <span>
-                <kbd className="px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-[10px] text-slate-500 font-mono">Esc</kbd> to cancel
-              </span>
-            </div>
-
             <div className="flex items-center gap-2 ml-auto">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition disabled:opacity-50"
+                className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -353,7 +425,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                 type="submit"
                 disabled={submitting || !title.trim()}
                 className={cn(
-                  "px-4 py-1.5 rounded-lg text-xs font-semibold text-white shadow-xs transition flex items-center gap-1.5 disabled:opacity-50",
+                  "px-4 py-2 rounded-xl text-xs font-semibold text-white shadow-xs transition flex items-center gap-1.5 disabled:opacity-50",
                   type === "tasks" ? "bg-blue-600 hover:bg-blue-700" : "bg-rose-600 hover:bg-rose-700"
                 )}
               >

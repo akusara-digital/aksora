@@ -326,6 +326,13 @@ select {
     transform 100ms ease;
 }
 
+/* Unified rounded styling for inputs, columns, textareas, and selects (Box 2 aesthetic) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.rounded-none):not(.rounded-full),
+textarea:not(.rounded-none):not(.rounded-full),
+select:not(.rounded-none):not(.rounded-full) {
+  border-radius: 0.75rem; /* 12px (rounded-xl) */
+}
+
 textarea {
   resize: none;
 }

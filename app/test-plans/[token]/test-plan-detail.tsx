@@ -31,6 +31,7 @@ import {
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { toast } from "@/components/ui/toast";
 import {
   PlanScopeChecklistModal,
@@ -736,7 +737,7 @@ export function TestPlanDetail({
            if (editError) setEditError(null);
          }}
          placeholder="e.g. Sprint 24 Regression Test Plan"
-         className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+         className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
          autoFocus
        />
      </div>
@@ -749,23 +750,24 @@ export function TestPlanDetail({
            value={editSprint}
            onChange={(e) => setEditSprint(e.target.value)}
            placeholder="e.g. Sprint 24"
-           className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+           className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
          />
        </div>
 
        <div className="space-y-1.5">
          <label className="text-xs font-bold text-slate-700">Status</label>
-         <select
+         <CustomSelect
            value={editStatus}
-           onChange={(e) => setEditStatus(e.target.value)}
-           className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
-         >
-           <option value="Draft">Draft</option>
-           <option value="Pending">Pending</option>
-           <option value="In Progress">In Progress</option>
-           <option value="Completed">Completed</option>
-           <option value="Archived">Archived</option>
-         </select>
+           onChange={setEditStatus}
+           options={[
+             { value: "Draft", label: "Draft", dot: "bg-slate-400" },
+             { value: "Pending", label: "Pending", dot: "bg-amber-500" },
+             { value: "In Progress", label: "In Progress", dot: "bg-blue-500" },
+             { value: "Completed", label: "Completed", dot: "bg-emerald-500" },
+             { value: "Archived", label: "Archived", dot: "bg-slate-500" },
+           ]}
+           className="h-10 rounded-xl"
+         />
        </div>
      </div>
 
@@ -776,7 +778,7 @@ export function TestPlanDetail({
            type="date"
            value={editStartDate}
            onChange={(e) => setEditStartDate(e.target.value)}
-           className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+           className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
          />
        </div>
 
@@ -786,7 +788,7 @@ export function TestPlanDetail({
            type="date"
            value={editEndDate}
            onChange={(e) => setEditEndDate(e.target.value)}
-           className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+           className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
          />
        </div>
      </div>
@@ -799,7 +801,7 @@ export function TestPlanDetail({
          rows={2}
          maxHeight={150}
          placeholder="Testing scope description or modules included..."
-         className="p-3 text-xs"
+         className="p-3 text-xs rounded-xl"
        />
      </div>
 
@@ -811,7 +813,7 @@ export function TestPlanDetail({
          rows={3}
          maxHeight={200}
          placeholder="Additional test plan notes, objectives, or instructions..."
-         className="p-3 text-xs"
+         className="p-3 text-xs rounded-xl"
        />
      </div>
 
@@ -820,14 +822,14 @@ export function TestPlanDetail({
          type="button"
          onClick={() => setShowEditModal(false)}
          disabled={submittingEdit}
-         className="h-9 rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+         className="h-9 rounded-xl border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
        >
          Cancel
        </button>
        <button
          type="submit"
          disabled={submittingEdit || !editTitle.trim()}
-         className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+         className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
        >
          <Check size={14} weight="bold" />
          {submittingEdit ? "Saving..." : "Save Changes"}

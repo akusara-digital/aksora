@@ -14,6 +14,7 @@ import {
 import { getInviteRoleOptions, getRoleLabel } from "@/lib/roles";
 import { toast } from "@/components/ui/toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CustomSelect } from "@/components/ui/custom-select";
 
 interface ProjectMember {
   id: number;
@@ -232,34 +233,37 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
               </p>
 
               <div className="flex flex-wrap gap-2 items-center">
-                <select
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value)}
-                  className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-800 shadow-xs outline-none focus:border-blue-500"
-                >
-                  {getInviteRoleOptions().map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      Role: {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="min-w-[150px]">
+                  <CustomSelect
+                    value={inviteRole}
+                    onChange={setInviteRole}
+                    options={getInviteRoleOptions().map((opt) => ({
+                      value: opt.value,
+                      label: `Role: ${opt.label}`,
+                    }))}
+                    className="h-9 rounded-xl py-1 text-xs"
+                  />
+                </div>
 
-                <select
-                  value={expiresInDays}
-                  onChange={(e) => setExpiresInDays(Number(e.target.value))}
-                  className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-800 shadow-xs outline-none focus:border-blue-500"
-                >
-                  <option value={1}>Expires in 1 day</option>
-                  <option value={7}>Expires in 7 days</option>
-                  <option value={14}>Expires in 14 days</option>
-                  <option value={30}>Expires in 30 days</option>
-                </select>
+                <div className="min-w-[160px]">
+                  <CustomSelect
+                    value={String(expiresInDays)}
+                    onChange={(val) => setExpiresInDays(Number(val))}
+                    options={[
+                      { value: "1", label: "Expires in 1 day" },
+                      { value: "7", label: "Expires in 7 days" },
+                      { value: "14", label: "Expires in 14 days" },
+                      { value: "30", label: "Expires in 30 days" },
+                    ]}
+                    className="h-9 rounded-xl py-1 text-xs"
+                  />
+                </div>
 
                 <button
                   type="button"
                   onClick={handleGenerateInvite}
                   disabled={generatingInvite}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-60"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
                 >
                   <LinkIcon size={14} weight="bold" />
                   {generatingInvite ? "Generating..." : "Create Invite Link"}
@@ -292,38 +296,41 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
             <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
               <div className="text-xs font-bold text-slate-800">Add Existing Workspace Member to Project</div>
               <div className="flex flex-wrap gap-2 items-center">
-                <select
-                  value={selectedUserId}
-                  onChange={(e) => setSelectedUserId(e.target.value)}
-                  className="h-9 min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 shadow-xs outline-none focus:border-blue-500"
-                >
-                  <option value="">Select team member...</option>
-                  {workspaceUsers
-                    .filter((u) => !members.some((m) => m.userId === u.id))
-                    .map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name || u.email} ({u.email})
-                      </option>
-                    ))}
-                </select>
+                <div className="min-w-[220px] flex-1">
+                  <CustomSelect
+                    value={selectedUserId}
+                    onChange={setSelectedUserId}
+                    options={[
+                      { value: "", label: "Select team member..." },
+                      ...workspaceUsers
+                        .filter((u) => !members.some((m) => m.userId === u.id))
+                        .map((u) => ({
+                          value: String(u.id),
+                          label: `${u.name || u.email} (${u.email})`,
+                        })),
+                    ]}
+                    placeholder="Select team member..."
+                    className="h-9 rounded-xl py-1 text-xs"
+                  />
+                </div>
 
-                <select
-                  value={addRole}
-                  onChange={(e) => setAddRole(e.target.value)}
-                  className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-800 shadow-xs outline-none focus:border-blue-500"
-                >
-                  {getInviteRoleOptions().map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      Role: {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="min-w-[150px]">
+                  <CustomSelect
+                    value={addRole}
+                    onChange={setAddRole}
+                    options={getInviteRoleOptions().map((opt) => ({
+                      value: opt.value,
+                      label: `Role: ${opt.label}`,
+                    }))}
+                    className="h-9 rounded-xl py-1 text-xs"
+                  />
+                </div>
 
                 <button
                   type="button"
                   onClick={handleAddExistingUser}
                   disabled={addingUser || !selectedUserId}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-slate-900 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-slate-800 disabled:opacity-50"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-slate-900 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
                 >
                   <Plus size={14} weight="bold" />
                   {addingUser ? "Adding..." : "Add to Project"}
@@ -365,18 +372,20 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
 
                     <div className="flex items-center gap-3">
                       {canManage ? (
-                        <select
-                          value={member.role}
-                          onChange={(e) => handleRoleChange(member.userId, e.target.value)}
-                          className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-700 shadow-xs outline-none focus:border-blue-500"
-                        >
-                          <option value="admin">Admin</option>
-                          {getInviteRoleOptions().map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="w-[130px]">
+                          <CustomSelect
+                            value={member.role}
+                            onChange={(val) => handleRoleChange(member.userId, val)}
+                            options={[
+                              { value: "admin", label: "Admin" },
+                              ...getInviteRoleOptions().map((opt) => ({
+                                value: opt.value,
+                                label: opt.label,
+                              })),
+                            ]}
+                            className="h-8 rounded-xl py-0.5 text-[11px]"
+                          />
+                        </div>
                       ) : (
                         <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700">
                           {getRoleLabel(member.role)}

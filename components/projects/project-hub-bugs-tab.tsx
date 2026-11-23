@@ -12,6 +12,7 @@ import {
   Funnel,
 } from "@phosphor-icons/react";
 import { formatDate, codeFromId } from "@/lib/utils";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { BugItem } from "./project-hub-types";
 
 interface ProjectHubBugsTabProps {
@@ -71,7 +72,7 @@ export function ProjectHubBugsTab({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search defects..."
-              className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-8 text-xs text-slate-900 placeholder:text-slate-400 focus:border-rose-500 focus:outline-none"
+              className="h-9 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-8 text-xs text-slate-900 placeholder:text-slate-400 focus:border-rose-500 focus:outline-none"
             />
             {search && (
               <button
@@ -85,47 +86,51 @@ export function ProjectHubBugsTab({
           </div>
 
           {/* Severity Filter */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-600">
-            <Funnel size={14} weight="bold" className="text-slate-400" />
-            <select
+          <div className="min-w-[135px]">
+            <CustomSelect
               value={severityFilter}
-              onChange={(e) => setSeverityFilter(e.target.value)}
-              className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-700 focus:border-rose-500 focus:outline-none"
-            >
-              <option value="all">All Severities</option>
-              <option value="critical">Critical</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
+              onChange={setSeverityFilter}
+              options={[
+                { value: "all", label: "All Severities" },
+                { value: "critical", label: "Critical", dot: "bg-rose-600" },
+                { value: "high", label: "High", dot: "bg-orange-500" },
+                { value: "medium", label: "Medium", dot: "bg-amber-500" },
+                { value: "low", label: "Low", dot: "bg-slate-400" },
+              ]}
+              icon={<Funnel size={13} weight="bold" />}
+              className="h-9 rounded-xl py-1"
+            />
           </div>
 
           {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-700 focus:border-rose-500 focus:outline-none"
-          >
-            <option value="all">All Statuses</option>
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="ready_to_retest">Ready to Retest</option>
-            <option value="closed">Closed</option>
-          </select>
+          <div className="min-w-[130px]">
+            <CustomSelect
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[
+                { value: "all", label: "All Statuses" },
+                { value: "open", label: "Open", dot: "bg-blue-500" },
+                { value: "in_progress", label: "In Progress", dot: "bg-amber-500" },
+                { value: "ready_to_retest", label: "Ready to Retest", dot: "bg-purple-500" },
+                { value: "closed", label: "Closed", dot: "bg-emerald-500" },
+              ]}
+              className="h-9 rounded-xl py-1"
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onOpenBugModal}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-rose-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-rose-700"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-rose-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-rose-700 cursor-pointer"
           >
             <Plus size={14} weight="bold" />
             Log Bug
           </button>
           <Link
             href={`/bugs?project=${encodeURIComponent(projectName)}`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
             title="Open full Bugs workspace"
           >
             <ArrowSquareOut size={14} weight="bold" />

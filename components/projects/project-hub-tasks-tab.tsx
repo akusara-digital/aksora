@@ -12,6 +12,7 @@ import {
   Funnel,
 } from "@phosphor-icons/react";
 import { formatDate, codeFromId } from "@/lib/utils";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { TaskItem } from "./project-hub-types";
 
 interface ProjectHubTasksTabProps {
@@ -89,7 +90,7 @@ export function ProjectHubTasksTab({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search tasks..."
-              className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-8 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+              className="h-9 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-8 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
             />
             {search && (
               <button
@@ -103,48 +104,52 @@ export function ProjectHubTasksTab({
           </div>
 
           {/* Status Filter */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-600">
-            <Funnel size={14} weight="bold" className="text-slate-400" />
-            <select
+          <div className="min-w-[130px]">
+            <CustomSelect
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-700 focus:border-blue-500 focus:outline-none"
-            >
-              <option value="all">All Statuses</option>
-              <option value="todo">To Do</option>
-              <option value="in_progress">In Progress</option>
-              <option value="need_to_test">Need to Test</option>
-              <option value="completed">Completed</option>
-              <option value="backlog">Backlog</option>
-            </select>
+              onChange={setStatusFilter}
+              options={[
+                { value: "all", label: "All Statuses" },
+                { value: "todo", label: "To Do", dot: "bg-slate-400" },
+                { value: "in_progress", label: "In Progress", dot: "bg-blue-500" },
+                { value: "need_to_test", label: "Need to Test", dot: "bg-amber-500" },
+                { value: "completed", label: "Completed", dot: "bg-emerald-500" },
+                { value: "backlog", label: "Backlog", dot: "bg-slate-300" },
+              ]}
+              icon={<Funnel size={13} weight="bold" />}
+              className="h-9 rounded-xl py-1"
+            />
           </div>
 
           {/* Priority Filter */}
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-700 focus:border-blue-500 focus:outline-none"
-          >
-            <option value="all">All Priorities</option>
-            <option value="P0">P0 (Critical)</option>
-            <option value="P1">P1 (High)</option>
-            <option value="P2">P2 (Medium)</option>
-            <option value="P3">P3 (Low)</option>
-          </select>
+          <div className="min-w-[130px]">
+            <CustomSelect
+              value={priorityFilter}
+              onChange={setPriorityFilter}
+              options={[
+                { value: "all", label: "All Priorities" },
+                { value: "P0", label: "P0 (Critical)", dot: "bg-rose-600" },
+                { value: "P1", label: "P1 (High)", dot: "bg-orange-500" },
+                { value: "P2", label: "P2 (Medium)", dot: "bg-blue-500" },
+                { value: "P3", label: "P3 (Low)", dot: "bg-slate-400" },
+              ]}
+              className="h-9 rounded-xl py-1"
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onOpenTaskModal}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 cursor-pointer"
           >
             <Plus size={14} weight="bold" />
             New Task
           </button>
           <Link
             href={`/tasks?project=${encodeURIComponent(projectName)}`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
             title="Open full Tasks workspace"
           >
             <ArrowSquareOut size={14} weight="bold" />

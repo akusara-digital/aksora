@@ -9,6 +9,7 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { toast } from "@/components/ui/toast";
 import { TestCaseImportButton } from "@/components/test-management/test-case-import";
 import { TestmoImportButton } from "@/components/test-management/testmo-import-modal";
@@ -650,7 +651,7 @@ export function SuiteDetail({
            if (editError) setEditError(null);
          }}
          placeholder="e.g. Authentication & Authorization"
-         className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+         className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
          autoFocus
        />
      </div>
@@ -662,22 +663,23 @@ export function SuiteDetail({
          value={editAssignee}
          onChange={(e) => setEditAssignee(e.target.value)}
          placeholder="e.g. QA Engineer Name"
-         className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+         className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
        />
      </div>
 
      <div className="space-y-1.5">
        <label className="text-xs font-bold text-slate-700">Status</label>
-       <select
+       <CustomSelect
          value={editStatus}
-         onChange={(e) => setEditStatus(e.target.value)}
-         className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
-       >
-         <option value="Active">Active</option>
-         <option value="Draft">Draft</option>
-         <option value="Completed">Completed</option>
-         <option value="Archived">Archived</option>
-       </select>
+         onChange={setEditStatus}
+         options={[
+           { value: "Active", label: "Active", dot: "bg-emerald-500" },
+           { value: "Draft", label: "Draft", dot: "bg-slate-400" },
+           { value: "Completed", label: "Completed", dot: "bg-blue-500" },
+           { value: "Archived", label: "Archived", dot: "bg-amber-500" },
+         ]}
+         className="h-10 rounded-xl"
+       />
      </div>
 
      <div className="space-y-1.5">
@@ -688,7 +690,7 @@ export function SuiteDetail({
          rows={3}
          maxHeight={200}
          placeholder="Additional test suite guidelines, environment requirements, or notes..."
-         className="p-3 text-xs"
+         className="p-3 text-xs rounded-xl"
        />
      </div>
 
@@ -697,14 +699,14 @@ export function SuiteDetail({
          type="button"
          onClick={() => setShowEditModal(false)}
          disabled={submittingEdit}
-         className="h-9 rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+         className="h-9 rounded-xl border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
        >
          Cancel
        </button>
        <button
          type="submit"
          disabled={submittingEdit || !editTitle.trim()}
-         className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+         className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
        >
          <Check size={14} weight="bold" />
          {submittingEdit ? "Saving..." : "Save Changes"}
