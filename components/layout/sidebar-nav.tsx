@@ -34,6 +34,7 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
       title: t.mySpace || "MY SPACE",
       items: [
         { href: "/my-work", label: t.myWork || "My Work", icon: Briefcase },
+        { href: "/projects", label: t.projects || "Projects", icon: FolderSimple },
       ],
     },
     {
@@ -42,12 +43,6 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
         { href: "/tasks", label: t.tasks || t.tasksAndSprints || "Tasks", icon: Kanban },
         { href: "/bugs", label: t.bugs || t.bugsAndIssues || "Bugs", icon: Bug },
         { href: "/work-logs", label: t.dailyWork || t.workLog || "Daily Work", icon: ClockCountdown },
-      ],
-    },
-    {
-      title: t.projects || "Projects",
-      items: [
-        { href: "/projects", label: t.projects || "Projects", icon: FolderSimple },
       ],
     },
     {

@@ -86,7 +86,7 @@ describe("Sidebar", () => {
     expect(html).toContain('href="/settings"');
   });
 
-  it("organizes main nav into 5 balanced groups (8 items) + compact footer utilities", () => {
+  it("organizes main nav into 4 balanced groups (8 items) + compact footer utilities", () => {
     const mockDict = {
       mySpace: "MY SPACE",
       myWork: "My Work",
@@ -109,7 +109,7 @@ describe("Sidebar", () => {
 
     // Group 0: MY SPACE
     expect(groups[0].title).toBe("MY SPACE");
-    expect(groups[0].items.map((i) => i.href)).toEqual(["/my-work"]);
+    expect(groups[0].items.map((i) => i.href)).toEqual(["/my-work", "/projects"]);
 
     // Group 1: Work Items
     expect(groups[1].title).toBe("Work Items");
@@ -119,26 +119,20 @@ describe("Sidebar", () => {
       "/work-logs",
     ]);
 
-    // Group 2: Projects
-    expect(groups[2].title).toBe("Projects");
+    // Group 2: Test Management
+    expect(groups[2].title).toBe("Test Management");
     expect(groups[2].items.map((i) => i.href)).toEqual([
-      "/projects",
-    ]);
-
-    // Group 3: Test Management
-    expect(groups[3].title).toBe("Test Management");
-    expect(groups[3].items.map((i) => i.href)).toEqual([
       "/test-cases",
       "/test-execution",
     ]);
 
-    // Group 4: Reports
-    expect(groups[4].title).toBe("Reports");
-    expect(groups[4].items.map((i) => i.href)).toEqual([
+    // Group 3: Reports
+    expect(groups[3].title).toBe("Reports");
+    expect(groups[3].items.map((i) => i.href)).toEqual([
       "/weekly-report",
     ]);
 
-    expect(groups).toHaveLength(5);
+    expect(groups).toHaveLength(4);
     expect(footerItems.map((i) => i.href)).toEqual(["/notes", "/settings"]);
 
     // Ensure no duplicate routes across main nav + footer
