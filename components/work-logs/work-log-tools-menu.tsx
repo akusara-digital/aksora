@@ -4,8 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import {
   Lightning,
   CaretDown,
-  Clock,
-  ClipboardText,
   CalendarCheck,
   ArrowsClockwise,
   Sparkle,
@@ -13,21 +11,15 @@ import {
 import { cn } from "@/lib/utils";
 
 interface WorkLogToolsMenuProps {
-  onOpenPull: () => void;
-  onCopyStandup: () => void;
   onOpenAudit: () => void;
   onSyncSicmundus: () => void;
-  copying: boolean;
   syncingSicmundus: boolean;
   activeModel?: string;
 }
 
 export function WorkLogToolsMenu({
-  onOpenPull,
-  onCopyStandup,
   onOpenAudit,
   onSyncSicmundus,
-  copying,
   syncingSicmundus,
   activeModel,
 }: WorkLogToolsMenuProps) {
@@ -73,50 +65,7 @@ export function WorkLogToolsMenu({
           </div>
 
           <div className="py-1">
-            {/* 1. Pull Today's QA Activity */}
-            <button
-              type="button"
-              onClick={() => {
-                setIsOpen(false);
-                onOpenPull();
-              }}
-              className="w-full flex items-start gap-2.5 px-3 py-2 text-left text-xs text-gray-700 hover:bg-violet-50 hover:text-violet-900 transition cursor-pointer"
-            >
-              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-violet-100 text-violet-700">
-                <Clock size={13} weight="bold" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-gray-800">Pull QA Activity</p>
-                <p className="text-[11px] text-gray-400 truncate">
-                  Import today&apos;s verified test runs & bugs
-                </p>
-              </div>
-            </button>
-
-            {/* 2. Copy Standup */}
-            <button
-              type="button"
-              onClick={() => {
-                setIsOpen(false);
-                onCopyStandup();
-              }}
-              disabled={copying}
-              className="w-full flex items-start gap-2.5 px-3 py-2 text-left text-xs text-gray-700 hover:bg-sky-50 hover:text-sky-900 transition cursor-pointer disabled:opacity-50"
-            >
-              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-sky-100 text-sky-700">
-                <ClipboardText size={13} weight="bold" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-gray-800">
-                  {copying ? "Copying..." : "Copy Standup"}
-                </p>
-                <p className="text-[11px] text-gray-400 truncate">
-                  Format for Slack or Teams message
-                </p>
-              </div>
-            </button>
-
-            {/* 3. Timesheet Audit */}
+            {/* Timesheet Audit */}
             <button
               type="button"
               onClick={() => {
@@ -136,7 +85,7 @@ export function WorkLogToolsMenu({
               </div>
             </button>
 
-            {/* 4. Sync Sicmundus */}
+            {/* Sync Sicmundus */}
             <button
               type="button"
               onClick={() => {
