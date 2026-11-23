@@ -136,6 +136,8 @@ describe("actionIssueAgent", () => {
     expect(res.ticket?.actualResult).toBe("Brief hilang dari form Image Studio dan kolom brief kembali kosong.");
     expect(res.ticket?.stepsToReproduce).toContain("Description:\nBrief yang sudah diisi pengguna di Image Studio hilang dari form");
     expect(res.ticket?.stepsToReproduce).toContain("Acceptance Criteria:\n☐ Setelah pengguna mengisi brief");
+    expect(res.ticket?.stepsToReproduce).not.toContain("Steps to Reproduce");
+    expect(res.ticket?.stepsToReproduce).not.toContain("1. Navigate to");
     expect(res.ticket?.evidence).toBe("https://bugsnap.akusaraproject.my.id/v/4028ab27-4282-4c36-8229-082cfffca9b9");
 
     callLLMSpy.mockRestore();

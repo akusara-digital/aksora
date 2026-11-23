@@ -25,6 +25,8 @@ export interface AiIssueAgentContentProps {
   pending?: boolean;
 }
 
+const STORAGE_AI_BUG_MEMORY = "aksora_bug_ai_prompt_memory";
+
 export function AiIssueAgentContent({
   defaultProject = "",
   selectedProject = "",
@@ -51,10 +53,27 @@ export function AiIssueAgentContent({
 
   const activeProject = selectedProject || defaultProject || "General";
 
-  // Read active AI config on mount
+  // Read active AI config and saved prompt memory on mount
   useEffect(() => {
     setActiveEngine(getActiveAiConfig());
+    if (typeof window !== "undefined") {
+      const savedMemory = localStorage.getItem(STORAGE_AI_BUG_MEMORY);
+      if (savedMemory) {
+        setInputNotes(savedMemory);
+      }
+    }
   }, []);
+
+  const handleNotesChange = (val: string) => {
+    setInputNotes(val);
+    if (typeof window !== "undefined") {
+      if (val.trim()) {
+        localStorage.setItem(STORAGE_AI_BUG_MEMORY, val);
+      } else {
+        localStorage.removeItem(STORAGE_AI_BUG_MEMORY);
+      }
+    }
+  };
 
   // Handle keyboard shortcut (Ctrl+Enter / Cmd+Enter)
   useEffect(() => {
@@ -148,6 +167,11 @@ export function AiIssueAgentContent({
       const detectedUrl = inputNotes.match(/https?:\/\/[^\s)]+/i)?.[0] || "";
       const finalEvidence = imageBase64 || ticket.evidence || detectedUrl || "";
 
+      // Clear prompt memory after successful structuring
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(STORAGE_AI_BUG_MEMORY);
+      }
+
       toast("Draft structured. Review and tweak before saving.", "success");
       onSwitchToManual({
         ...ticket,
@@ -191,7 +215,7 @@ export function AiIssueAgentContent({
           <textarea
             ref={textareaRef}
             value={inputNotes}
-            onChange={(e) => setInputNotes(e.target.value)}
+            onChange={(e) => handleNotesChange(e.target.value)}
             onPaste={handlePaste}
             rows={10}
             placeholder="Describe the defect, paste stack trace / console log, or press Ctrl+V to drop a screenshot..."
@@ -224,22 +248,27 @@ export function AiIssueAgentContent({
               </button>
             </div>
 
-            {/* Right: Active AI Engine from settings */}
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
-              <span
-                className={cn(
-                  "inline-block h-1.5 w-1.5 rounded-full",
-                  activeEngine.provider ? "bg-emerald-500" : "bg-amber-400"
-                )}
-              />
-              <span>
-                AI Engine:{" "}
-                <span className="font-semibold text-slate-700">
-                  {activeEngine.provider
-                    ? `${AI_PROVIDER_LABELS[activeEngine.provider as SupportedProvider]?.label || activeEngine.provider}${
-                        activeEngine.model ? ` (${activeEngine.model})` : ""
-                      }`
-                    : "Not configured (Settings)"}
+            {/* Right: Active AI Engine & Workspace Memory from settings */}
+            <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+              <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
+                Memory Active
+              </span>
+              <span className="flex items-center gap-1">
+                <span
+                  className={cn(
+                    "inline-block h-1.5 w-1.5 rounded-full",
+                    activeEngine.provider ? "bg-emerald-500" : "bg-amber-400"
+                  )}
+                />
+                <span>
+                  AI Engine:{" "}
+                  <span className="font-semibold text-slate-700">
+                    {activeEngine.provider
+                      ? `${AI_PROVIDER_LABELS[activeEngine.provider as SupportedProvider]?.label || activeEngine.provider}${
+                          activeEngine.model ? ` (${activeEngine.model})` : ""
+                        }`
+                      : "Not configured (Settings)"}
+                  </span>
                 </span>
               </span>
             </div>

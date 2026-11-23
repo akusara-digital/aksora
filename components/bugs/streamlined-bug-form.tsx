@@ -280,10 +280,10 @@ export function StreamlinedBugForm({
           </div>
         </div>
 
-        {/* Row 3: DESCRIPTION & ACCEPTANCE CRITERIA / STEPS */}
+        {/* Row 3: DESCRIPTION & ACCEPTANCE CRITERIA */}
         <div>
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
-            Description & Acceptance Criteria / Steps
+            Description & Acceptance Criteria
           </label>
           <AutoResizeTextarea
             value={stepsToReproduce}

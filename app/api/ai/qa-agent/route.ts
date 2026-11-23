@@ -185,8 +185,34 @@ Respond ONLY with valid JSON in this exact structure with no extra markdown:
 
     // 2b. Action: Autonomous Issue & Bug Agent (SnapTest style)
     if (body.action === "issue_agent") {
+      let workspaceMemory = "";
+      if (user.activeWorkspaceId) {
+        try {
+          const { db } = await import("@/lib/db");
+          const recentBugs = await db.query<{ module?: string; title?: string }>(
+            `SELECT "module", "title" FROM "Bug" WHERE "workspaceId" = ? AND ("deletedAt" IS NULL OR "deletedAt" = '') ORDER BY "createdAt" DESC LIMIT 8`,
+            [user.activeWorkspaceId]
+          );
+          if (recentBugs.length > 0) {
+            const knownModules = Array.from(new Set(recentBugs.map((b: { module?: string }) => b.module).filter(Boolean)));
+            const recentTitles = recentBugs.slice(0, 4).map((b: { title?: string }) => b.title).filter(Boolean);
+            workspaceMemory = `WORKSPACE DEFECT CONTEXT & MODULE MEMORY:\n- Known Modules: ${knownModules.join(", ")}\n- Recent Reported Bugs in workspace:\n  * ${recentTitles.join("\n  * ")}`;
+          }
+        } catch {
+          // keep AI call resilient if DB lookup fails
+        }
+      }
+
+      const mergedPayload = {
+        ...(body.payload || {}),
+        customRules: [
+          (body.payload as { customRules?: string })?.customRules,
+          workspaceMemory,
+        ].filter(Boolean).join("\n\n"),
+      };
+
       const result = await actionIssueAgent(
-        (body.payload || {}) as Parameters<typeof actionIssueAgent>[0],
+        mergedPayload as Parameters<typeof actionIssueAgent>[0],
         {
           provider,
           model,

@@ -126,6 +126,9 @@ TEMPLATE FORMAT RULES:
   * Checkbox list using '☐' bullet items for the verification criteria that define when this bug is successfully resolved:
     ☐ Setelah pengguna mengisi brief lalu menjalankan generate, isi brief tetap identik dengan input awal ketika proses selesai, gagal, atau dibatalkan.
     ☐ Setelah halaman Image Studio di-refresh atau pengguna berpindah tab lalu kembali, brief yang telah disimpan tampil kembali tanpa perlu diisi ulang.
+- CRITICAL RULE - STRICTLY NO TEST STEPS / NO STEPS TO REPRODUCE:
+  * DO NOT output "Steps to Reproduce", numbered reproduction steps (1. ..., 2. ...), or test steps.
+  * The user explicitly requires that the bug report output contains ONLY: Title, Description, Expected Result, Actual Result, Acceptance Criteria (with ☐), and Evidence URL.
 - Bug Type: Exactly one of: "Functional" | "UI/UX" | "Performance" | "Validation" | "API" | "Security" | "Compatibility". Default is "Functional".
 - Preconditions: Clean prerequisites needed before triggering the bug (e.g. "User is logged in and on Image Studio page") or "None".
 - Severity: Exactly one of: "critical" | "high" | "medium" | "low". (Critical = crash/blocker/data loss, High = major feature broken, Medium = normal defect, Low = cosmetic/minor).
@@ -257,13 +260,10 @@ Return ONLY a valid JSON object (no markdown code blocks, no \`\`\`json):
   let rawSteps = String(parsed.stepsToReproduce || "").trim();
 
   if (rawDesc || rawAc) {
-    if (!rawSteps.includes("Description:") && !rawSteps.includes("Acceptance Criteria:")) {
-      const parts: string[] = [];
-      if (rawDesc) parts.push(`Description:\n${rawDesc}`);
-      if (rawSteps) parts.push(`Steps to Reproduce:\n${rawSteps}`);
-      if (rawAc) parts.push(`Acceptance Criteria:\n${rawAc}`);
-      rawSteps = parts.join("\n\n");
-    }
+    const parts: string[] = [];
+    if (rawDesc) parts.push(`Description:\n${rawDesc}`);
+    if (rawAc) parts.push(`Acceptance Criteria:\n${rawAc}`);
+    rawSteps = parts.join("\n\n");
   }
 
   const ticket: IssueAgentTicketDraft = {
