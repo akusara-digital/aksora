@@ -72,6 +72,24 @@ export function getModuleWorkspaceCrumbs(module: ModuleKey, title: string) {
   ];
 }
 
+/** 3-level breadcrumb for the detail view: Module > Project > Code (falls back to 2-level when the row has no project/code). */
+export function getDetailViewCrumbs(module: ModuleKey, title: string, row: Record<string, unknown>) {
+  const [rootCrumb] = getModuleWorkspaceCrumbs(module, title);
+  const project = String(row.project ?? row.projectName ?? "").trim();
+  const code = String(row.code ?? "").trim();
+  const baseHref = "href" in rootCrumb ? rootCrumb.href : undefined;
+
+  const crumbs: { label: string; href?: string }[] = [rootCrumb];
+  if (project) {
+    crumbs.push({
+      label: project,
+      href: baseHref ? `${baseHref}?project=${encodeURIComponent(project)}` : undefined,
+    });
+  }
+  crumbs.push({ label: code || title });
+  return crumbs;
+}
+
 export function getModuleWorkspaceIcon(module: ModuleKey) {
   const icons: Record<ModuleKey, ReactNode> = {
     tasks: <Kanban size={22} weight="bold" />,

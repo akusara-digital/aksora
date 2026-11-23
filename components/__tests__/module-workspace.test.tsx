@@ -66,6 +66,10 @@ vi.mock("@/components/module/module-workspace-utils", () => ({
     { label: "Dashboard" },
     { label: title },
   ],
+  getDetailViewCrumbs: (_module: string, title: string) => [
+    { label: "Dashboard" },
+    { label: title },
+  ],
   getModuleWorkspacePermissions: (role: string) => {
     const isAdmin = role === "admin";
     const isLead = role === "pm";
@@ -86,8 +90,8 @@ vi.mock("@/components/module/module-workspace-utils", () => ({
   parseFieldError: () => ({}),
 }));
 
-vi.mock("@/components/module/module-view-modal", () => ({
-  ViewModal: () => null,
+vi.mock("@/components/module/module-detail-view", () => ({
+  ModuleDetailView: () => null,
 }));
 
 vi.mock("@/components/ui/toast", () => ({

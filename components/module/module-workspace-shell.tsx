@@ -22,7 +22,7 @@ const KanbanBoard = dynamic(() => import("@/components/module/kanban-board").the
  loading: () => <div className="h-40  border border-gray-200 bg-gray-50" />,
 });
 
-const ViewModal = dynamic(() => import("@/components/module/module-view-modal").then((module) => module.ViewModal), {
+const ModuleDetailView = dynamic(() => import("@/components/module/module-detail-view").then((module) => module.ModuleDetailView), {
  ssr: false,
  loading: () => null,
 });
@@ -331,8 +331,28 @@ export function ModuleWorkspaceShell({
  onResetColumns={onResetColumns}
  />
 
-
- {viewMode ==="table" ? (
+ {viewingRow ? (
+ <div className="border-t border-gray-200 p-5">
+ <ModuleDetailView
+ row={viewingRow}
+ config={config}
+ fieldIcons={fieldIcons}
+ onClose={onCloseView}
+ onEdit={onEditView}
+ canEdit={canEdit}
+ canDelete={canDelete}
+ onDelete={() => {
+   if (viewingRow) {
+     onDeleteRow(viewingRow);
+     onCloseView();
+   }
+ }}
+ module={module}
+ initialTab={initialTab}
+ onTabChange={onTabChange}
+ />
+ </div>
+ ) : viewMode ==="table" ? (
  <>
  {/* Desktop table */}
  <div className="hidden md:block">
@@ -516,27 +536,6 @@ export function ModuleWorkspaceShell({
  onReopenCancel={onReopenCancel}
  onReopenConfirm={onReopenConfirm}
  />
-
- {viewingRow && (
- <ViewModal
- row={viewingRow}
- config={config}
- fieldIcons={fieldIcons}
- onClose={onCloseView}
- onEdit={onEditView}
- canEdit={canEdit}
- canDelete={canDelete}
- onDelete={() => {
-   if (viewingRow) {
-     onDeleteRow(viewingRow);
-     onCloseView();
-   }
- }}
- module={module}
- initialTab={initialTab}
- onTabChange={onTabChange}
- />
- )}
  </>
  );
 }
