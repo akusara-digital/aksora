@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import {
   Image as ImageIcon,
-  Code,
   X,
   CircleNotch,
   Lightning,
@@ -42,7 +41,6 @@ export function AiIssueAgentContent({
   const [preset, setPreset] = useState<"standard" | "compact" | "technical">("technical");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [createAnother, setCreateAnother] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -89,13 +87,6 @@ export function AiIssueAgentContent({
     }
   };
 
-  const handleInsertPasteLog = () => {
-    const logTemplate = "\n[Stack trace / Console log]:\nError: ";
-    setInputNotes((prev) => (prev ? `${prev}\n${logTemplate}` : "Error: "));
-    setTimeout(() => {
-      textareaRef.current?.focus();
-    }, 50);
-  };
 
   const handleProcess = async (targetAction: "auto" | "review") => {
     if (!inputNotes.trim() && !imageBase64) {
@@ -171,15 +162,8 @@ export function AiIssueAgentContent({
           status: "open",
         };
 
-        await onDirectSubmit(payload, createAnother);
+        await onDirectSubmit(payload, false);
         toast("Bug created successfully!", "success");
-
-        if (createAnother) {
-          setInputNotes("");
-          setImagePreview(null);
-          setImageBase64(null);
-          textareaRef.current?.focus();
-        }
       }
     } catch (err) {
       toast(err instanceof Error ? err.message : "Failed to structure issue", "error");
@@ -251,132 +235,47 @@ export function AiIssueAgentContent({
               <ImageIcon size={13} weight="bold" className="text-slate-500" />
               <span>Attach Screenshot</span>
             </button>
-
-            <button
-              type="button"
-              onClick={handleInsertPasteLog}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition cursor-pointer"
-            >
-              <Code size={13} weight="bold" className="text-slate-500" />
-              <span>Paste Log</span>
-            </button>
-          </div>
-
-          {/* Right: Output Preset Selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-semibold text-slate-500">Output:</span>
-            <div className="inline-flex rounded-md border border-slate-200 bg-white p-0.5 text-[11px]">
-              {(
-                [
-                  { id: "standard", label: "Standard" },
-                  { id: "compact", label: "Compact" },
-                  { id: "technical", label: "Technical" },
-                ] as const
-              ).map((p) => {
-                const isSelected = preset === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setPreset(p.id)}
-                    className={cn(
-                      "rounded px-2 py-0.5 font-semibold transition cursor-pointer",
-                      isSelected
-                        ? "border border-blue-200 bg-blue-50 text-blue-700 font-bold"
-                        : "text-slate-600 hover:text-slate-900",
-                    )}
-                  >
-                    {p.label}
-                  </button>
-                );
-              })}
-            </div>
           </div>
         </div>
-      </div>
-
-      {/* Helper Bar: Try Examples & Auto-assigns hint */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[11px]">
-        <div className="flex items-center gap-1.5 text-slate-500">
-          <span>Try example:</span>
-          <button
-            type="button"
-            onClick={() => {
-              setInputNotes("Payment button unresponsive after selecting QRIS on checkout page. QR code fails to render.");
-            }}
-            className="font-medium text-blue-600 hover:underline cursor-pointer"
-          >
-            QRIS freeze
-          </button>
-          <span className="text-slate-300">·</span>
-          <button
-            type="button"
-            onClick={() => {
-              setInputNotes("Saving project settings returns HTTP 500 error toast. Console shows 500 Internal Server Error on /api/items/projects.");
-            }}
-            className="font-medium text-blue-600 hover:underline cursor-pointer"
-          >
-            API 500 error
-          </button>
-        </div>
-
-        <span className="text-slate-400 font-medium">Auto-assigns Severity, Priority & Repro Steps</span>
       </div>
       </div>
 
       {/* Footer Controls */}
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3.5">
-        {/* Left: Create another checkbox */}
-        <label className="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={createAnother}
-            onChange={(e) => setCreateAnother(e.target.checked)}
-            className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 accent-blue-600 focus:ring-blue-500 cursor-pointer"
-          />
-          <span className="text-xs font-semibold text-slate-700">Create another</span>
-        </label>
+      <div className="mt-2 flex items-center justify-end gap-2 border-t border-slate-200 pt-3.5">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={loading || pending}
+          className="rounded-md border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer disabled:opacity-50"
+        >
+          Cancel
+        </button>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={loading || pending}
-            className="rounded-md border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer disabled:opacity-50"
-          >
-            Cancel
-          </button>
+        <button
+          type="button"
+          onClick={() => void handleProcess("review")}
+          disabled={loading || pending}
+          className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50/70 px-4 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition cursor-pointer disabled:opacity-50"
+        >
+          {loading && actionType === "review" && (
+            <CircleNotch size={13} className="animate-spin text-blue-700" />
+          )}
+          Structure & Review
+        </button>
 
-          <button
-            type="button"
-            onClick={() => void handleProcess("review")}
-            disabled={loading || pending}
-            className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50/70 px-4 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition cursor-pointer disabled:opacity-50"
-          >
-            {loading && actionType === "review" && (
-              <CircleNotch size={13} className="animate-spin text-blue-700" />
-            )}
-            Structure & Review
-          </button>
-
-          <button
-            type="button"
-            onClick={() => void handleProcess("auto")}
-            disabled={loading || pending}
-            className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
-          >
-            {loading && actionType === "auto" ? (
-              <CircleNotch size={13} className="animate-spin text-white" />
-            ) : (
-              <Lightning size={13} weight="bold" />
-            )}
-            <span>Auto-Create Bug</span>
-            <kbd className="hidden sm:inline-block rounded bg-blue-700/60 px-1 py-0.5 text-[10px] font-mono font-medium text-blue-100">
-              ⌘↵
-            </kbd>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => void handleProcess("auto")}
+          disabled={loading || pending}
+          className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
+        >
+          {loading && actionType === "auto" ? (
+            <CircleNotch size={13} className="animate-spin text-white" />
+          ) : (
+            <Lightning size={13} weight="bold" />
+          )}
+          <span>Auto-Create Bug</span>
+        </button>
       </div>
 
       <AiUnconfiguredModal
