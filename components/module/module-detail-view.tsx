@@ -169,7 +169,14 @@ export function ModuleDetailView({
 
       <div className="flex flex-wrap items-center gap-2 pl-12">
         {module === "bugs" && (
-          <BugTicketButton bugId={row.id} externalTicket={row.externalTicket} />
+          <BugTicketButton
+            bugId={row.id}
+            externalTicket={row.externalTicket}
+            defaultAssignee={String(row.suggestedDev || "")}
+            defaultModule={String(row.module || "")}
+            defaultProject={String(row.project || "")}
+            devOptions={config.fields.find((f) => f.name === "suggestedDev")?.options || []}
+          />
         )}
         {module === "test-cases" && (
           <AiExportAutomationButton
