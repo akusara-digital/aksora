@@ -63,7 +63,6 @@ export function StreamlinedBugForm({
   const [stepsToReproduce, setStepsToReproduce] = useState(() => String(initialData?.stepsToReproduce || ""));
   const [expectedResult, setExpectedResult] = useState(() => String(initialData?.expectedResult || ""));
   const [actualResult, setActualResult] = useState(() => String(initialData?.actualResult || ""));
-  const [createAnother, setCreateAnother] = useState(false);
 
   // Sync initialData changes (e.g. when switched from AI draft)
   useEffect(() => {
@@ -153,15 +152,7 @@ export function StreamlinedBugForm({
     if (evidence.trim()) payload.evidence = evidence.trim();
     if (relatedItems.trim()) payload.relatedItems = relatedItems.trim();
 
-    onSubmit(payload, createAnother);
-
-    if (createAnother && !initialData?.id) {
-      setTitle("");
-      setStepsToReproduce("");
-      setExpectedResult("");
-      setActualResult("");
-      toast("Bug created! Ready for next bug.", "success");
-    }
+    onSubmit(payload);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -360,49 +351,31 @@ export function StreamlinedBugForm({
       </div>
 
       {/* Footer Controls */}
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3.5">
-        {/* Left: Create another checkbox */}
-        {!isEditing ? (
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={createAnother}
-              onChange={(e) => setCreateAnother(e.target.checked)}
-              className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 accent-blue-600 focus:ring-blue-500 cursor-pointer"
-            />
-            <span className="text-xs font-semibold text-slate-700">Create another</span>
-          </label>
-        ) : (
-          <div />
-        )}
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={pending}
-            className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={pending}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
-          >
-            {pending ? (
-              <CircleNotch size={13} className="animate-spin text-white" />
-            ) : isEditing ? (
-              <span>Save Changes</span>
-            ) : (
-              <>
-                <Plus size={13} weight="bold" />
-                <span>Create Bug</span>
-              </>
-            )}
-          </button>
-        </div>
+      <div className="mt-2 flex flex-wrap items-center justify-end gap-2 border-t border-slate-200 pt-3.5">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={pending}
+          className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
+        >
+          {pending ? (
+            <CircleNotch size={13} className="animate-spin text-white" />
+          ) : isEditing ? (
+            <span>Save Changes</span>
+          ) : (
+            <>
+              <Plus size={13} weight="bold" />
+              <span>Create Bug</span>
+            </>
+          )}
+        </button>
       </div>
     </form>
   );

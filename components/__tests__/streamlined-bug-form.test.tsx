@@ -52,22 +52,9 @@ describe("StreamlinedBugForm", () => {
     expect(devInput).toBeDefined();
   });
 
-  it("handles create another checkbox and passes flag to onSubmit", () => {
-    const handleSubmit = vi.fn();
-    render(<StreamlinedBugForm {...defaultProps} onSubmit={handleSubmit} />);
-
-    const titleInput = screen.getByPlaceholderText(/e\.g\. checkout button unresponsive/i);
-    fireEvent.change(titleInput, { target: { value: "Checkout crash on tablet" } });
-
-    const createAnotherCheckbox = screen.getByRole("checkbox", { name: /create another/i });
-    expect(createAnotherCheckbox).toBeDefined();
-    fireEvent.click(createAnotherCheckbox);
-
-    const submitBtn = screen.getByRole("button", { name: /create bug/i });
-    fireEvent.click(submitBtn);
-
-    expect(handleSubmit).toHaveBeenCalledTimes(1);
-    expect(handleSubmit.mock.calls[0][1]).toBe(true);
+  it("does not render create another checkbox in footer", () => {
+    render(<StreamlinedBugForm {...defaultProps} />);
+    expect(screen.queryByRole("checkbox", { name: /create another/i })).toBeNull();
   });
 
   it("submits form on Ctrl+Enter keyboard shortcut", () => {
