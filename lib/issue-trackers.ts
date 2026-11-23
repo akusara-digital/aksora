@@ -91,20 +91,37 @@ export async function getTracker(id: number, andWhere: string, params: (string |
   );
 }
 
-function bugSections(bug: TicketBug) {
-  return [
-    ["Project", [bug.project, bug.module].filter(Boolean).join(" / ") || "-"],
+export type CreateTicketOptions = {
+  runUrl?: string;
+  environment?: string;
+  scope?: string;
+  assignee?: string;
+  labels?: string[];
+};
+
+function bugSections(bug: TicketBug, extra?: { environment?: string; scope?: string; assignee?: string }) {
+  const sections: [string, string][] = [
+    ["Project", [bug.project, bug.module, extra?.scope && extra.scope !== "None (Leave empty)" ? extra.scope : ""].filter(Boolean).join(" / ") || "-"],
+  ];
+  if (extra?.environment) {
+    sections.push(["Environment", extra.environment]);
+  }
+  if (extra?.assignee && extra.assignee !== "Leave Unassigned") {
+    sections.push(["Assignee", extra.assignee]);
+  }
+  sections.push(
     ["Severity", bug.severity || "-"],
     ["Priority", bug.priority || "-"],
     ["Preconditions", bug.preconditions || "-"],
     ["Steps to reproduce", bug.stepsToReproduce || "-"],
     ["Expected result", bug.expectedResult || "-"],
     ["Actual result", bug.actualResult || "-"],
-  ] as const;
+  );
+  return sections;
 }
 
-export function bugPlainText(bug: TicketBug, runUrl?: string) {
-  const lines = bugSections(bug).map(([label, value]) => `${label}:\n${value}`);
+export function bugPlainText(bug: TicketBug, runUrl?: string, extra?: { environment?: string; scope?: string; assignee?: string }) {
+  const lines = bugSections(bug, extra).map(([label, value]) => `${label}:\n${value}`);
   lines.push(`View in Aksora: ${bugDeepLink(bug)}`);
   if (runUrl) lines.push(`Test run: ${runUrl}`);
   return lines.join("\n\n");
@@ -118,9 +135,9 @@ function adfParagraph(text: string, link?: string) {
 }
 
 /** Jira Cloud requires Atlassian Document Format for v3 descriptions. */
-function bugAdf(bug: TicketBug, runUrl?: string) {
+function bugAdf(bug: TicketBug, runUrl?: string, extra?: { environment?: string; scope?: string; assignee?: string }) {
   const content: unknown[] = [];
-  for (const [label, value] of bugSections(bug)) {
+  for (const [label, value] of bugSections(bug, extra)) {
     content.push({ type: "heading", attrs: { level: 3 }, content: [{ type: "text", text: label }] });
     for (const line of String(value).split("\n")) if (line.trim()) content.push(adfParagraph(line));
   }
@@ -165,13 +182,45 @@ function secretOf(tracker: TrackerRow) {
   return decryptSecret(tracker.secretEncrypted);
 }
 
-export async function createTicket(tracker: TrackerRow, bug: TicketBug, opts: { runUrl?: string } = {}): Promise<TicketResult> {
+export async function createTicket(tracker: TrackerRow, bug: TicketBug, opts: CreateTicketOptions = {}): Promise<TicketResult> {
   const secret = secretOf(tracker);
   const summary = `[${bug.severity || "Bug"}] ${bug.title}`.slice(0, 250);
 
   if (tracker.kind === "jira") {
     const cfg = parseConfig(tracker, "jira");
     const origin = await jiraOrigin(cfg.host);
+
+    const labels: string[] = [];
+    if (opts.environment) {
+      const cleanEnv = opts.environment.replace(/^[^\w]+/, "").replace(/\s+/g, "-").trim();
+      if (cleanEnv) labels.push(cleanEnv);
+    }
+    if (opts.scope && opts.scope !== "None (Leave empty)") {
+      const cleanScope = opts.scope.replace(/^[^\w]+/, "").replace(/\s+/g, "-").trim();
+      if (cleanScope) labels.push(cleanScope);
+    }
+    if (opts.labels && Array.isArray(opts.labels)) {
+      for (const l of opts.labels) {
+        const c = String(l).replace(/^[^\w]+/, "").replace(/\s+/g, "-").trim();
+        if (c && !labels.includes(c)) labels.push(c);
+      }
+    }
+
+    const fields: Record<string, unknown> = {
+      project: { key: cfg.projectKey },
+      issuetype: { name: cfg.issueType },
+      summary,
+      description: bugAdf(bug, opts.runUrl, {
+        environment: opts.environment,
+        scope: opts.scope,
+        assignee: opts.assignee,
+      }),
+    };
+
+    if (labels.length > 0) {
+      fields.labels = labels;
+    }
+
     const res = await fetch(`${origin}/rest/api/3/issue`, {
       method: "POST",
       headers: {
@@ -180,14 +229,7 @@ export async function createTicket(tracker: TrackerRow, bug: TicketBug, opts: { 
         "Content-Type": "application/json",
       },
       redirect: "error",
-      body: JSON.stringify({
-        fields: {
-          project: { key: cfg.projectKey },
-          issuetype: { name: cfg.issueType },
-          summary,
-          description: bugAdf(bug, opts.runUrl),
-        },
-      }),
+      body: JSON.stringify({ fields }),
     });
     if (!res.ok) throw await readError(res, "Jira");
     const json = (await res.json()) as { key: string };

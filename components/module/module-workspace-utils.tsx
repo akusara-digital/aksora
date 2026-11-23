@@ -158,6 +158,9 @@ export function getPreferredColumnOrder(module: ModuleKey) {
   if (module === "work-logs") {
     return ["date", "startTime", "endTime", "durationMinutes", "category", "project", "description", "output", "assignee"];
   }
+  if (module === "bugs") {
+    return ["project", "title", "priority", "status", "externalTicket"];
+  }
   return ["code", "title", "project", "status", "priority"];
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Check } from "@phosphor-icons/react";
 import { Badge } from "@/components/shared/badge";
 import { HighlightText } from "@/components/shared/highlight-text";
 import { InlineStatusEditor } from "@/components/module/inline-status-editor";
@@ -149,6 +150,41 @@ export function ModuleWorkspaceCell({ module, row, column, value: rawValue, onIn
         <Badge value={String(value)} displayValue={getStatusDisplay(module, String(value))} />
       ) : column.tone ? (
         <Badge value={String(value)} />
+      ) : column.key === "externalTicket" ? (
+        (() => {
+          const rawTicket = String(value || "").trim();
+          if (!rawTicket) {
+            return (
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-400">
+                Not pushed
+              </span>
+            );
+          }
+          const isUrl = /^https?:\/\//i.test(rawTicket);
+          const matchKey = rawTicket.match(/([A-Z0-9]+-\d+)/i);
+          const displayKey = matchKey ? matchKey[1].toUpperCase() : (isUrl ? rawTicket.split("/").pop() : rawTicket);
+
+          return isUrl ? (
+            <a
+              href={rawTicket}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100 hover:text-emerald-900 shadow-2xs"
+              title={`View ${displayKey} in Jira`}
+            >
+              <Check size={12} weight="bold" className="text-emerald-600" />
+              <span>Pushed ({displayKey})</span>
+            </a>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 shadow-2xs"
+              title={`Jira Ticket: ${displayKey}`}
+            >
+              <Check size={12} weight="bold" className="text-emerald-600" />
+              <span>Pushed ({displayKey})</span>
+            </span>
+          );
+        })()
       ) : column.key === "durationMinutes" ? (
         <span className="font-medium text-gray-700">
           {formatDuration(

@@ -9,8 +9,11 @@ import { createTicket, getTracker, type TicketBug } from "@/lib/issue-trackers";
 export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
-  trackerId: z.coerce.number().int().positive(),
+  trackerId: z.coerce.number().int().positive().optional(),
   runUrl: z.string().url().optional(),
+  environment: z.string().optional(),
+  scope: z.string().optional(),
+  assignee: z.string().optional(),
 });
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -19,7 +22,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (normalizeRole(user.role) === "guest") return NextResponse.json({ error: "Guests have read-only access." }, { status: 403 });
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Pick a tracker." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Invalid request payload." }, { status: 400 });
 
   const scope = getAccessScope(user);
   const bugId = Number((await params).id);
@@ -33,12 +36,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   );
   if (!bug) return NextResponse.json({ error: "Bug not found." }, { status: 404 });
 
-  // Tracker belongs to the bug's workspace, not necessarily the caller's (superadmin case).
-  const tracker = await getTracker(parsed.data.trackerId, ` AND "workspaceId" = ?`, [bug.workspaceId ?? -1]);
-  if (!tracker || !tracker.enabled) return NextResponse.json({ error: "Tracker not found or disabled." }, { status: 404 });
+  let tracker;
+  if (parsed.data.trackerId) {
+    tracker = await getTracker(parsed.data.trackerId, ` AND "workspaceId" = ?`, [bug.workspaceId ?? -1]);
+  } else {
+    // Fall back to active enabled Jira tracker for the bug's workspace
+    tracker = await db.get<import("@/lib/issue-trackers").TrackerRow>(
+      `SELECT * FROM "IssueTracker" WHERE "workspaceId" = ? AND "kind" = 'jira' AND "enabled" = 1 AND "deletedAt" IS NULL ORDER BY "id" ASC LIMIT 1`,
+      [bug.workspaceId ?? -1],
+    );
+  }
+  if (!tracker || !tracker.enabled) return NextResponse.json({ error: "No enabled Jira tracker found in this workspace." }, { status: 404 });
 
   try {
-    const ticket = await createTicket(tracker, bug, { runUrl: parsed.data.runUrl });
+    const ticket = await createTicket(tracker, bug, {
+      runUrl: parsed.data.runUrl,
+      environment: parsed.data.environment,
+      scope: parsed.data.scope,
+      assignee: parsed.data.assignee,
+    });
     const externalTicket = ticket.url || ticket.key;
     await db.run(`UPDATE "Bug" SET "externalTicket" = ?, "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = ?`, [externalTicket, bug.id]);
     await logActivity(

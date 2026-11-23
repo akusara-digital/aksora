@@ -13,6 +13,17 @@ import { toast } from "@/components/ui/toast";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { cn } from "@/lib/utils";
 import { BugCollapsibleDetails } from "./bug-collapsible-details";
+import { PushToJiraModal } from "./push-to-jira-modal";
+
+export interface BugSubmitOptions {
+  pushToJira?: boolean;
+  jiraConfig?: {
+    trackerId?: number;
+    assignee?: string;
+    environment?: string;
+    scope?: string;
+  };
+}
 
 interface StreamlinedBugFormProps {
   projectOptions?: Array<{ label: string; value: string }>;
@@ -22,7 +33,7 @@ interface StreamlinedBugFormProps {
   initialData?: Record<string, unknown> | null;
   pending?: boolean;
   onCancel: () => void;
-  onSubmit: (entry: Record<string, unknown>, createAnother?: boolean) => void;
+  onSubmit: (entry: Record<string, unknown>, options?: BugSubmitOptions | boolean) => void;
 }
 
 const SEVERITY_OPTIONS = [
@@ -63,6 +74,29 @@ export function StreamlinedBugForm({
   const [stepsToReproduce, setStepsToReproduce] = useState(() => String(initialData?.stepsToReproduce || ""));
   const [expectedResult, setExpectedResult] = useState(() => String(initialData?.expectedResult || ""));
   const [actualResult, setActualResult] = useState(() => String(initialData?.actualResult || ""));
+
+  // Jira Integration state
+  const [jiraTracker, setJiraTracker] = useState<{ id: number; name: string; kind: string } | null>(null);
+  const [showJiraModal, setShowJiraModal] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<Record<string, unknown> | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/issue-trackers")
+      .then((res) => res.json())
+      .then((json) => {
+        if (!active) return;
+        const trackers = (json.data as Array<{ id: number; name: string; kind: string; enabled: boolean }>) || [];
+        const jira = trackers.find((t) => t.kind === "jira" && t.enabled);
+        setJiraTracker(jira ? { id: jira.id, name: jira.name, kind: jira.kind } : null);
+      })
+      .catch(() => {
+        if (active) setJiraTracker(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Sync initialData changes (e.g. when switched from AI draft)
   useEffect(() => {
@@ -152,7 +186,37 @@ export function StreamlinedBugForm({
     if (evidence.trim()) payload.evidence = evidence.trim();
     if (relatedItems.trim()) payload.relatedItems = relatedItems.trim();
 
-    onSubmit(payload);
+    // If editing existing bug, or Jira is not connected: submit directly
+    if (isEditing || !jiraTracker) {
+      onSubmit(payload, { pushToJira: false });
+      return;
+    }
+
+    // Open SnapTest-style Push to Jira confirmation popup
+    setPendingPayload(payload);
+    setShowJiraModal(true);
+  };
+
+  const handleConfirmPush = (jiraConfig: { assignee: string; environment: string; scope: string }) => {
+    if (!pendingPayload) return;
+    const finalPayload = { ...pendingPayload };
+    if (jiraConfig.assignee && !finalPayload.suggestedDev) {
+      finalPayload.suggestedDev = jiraConfig.assignee;
+    }
+    setShowJiraModal(false);
+    onSubmit(finalPayload, {
+      pushToJira: true,
+      jiraConfig: {
+        trackerId: jiraTracker?.id,
+        ...jiraConfig,
+      },
+    });
+  };
+
+  const handleSaveWithoutPush = () => {
+    if (!pendingPayload) return;
+    setShowJiraModal(false);
+    onSubmit(pendingPayload, { pushToJira: false });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -377,6 +441,18 @@ export function StreamlinedBugForm({
           )}
         </button>
       </div>
+
+      <PushToJiraModal
+        isOpen={showJiraModal}
+        onClose={() => setShowJiraModal(false)}
+        devOptions={devOptions}
+        defaultAssignee={suggestedDev}
+        defaultModule={moduleName}
+        defaultProject={selectedProject || project}
+        submitting={pending}
+        onConfirmPush={handleConfirmPush}
+        onSaveWithoutPush={handleSaveWithoutPush}
+      />
     </form>
   );
 }

@@ -151,6 +151,7 @@ export const moduleConfigs: Record<ModuleKey, ModuleConfig> = {
       { key: "severity", label: "Severity", tone: "severity" },
       { key: "priority", label: "Priority", tone: "priority" },
       { key: "status", label: "Status", tone: "status" },
+      { key: "externalTicket", label: "Jira Ticket" },
       { key: "suggestedDev", label: "Suggested Dev" },
       { key: "relatedItems", label: "Linked Items", multiline: true },
       { key: "evidence", label: "Evidence", link: true },

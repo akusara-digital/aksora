@@ -272,7 +272,10 @@ export function ModuleWorkspaceShell({
    setBugCreateMode("manual");
  };
 
- const handleDirectBugSubmit = async (entry: Record<string, unknown>, createAnother?: boolean) => {
+ const handleDirectBugSubmit = async (
+   entry: Record<string, unknown>,
+   options?: { pushToJira?: boolean; jiraConfig?: Record<string, unknown> } | boolean,
+ ) => {
    const formData = new FormData();
    for (const [key, val] of Object.entries(entry)) {
      if (val !== undefined && val !== null) {
@@ -280,17 +283,43 @@ export function ModuleWorkspaceShell({
      }
    }
 
-   if (createAnother && !editingRow) {
+   const isPushToJira = typeof options === "object" && options?.pushToJira;
+
+   if (isPushToJira && !editingRow) {
      try {
        const res = await fetch(`/api/items/${module}`, {
          method: "POST",
          body: formData,
        });
+       const json = await res.json().catch(() => ({}));
        if (!res.ok) {
-         const err = await res.json().catch(() => ({}));
-         throw new Error(err.error || "Failed to create bug");
+         throw new Error(json.error || "Failed to create bug");
        }
-       toast("Bug created successfully! Ready for next bug.", "success");
+       const createdBug = json.data;
+       const bugId = createdBug?.id;
+
+       if (bugId) {
+         try {
+           const ticketRes = await fetch(`/api/bugs/${bugId}/ticket`, {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify(options?.jiraConfig || {}),
+           });
+           const ticketJson = await ticketRes.json().catch(() => ({}));
+           if (ticketRes.ok && ticketJson.data?.key) {
+             toast(`Bug created and pushed to Jira as ${ticketJson.data.key}!`, "success");
+           } else {
+             toast(`Bug created in Aksora, but Jira push returned: ${ticketJson.error || "failed"}`, "warning");
+           }
+         } catch (ticketErr) {
+           toast(`Bug created in Aksora, but failed to push to Jira: ${ticketErr instanceof Error ? ticketErr.message : "Network error"}`, "warning");
+         }
+       } else {
+         toast("Bug created successfully in Aksora!", "success");
+       }
+
+       setManualBugDraft(null);
+       onCancelForm();
        router.refresh();
      } catch (err) {
        toast(err instanceof Error ? err.message : "Failed to create bug", "error");
