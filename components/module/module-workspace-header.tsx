@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Plus, MagnifyingGlass, Table, Kanban } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { ModuleFilterBar, type FilterValue } from "@/components/module/module-filter-bar";
-import { SavedViews } from "@/components/module/saved-views";
 import { QuickBugButton } from "@/components/bugs/quick-bug-button";
 import { TestSessionsToolsMenu } from "@/components/test-sessions/test-sessions-tools-menu";
 import { WorkLogAiActions } from "@/components/work-logs/work-log-ai-actions";
@@ -185,19 +184,6 @@ export function ModuleWorkspaceHeader({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto lg:ml-auto">
-              {filterOptions && filterOptions.length > 0 && activeFilters && onFilterChange && (
-                <SavedViews
-                  module={module}
-                  activeFilters={activeFilters}
-                  search={search}
-                  viewMode={viewMode}
-                  onApplyView={(filters, newSearch, newViewMode) => {
-                    onFilterChange(filters);
-                    onSearchChange(newSearch);
-                    onSetViewMode(newViewMode);
-                  }}
-                />
-              )}
               {filterOptions && filterOptions.length > 0 && activeFilters && onFilterChange && (
                 <ModuleFilterBar
                   filters={filterOptions}
