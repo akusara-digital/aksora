@@ -29,19 +29,34 @@ export function getDefaultCrumbsForPath(pathname: string): Crumb[] {
   if (p === "/" || p === "/dashboard") {
     return [{ label: "Dashboard" }];
   }
-  if (p === "/projects" || p.startsWith("/projects/")) {
+  if (p === "/projects") {
     return [{ label: "Dashboard", href: "/dashboard" }, { label: "Projects" }];
+  }
+  if (p.startsWith("/projects/")) {
+    return [{ label: "Projects", href: "/projects" }, { label: "Project Hub" }];
+  }
+  if (p.startsWith("/test-cases/detail/")) {
+    return [{ label: "Test Management", href: "/test-cases" }, { label: "Cases & Suites", href: "/test-cases" }, { label: "Case Detail" }];
   }
   if (p === "/test-cases" || p.startsWith("/test-cases/")) {
     return [{ label: "Test Management", href: "/test-cases" }, { label: "Cases & Suites" }];
   }
-  if (p === "/test-plans" || p.startsWith("/test-plans")) {
+  if (p.startsWith("/test-plans/")) {
+    return [{ label: "Test Management", href: "/test-cases" }, { label: "Test Plans", href: "/test-plans" }, { label: "Plan Detail" }];
+  }
+  if (p === "/test-plans") {
     return [{ label: "Test Management", href: "/test-cases" }, { label: "Test Plans" }];
   }
-  if (p === "/test-suites" || p.startsWith("/test-suites")) {
+  if (p.startsWith("/test-suites/")) {
+    return [{ label: "Test Management", href: "/test-cases" }, { label: "Cases & Suites", href: "/test-cases" }, { label: "Suite Detail" }];
+  }
+  if (p === "/test-suites") {
     return [{ label: "Test Management", href: "/test-cases" }, { label: "Test Suites" }];
   }
-  if (p === "/test-execution" || p.startsWith("/test-execution")) {
+  if (p.startsWith("/test-execution/")) {
+    return [{ label: "Test Management", href: "/test-cases" }, { label: "Test Runs", href: "/test-execution" }, { label: "Execution Run" }];
+  }
+  if (p === "/test-execution") {
     return [{ label: "Test Management", href: "/test-cases" }, { label: "Test Runs" }];
   }
   if (p === "/exploratory") {

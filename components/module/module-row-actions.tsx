@@ -70,6 +70,22 @@ export function ModuleRowActions({
             Execute
           </Link>
         )}
+        {module === "test-plans" && publicToken && (
+          <Link
+            href={`/test-plans/${publicToken}`}
+            className="rounded-sm bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 inline-flex items-center gap-1"
+          >
+            Open Plan
+          </Link>
+        )}
+        {module === "test-cases" && publicToken && (
+          <Link
+            href={`/test-cases/detail/${publicToken}`}
+            className="rounded-sm border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 inline-flex items-center gap-1"
+          >
+            Details
+          </Link>
+        )}
         {!["users", "assignees"].includes(module) && (
           <button
             type="button"

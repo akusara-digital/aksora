@@ -58,4 +58,26 @@ describe("TopBreadcrumbs", () => {
       { label: "Bug Tracker" },
     ]);
   });
+
+  it("derives hierarchical breadcrumbs for detail sub-pages", () => {
+    expect(getDefaultCrumbsForPath("/projects/12")).toEqual([
+      { label: "Projects", href: "/projects" },
+      { label: "Project Hub" },
+    ]);
+    expect(getDefaultCrumbsForPath("/test-plans/tp-token")).toEqual([
+      { label: "Test Management", href: "/test-cases" },
+      { label: "Test Plans", href: "/test-plans" },
+      { label: "Plan Detail" },
+    ]);
+    expect(getDefaultCrumbsForPath("/test-cases/detail/tc-token")).toEqual([
+      { label: "Test Management", href: "/test-cases" },
+      { label: "Cases & Suites", href: "/test-cases" },
+      { label: "Case Detail" },
+    ]);
+    expect(getDefaultCrumbsForPath("/test-execution/run-1")).toEqual([
+      { label: "Test Management", href: "/test-cases" },
+      { label: "Test Runs", href: "/test-execution" },
+      { label: "Execution Run" },
+    ]);
+  });
 });

@@ -386,10 +386,10 @@ export function ProjectsClient() {
                   </span>
                   <Link
                     href={`/projects/${project.id}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 transition hover:text-blue-700"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 transition hover:bg-blue-600 hover:text-white"
                   >
-                    View Project
-                    <ArrowRight size={13} weight="bold" />
+                    Open Hub
+                    <ArrowRight size={12} weight="bold" />
                   </Link>
                 </div>
               </div>
