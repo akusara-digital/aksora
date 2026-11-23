@@ -357,12 +357,12 @@ select:disabled {
 
 /* ── Drag handle cursor (white OS hand cursor is invisible on light bg) ── */
 .cursor-grab {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 256 256'%3E%3Cpath d='M188,44a32,32,0,0,0-8,1V44a32,32,0,0,0-60.79-14A32,32,0,0,0,76,60v50.83a32,32,0,0,0-52,36.7C55.82,214.6,75.35,244,128,244a92.1,92.1,0,0,0,92-92V76A32,32,0,0,0,188,44Z' fill='black' stroke='white' stroke-width='14' stroke-linejoin='round' paint-order='stroke'/%3E%3C/svg%3E") 8 8, grab;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 256 256'%3E%3Cpath d='M188,44a32,32,0,0,0-8,1V44a32,32,0,0,0-60.79-14A32,32,0,0,0,76,60v50.83a32,32,0,0,0-52,36.7C55.82,214.6,75.35,244,128,244a92.1,92.1,0,0,0,92-92V76A32,32,0,0,0,188,44Z' fill='white' stroke='black' stroke-width='14' stroke-linejoin='round' paint-order='stroke'/%3E%3C/svg%3E") 8 8, grab;
 }
 
 .cursor-grab:active,
 .active\:cursor-grabbing:active {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 256 256'%3E%3Cpath d='M200,76H188V64a36,36,0,0,0-60-26.8A36,36,0,0,0,69.27,54.54,36,36,0,0,0,20,88v40a108,108,0,0,0,216,0V112A36,36,0,0,0,200,76Z' fill='black' stroke='white' stroke-width='14' stroke-linejoin='round' paint-order='stroke'/%3E%3C/svg%3E") 8 8, grabbing;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 256 256'%3E%3Cpath d='M200,76H188V64a36,36,0,0,0-60-26.8A36,36,0,0,0,69.27,54.54,36,36,0,0,0,20,88v40a108,108,0,0,0,216,0V112A36,36,0,0,0,200,76Z' fill='white' stroke='black' stroke-width='14' stroke-linejoin='round' paint-order='stroke'/%3E%3C/svg%3E") 8 8, grabbing;
 }
 
 /* ── Tap feedback (native CSS, no per-component JS) ───────────── */
