@@ -56,7 +56,6 @@ vi.mock("@/components/module/module-view-modal-parts", () => ({
   renderEvidence: () => null,
 }));
 
-vi.mock("@/components/bugs/ai-root-cause-button", () => ({ AiRootCauseButton: () => null }));
 vi.mock("@/components/bugs/ai-bug-to-case-button", () => ({ AiBugToCaseButton: () => null }));
 vi.mock("@/components/bugs/bug-triage-button", () => ({ BugTriageButton: () => null }));
 vi.mock("@/components/bugs/bug-ticket-button", () => ({ BugTicketButton: () => null }));

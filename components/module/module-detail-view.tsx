@@ -13,7 +13,6 @@ import { ModuleDetailViewSidebar } from "@/components/module/module-detail-view-
 import { getDetailViewCrumbs, getModuleWorkspaceIcon } from "@/components/module/module-workspace-utils";
 import { SicmundusSyncModal } from "@/components/tasks/sicmundus-sync-modal";
 import { workLogToSicmundusProp } from "@/components/tasks/sicmundus-sync-parts";
-import { AiRootCauseButton } from "@/components/bugs/ai-root-cause-button";
 import { BugTicketButton } from "@/components/bugs/bug-ticket-button";
 import { AiTaskToCasesButton } from "@/components/tasks/ai-task-to-cases-button";
 import { AiExportAutomationButton } from "@/components/test-management/ai-export-automation-button";
@@ -170,15 +169,7 @@ export function ModuleDetailView({
 
       <div className="flex flex-wrap items-center gap-2 pl-12">
         {module === "bugs" && (
-          <>
-            <AiRootCauseButton
-              title={String(row.title || "")}
-              steps={String(row.stepsToReproduce || row.preconditions || "")}
-              actualResult={String(row.actualResult || "")}
-              project={String(row.project || "")}
-            />
-            <BugTicketButton bugId={row.id} externalTicket={row.externalTicket} />
-          </>
+          <BugTicketButton bugId={row.id} externalTicket={row.externalTicket} />
         )}
         {module === "test-cases" && (
           <AiExportAutomationButton
