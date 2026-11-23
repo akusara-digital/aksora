@@ -35,7 +35,8 @@ Next.js 16 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` · 
 ## Quality Checks & Knowledge Graph
 
 ```bash
-pnpm test            # vitest
+pnpm test            # fast relevant/changed tests only (vitest)
+pnpm test:all        # full regression test suite (all 170+ test files)
 pnpm precheck        # eslint + tsc --noEmit + next build
 pnpm ci:check        # test + precheck (same as GitHub Actions)
 pnpm db:health       # verify DB schema integrity

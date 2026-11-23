@@ -77,7 +77,7 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 5. **Pre-Completion Verification**: Selalu verifikasi sebelum melapor selesai:
    - `npx tsc --noEmit` — pastikan 0 error TypeScript baru.
    - `pnpm db:health` — pastikan 56 tabel sinkron jika ada perubahan skema DB.
-   - `npx vitest run <file>` — jika menyentuh modul yang memiliki test.
+   - `pnpm test` (atau `pnpm test <file>`) — menjalankan hanya test terkait dan relevan agar proses test cepat (gunakan `pnpm test:all` jika diminta full regression).
 6. **Filter by workspaceId**: Pastikan selalu filter berdasarkan `workspaceId` (kecuali superadmin). Log semua CRUD via `logActivity()`.
 7. **Validate Session**: Validasi session pada setiap mutating route. Gunakan validasi Zod dari `lib/modules.ts`.
 8. **API Standard**: `{ data }` untuk success, `{ error: string }` + status code untuk failure.

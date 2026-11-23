@@ -8,6 +8,7 @@ export default defineConfig({
     environment: "node",
     include: ["**/*.test.ts", "**/*.test.tsx"],
     exclude: ["node_modules", ".next", "coverage", "output"],
+    passWithNoTests: true,
   },
   resolve: {
     alias: {
