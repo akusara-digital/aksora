@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { getAccessScope } from "@/lib/data-helpers";
+import { validateOutboundUrlAsync } from "@/lib/ssrf-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,11 @@ export async function POST(
     return NextResponse.json({ error: "Canary not found" }, { status: 404 });
   }
 
+  const ssrfError = await validateOutboundUrlAsync(canary.url);
+  if (ssrfError) {
+    return NextResponse.json({ error: `Cannot ping URL: ${ssrfError}` }, { status: 400 });
+  }
+
   let customHeaders: Record<string, string> = {};
   try {
     if (canary.headers) customHeaders = JSON.parse(canary.headers);
@@ -51,6 +57,7 @@ export async function POST(
 
     const res = await fetch(canary.url, {
       method: canary.method || "GET",
+      redirect: "error",
       headers: {
         "User-Agent": "Aksora-QA-Canary/1.0",
         ...customHeaders,

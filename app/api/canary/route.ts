@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { getAccessScope, logActivity } from "@/lib/data-helpers";
+import { validateOutboundUrl } from "@/lib/ssrf-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,11 @@ export async function POST(request: NextRequest) {
 
   if (!url || typeof url !== "string" || !url.trim().startsWith("http")) {
     return NextResponse.json({ error: "valid http/https URL is required" }, { status: 400 });
+  }
+
+  const urlError = validateOutboundUrl(url.trim());
+  if (urlError) {
+    return NextResponse.json({ error: urlError }, { status: 400 });
   }
 
   await db.run(

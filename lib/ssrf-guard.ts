@@ -11,21 +11,28 @@ const BLOCKED_HOSTNAMES = new Set(["localhost", "metadata.google.internal"]);
 function isPrivateIPv4(ip: string): boolean {
   const parts = ip.split(".").map(Number);
   if (parts.length !== 4 || parts.some((p) => Number.isNaN(p))) return false;
-  const [a, b] = parts;
+  const [a, b, c] = parts;
   if (a === 127) return true; // loopback
   if (a === 10) return true; // 10.0.0.0/8
   if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12
   if (a === 192 && b === 168) return true; // 192.168.0.0/16
   if (a === 169 && b === 254) return true; // 169.254.0.0/16 (link-local + cloud metadata)
   if (a === 0) return true; // 0.0.0.0/8
+  if (a === 100 && b >= 64 && b <= 127) return true; // 100.64.0.0/10 (Carrier-Grade NAT)
+  if (a === 192 && b === 0 && (c === 0 || c === 2)) return true; // 192.0.0.0/24 & 192.0.2.0/24 (TEST-NET-1)
+  if (a === 198 && b === 51 && c === 100) return true; // 198.51.100.0/24 (TEST-NET-2)
+  if (a === 203 && b === 0 && c === 113) return true; // 203.0.113.0/24 (TEST-NET-3)
+  if (a >= 224) return true; // 224.0.0.0/4 (Multicast) & 240.0.0.0/4 (Reserved)
   return false;
 }
 
 function isPrivateIPv6(ip: string): boolean {
   const lower = ip.toLowerCase();
-  if (lower === "::1") return true; // loopback
+  if (lower === "::1" || lower === "::") return true; // loopback & unspecified
   if (lower.startsWith("fc") || lower.startsWith("fd")) return true; // fc00::/7 unique local
   if (lower.startsWith("fe80:")) return true; // fe80::/10 link-local
+  if (lower.startsWith("2001:db8:") || lower.startsWith("100::")) return true; // documentation & discard
+  if (lower.startsWith("ff00:") || lower.startsWith("ff")) return true; // multicast
   if (lower === "::" || lower.startsWith("::ffff:")) {
     // IPv4-mapped IPv6 — check both dot-decimal and hex notation
     const mapped = lower.replace("::ffff:", "");
@@ -102,12 +109,20 @@ export async function validateOutboundUrlAsync(rawUrl: string): Promise<string |
     const dnsTimeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("DNS resolution timeout")), 3000)
     );
-    const { address, family } = await Promise.race([lookup(hostname), dnsTimeout]);
-    if (family === 4 && isPrivateIPv4(address)) {
-      return "This host resolves to a private or loopback IP address.";
-    }
-    if (family === 6 && isPrivateIPv6(address)) {
-      return "This host resolves to a private or loopback IP address.";
+    const resolved = await Promise.race([
+      lookup(hostname, { all: true } as unknown as { all: true }),
+      dnsTimeout,
+    ]);
+    const records = Array.isArray(resolved) ? resolved : [resolved];
+    for (const record of records) {
+      if (!record) continue;
+      const family = typeof record.family === "number" ? record.family : isIP(record.address);
+      if (family === 4 && isPrivateIPv4(record.address)) {
+        return "This host resolves to a private or loopback IP address.";
+      }
+      if (family === 6 && isPrivateIPv6(record.address)) {
+        return "This host resolves to a private or loopback IP address.";
+      }
     }
   } catch {
     return "Could not resolve host.";

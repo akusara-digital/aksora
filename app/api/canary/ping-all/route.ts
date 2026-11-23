@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { getAccessScope } from "@/lib/data-helpers";
+import { validateOutboundUrlAsync } from "@/lib/ssrf-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -51,11 +52,25 @@ export async function POST(request: NextRequest) {
       let errorMsg = "";
 
       try {
+        const ssrfError = await validateOutboundUrlAsync(canary.url);
+        if (ssrfError) {
+          return {
+            id: canary.id,
+            name: canary.name,
+            environment: canary.environment,
+            status: 0,
+            latencyMs: 0,
+            isHealthy: 0,
+            error: `Blocked outbound URL: ${ssrfError}`,
+          };
+        }
+
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8_000);
 
         const res = await fetch(canary.url, {
           method: canary.method || "GET",
+          redirect: "error",
           headers: {
             "User-Agent": "Aksora-QA-Canary/1.0",
             ...customHeaders,

@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { validateOutboundUrlAsync } from "@/lib/ssrf-guard";
 
 export interface CriticalBugAlert {
   company: string;
@@ -140,6 +141,12 @@ export async function broadcastCriticalBug(alert: CriticalBugAlert) {
 
   await Promise.allSettled(
     targetUrls.map(async (url) => {
+      const ssrfError = await validateOutboundUrlAsync(url);
+      if (ssrfError) {
+        console.warn(`[chat-broadcast] blocked outbound URL ${url}: ${ssrfError}`);
+        return;
+      }
+
       const isDiscord = url.includes("discord.com");
       const body = JSON.stringify(isDiscord ? discordPayload : slackPayload);
       const controller = new AbortController();
@@ -147,6 +154,7 @@ export async function broadcastCriticalBug(alert: CriticalBugAlert) {
       try {
         await fetch(url, {
           method: "POST",
+          redirect: "error",
           headers: { "Content-Type": "application/json" },
           body,
           signal: controller.signal,

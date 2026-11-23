@@ -26,7 +26,6 @@ const publicPaths = [
   "/sw.js",
   "/_next",
   "/opengraph-image",
-  "/api/upload",
   "/invite/",
   "/report/",
   "/test-plans/",
@@ -46,12 +45,24 @@ const publicPaths = [
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60_000; // 1 minute
 const RATE_LIMIT_MAX = 120; // 120 requests per minute per IP
+
+// Stricter rate limit for public auth endpoints (brute-force defense)
+const authRateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const AUTH_RATE_LIMIT_WINDOW = 60_000; // 1 minute
+const AUTH_RATE_LIMIT_MAX = 20; // 20 requests per minute per IP
 let lastCleanup = Date.now();
 
+// Secure client IP extraction: prefer x-real-ip, fall back to the LAST x-forwarded-for entry.
+// The first entry is client-controlled and spoofable; Vercel and edge proxies append to the end.
 function getClientIp(request: NextRequest): string {
-  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    || request.headers.get("x-real-ip")
-    || "unknown";
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const parts = forwardedFor.split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.length) return parts[parts.length - 1];
+  }
+  return "unknown";
 }
 
 function checkRateLimit(ip: string): boolean {
@@ -61,6 +72,9 @@ function checkRateLimit(ip: string): boolean {
   if (now - lastCleanup > 5 * 60_000) {
     for (const [key, val] of rateLimitStore) {
       if (now > val.resetTime) rateLimitStore.delete(key);
+    }
+    for (const [key, val] of authRateLimitStore) {
+      if (now > val.resetTime) authRateLimitStore.delete(key);
     }
     lastCleanup = now;
   }
@@ -73,6 +87,18 @@ function checkRateLimit(ip: string): boolean {
 
   record.count++;
   return record.count <= RATE_LIMIT_MAX;
+}
+
+function checkAuthRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = authRateLimitStore.get(ip);
+  if (!record || now > record.resetTime) {
+    authRateLimitStore.set(ip, { count: 1, resetTime: now + AUTH_RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  record.count++;
+  return record.count <= AUTH_RATE_LIMIT_MAX;
 }
 
 function detectLocale(header: string | null): "en" | "id" {
@@ -101,22 +127,32 @@ export async function proxy(request: NextRequest) {
     return withLocale(request, NextResponse.next());
   }
 
-  if (
-    publicPaths.some((path) => pathname === path || pathname.startsWith(path)) &&
-    !pathname.startsWith("/test-plans/projects/")
-  ) {
-    return pathname.startsWith("/api") ? NextResponse.next() : withLocale(request, NextResponse.next());
-  }
-
-  // Rate limiting for API routes
+  // Rate limiting for ALL API routes (enforced before publicPaths bypass)
   if (pathname.startsWith("/api")) {
     const ip = getClientIp(request);
+
+    if (pathname.startsWith("/api/auth/")) {
+      if (!checkAuthRateLimit(ip)) {
+        return NextResponse.json(
+          { error: "Too many authentication attempts. Please try again later." },
+          { status: 429, headers: { "Retry-After": "60" } },
+        );
+      }
+    }
+
     if (!checkRateLimit(ip)) {
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
         { status: 429, headers: { "Retry-After": "60" } },
       );
     }
+  }
+
+  if (
+    publicPaths.some((path) => pathname === path || pathname.startsWith(path)) &&
+    !pathname.startsWith("/test-plans/projects/")
+  ) {
+    return pathname.startsWith("/api") ? NextResponse.next() : withLocale(request, NextResponse.next());
   }
 
   const token =

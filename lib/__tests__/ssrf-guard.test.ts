@@ -42,6 +42,11 @@ describe("validateOutboundUrl (sync, literal-IP + protocol checks)", () => {
     expect(validateOutboundUrl("http://localhost:5432")).toMatch(/not allowed/i);
   });
 
+  it("rejects literal carrier-grade NAT and multicast addresses", () => {
+    expect(validateOutboundUrl("http://100.64.0.1")).toMatch(/private|loopback/i);
+    expect(validateOutboundUrl("http://224.0.0.1")).toMatch(/private|loopback/i);
+  });
+
   it("allows a public IPv4 address", () => {
     expect(validateOutboundUrl("http://93.184.216.34")).toBeNull();
   });
@@ -58,6 +63,15 @@ describe("validateOutboundUrlAsync (DNS-rebinding protection)", () => {
     mocks.dnsLookup.mockResolvedValueOnce({ address: "93.184.216.34", family: 4 });
     const result = await validateOutboundUrlAsync("https://example.com");
     expect(result).toBeNull();
+  });
+
+  it("rejects a hostname when multiple IPs are returned and at least one is private", async () => {
+    mocks.dnsLookup.mockResolvedValueOnce([
+      { address: "93.184.216.34", family: 4 },
+      { address: "127.0.0.1", family: 4 },
+    ]);
+    const result = await validateOutboundUrlAsync("https://mixed-dns.example.com");
+    expect(result).toMatch(/private|loopback/i);
   });
 
   it("rejects when DNS resolution fails", async () => {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { getAccessScope, logActivity } from "@/lib/data-helpers";
+import { validateOutboundUrl } from "@/lib/ssrf-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,15 @@ export async function PATCH(
   const vals: unknown[] = [];
 
   if (body.name !== undefined) { sets.push('"name" = ?'); vals.push(String(body.name).trim()); }
-  if (body.url !== undefined) { sets.push('"url" = ?'); vals.push(String(body.url).trim()); }
+  if (body.url !== undefined) {
+    const trimmedUrl = String(body.url).trim();
+    const urlError = validateOutboundUrl(trimmedUrl);
+    if (urlError) {
+      return NextResponse.json({ error: urlError }, { status: 400 });
+    }
+    sets.push('"url" = ?');
+    vals.push(trimmedUrl);
+  }
   if (body.expectedStatus !== undefined) { sets.push('"expectedStatus" = ?'); vals.push(Number(body.expectedStatus)); }
   if (body.active !== undefined) { sets.push('"active" = ?'); vals.push(body.active ? 1 : 0); }
   if (body.project !== undefined) { sets.push('"project" = ?'); vals.push(String(body.project).trim()); }

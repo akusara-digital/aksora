@@ -78,8 +78,30 @@ export async function POST(request: NextRequest) {
         webhook = decryptSecret(row.discordWebhook);
       }
 
+      let parsedUrl: URL;
+      try {
+        parsedUrl = new URL(webhook);
+      } catch {
+        return NextResponse.json({ error: "Invalid Discord webhook URL format." }, { status: 400 });
+      }
+
+      const host = parsedUrl.hostname.toLowerCase();
+      const isDiscordHost =
+        host === "discord.com" ||
+        host.endsWith(".discord.com") ||
+        host === "discordapp.com" ||
+        host.endsWith(".discordapp.com");
+
+      if (parsedUrl.protocol !== "https:" || !isDiscordHost) {
+        return NextResponse.json(
+          { error: "Discord webhook must be an official https://discord.com/api/webhooks URL." },
+          { status: 400 }
+        );
+      }
+
       const res = await fetch(webhook, {
         method: "POST",
+        redirect: "error",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: `✅ **Aksora Bot Connected!**\nHello ${user.name || user.email}, your Discord alerts are active.`,

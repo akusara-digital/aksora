@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/data-helpers";
+import { validateOutboundUrlAsync } from "@/lib/ssrf-guard";
 
 export interface AutomationRuleRow {
   id: number;
@@ -80,19 +81,28 @@ export async function evaluateAutomationRules(
             );
           }
         } else if (rule.actionType === "webhook" && rule.actionValue) {
-          // Trigger outbound webhook payload
-          fetch(rule.actionValue, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              event: "rule_triggered",
-              rule: rule.name,
-              module,
-              entityId,
-              data: updatedData,
-              timestamp: new Date().toISOString(),
-            }),
-          }).catch((err) => console.warn(`Automation webhook failed for rule ${rule.name}:`, err));
+          // Trigger outbound webhook payload with SSRF and redirect protection
+          (async () => {
+            const ssrfError = await validateOutboundUrlAsync(rule.actionValue);
+            if (ssrfError) {
+              console.warn(`Automation webhook blocked for rule ${rule.name}: ${ssrfError}`);
+              return;
+            }
+            await fetch(rule.actionValue, {
+              method: "POST",
+              redirect: "error",
+              signal: AbortSignal.timeout(6000),
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                event: "rule_triggered",
+                rule: rule.name,
+                module,
+                entityId,
+                data: updatedData,
+                timestamp: new Date().toISOString(),
+              }),
+            });
+          })().catch((err) => console.warn(`Automation webhook failed for rule ${rule.name}:`, err));
         }
       }
     }

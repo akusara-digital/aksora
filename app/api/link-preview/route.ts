@@ -66,7 +66,7 @@ export async function GET(request: Request) {
     const res = await fetch(rawUrl, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       headers: { Accept: "text/html" },
-      redirect: "follow",
+      redirect: "error",
     });
     const contentType = res.headers.get("content-type") || "";
     if (res.ok && contentType.includes("text/html")) {

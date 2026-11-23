@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { checkMemoryRateLimit } from "@/lib/rate-limit";
 import { callLLM, DEFAULT_AI_MODELS, type SupportedProvider } from "@/lib/ai-service";
 import {
   actionCheckDuplicateBugs,
@@ -22,6 +23,15 @@ export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limiting: max 30 AI requests per minute per user to prevent abuse and token exhaustion
+  const rateLimit = checkMemoryRateLimit(`ai:qa-agent:${user.id}`, 30, 60 * 1000);
+  if (rateLimit.limited) {
+    return NextResponse.json(
+      { error: "Too many AI requests. Please wait a minute before trying again." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.resetAfterMs / 1000)) } }
+    );
   }
 
   try {
