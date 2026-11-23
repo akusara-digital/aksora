@@ -1,12 +1,12 @@
 "use client";
 
-import { type Dispatch, type ReactNode, type SetStateAction } from "react";
+import { useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { cn } from "@/lib/utils";
 import { ModuleWorkspaceFormField, type FieldOption, type FormField } from "@/components/module/module-workspace-form-field";
 import type { ModuleKey } from "@/lib/modules";
 import { getRequiredFieldErrors } from "@/lib/form-validation";
 import { AiEnhanceBugButton } from "@/components/bugs/ai-enhance-bug-button";
-import { CheckCircle } from "@phosphor-icons/react";
+import { CaretRight, CheckCircle } from "@phosphor-icons/react";
 
 type Row = Record<string, unknown> & { id?: string | number };
 type DuplicateRow = { id: string | number; code: string; title: string; status: string };
@@ -75,6 +75,19 @@ export function ModuleWorkspaceForm({
 }: ModuleWorkspaceFormProps) {
   const isBugModule = module === "bugs";
   const isWorkLogModule = module === "work-logs";
+  const isTaskModule = module === "tasks";
+
+  const [showTaskDetails, setShowTaskDetails] = useState(() => {
+    if (!editingRow) return false;
+    return Boolean(
+      editingRow.startDate ||
+      editingRow.endDate ||
+      editingRow.relatedFeature ||
+      editingRow.durationMinutes ||
+      editingRow.acceptanceCriteria ||
+      editingRow.evidence,
+    );
+  });
   const fieldByName = new Map(fields.map((f) => [f.name, f]));
 
   const renderField = (name: string, customSpanClass?: string) => {
@@ -300,6 +313,82 @@ export function ModuleWorkspaceForm({
                 "project", "category", "date",
                 "startTime", "endTime", "durationMinutes",
                 "description", "output", "notes",
+              ]);
+              const otherFields = fields.filter((f) => !handledNames.has(f.name) && !hiddenFields.includes(f.name));
+              if (otherFields.length === 0) return null;
+              return (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-start pt-2">
+                  {otherFields.map((f) => renderField(f.name))}
+                </div>
+              );
+            })()}
+          </div>
+        ) : isTaskModule ? (
+          <div className="space-y-5">
+            {/* Core Task Info */}
+            <div className="space-y-4">
+              {/* Title */}
+              <div className="w-full">
+                {renderField("title", "w-full")}
+              </div>
+
+              {/* Attributes Grid: Project, Type, Priority, Status, Assignee */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:items-start">
+                {renderField("project")}
+                {renderField("category")}
+                {renderField("priority")}
+                {renderField("status")}
+                {renderField("assignee")}
+              </div>
+
+              {/* Description */}
+              <div className="w-full">
+                {renderField("description", "w-full")}
+              </div>
+            </div>
+
+            {/* Collapsible Additional Details */}
+            <div className="pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowTaskDetails((prev) => !prev)}
+                className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-blue-600 transition select-none"
+              >
+                <CaretRight
+                  size={14}
+                  weight="bold"
+                  className={cn("transition-transform duration-150", showTaskDetails && "rotate-90")}
+                />
+                <span>
+                  {showTaskDetails
+                    ? "Hide additional details"
+                    : "+ Additional Details (Dates, Duration, Feature, Acceptance Criteria, Evidence)"}
+                </span>
+              </button>
+
+              <div className={cn("mt-4 space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition-all", !showTaskDetails && "hidden")}>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start">
+                  {renderField("relatedFeature", "w-full")}
+                  {renderField("evidence", "w-full")}
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:items-start">
+                  {renderField("startDate")}
+                  {renderField("endDate")}
+                  {renderField("durationMinutes")}
+                </div>
+
+                <div className="w-full">
+                  {renderField("acceptanceCriteria", "w-full")}
+                </div>
+              </div>
+            </div>
+
+            {/* Dynamic fallback for any extra custom fields */}
+            {(() => {
+              const handledNames = new Set([
+                "title", "project", "category", "priority", "status", "assignee", "description",
+                "relatedFeature", "evidence", "startDate", "endDate", "durationMinutes", "acceptanceCriteria",
               ]);
               const otherFields = fields.filter((f) => !handledNames.has(f.name) && !hiddenFields.includes(f.name));
               if (otherFields.length === 0) return null;

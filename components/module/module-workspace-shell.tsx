@@ -400,7 +400,8 @@ export function ModuleWorkspaceShell({
  {/* Form Drawer */}
  <FormDrawer
  open={showForm}
- title={editingRow ? `Edit ${config.shortTitle}` : `Create ${config.shortTitle}`}
+ size={module === "tasks" ? "lg" : "xl"}
+ title={editingRow ? `Edit ${config.shortTitle.replace(/s$/i, "")}` : `Create ${config.shortTitle.replace(/s$/i, "")}`}
  subtitle={
   editingRow
     ? "Update existing data."
@@ -408,6 +409,8 @@ export function ModuleWorkspaceShell({
     ? "Describe the issue or paste a screenshot — AI structures the rest."
     : module === "bugs"
     ? "Fill in core defect details quickly."
+    : module === "tasks"
+    ? "Create a task with essential details."
     : "Fill in new data with a consistent format."
  }
  customHeader={
