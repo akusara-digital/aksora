@@ -6,6 +6,7 @@ import {
   Checks,
   Table,
   Plus,
+  SidebarSimple,
 } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import {
@@ -289,6 +290,16 @@ export function TestCaseLibrary({
                     ? "Test cases live inside suites. Create your first suite on the left, then add cases manually or generate them with AI."
                     : "Choose any suite from the left panel to inspect, edit, or add test cases."}
                 </p>
+                {!showSidebar && groups.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleSidebar}
+                    className="mt-1 inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs"
+                  >
+                    <SidebarSimple size={14} weight="bold" />
+                    <span>Show Suites Panel</span>
+                  </button>
+                )}
                 {groups.length === 0 && (
                   <button
                     type="button"

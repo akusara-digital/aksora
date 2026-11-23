@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   CheckCircle, XCircle, Warning, CaretLeft, CaretRight, Play, ArrowLeft,
-  Keyboard, Lightning, Timer, Bug, Sparkle, SquaresFour, Columns
+  Keyboard, Lightning, Timer, Bug, Sparkle, SquaresFour, Columns, SidebarSimple
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -74,6 +74,30 @@ export function RunExecutionView({
   const [showBugModal, setShowBugModal] = useState(false);
   const [isPlayMode, setIsPlayMode] = useState(false);
   const [viewMode, setViewMode] = useState<"split" | "matrix">("split");
+  const [showCaseList, setShowCaseList] = useState(true);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("aksora-show-execution-caselist");
+      if (saved !== null) {
+        setShowCaseList(saved === "true");
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  const toggleCaseList = () => {
+    setShowCaseList((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem("aksora-show-execution-caselist", String(next));
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
+  };
   const [showAiVision, setShowAiVision] = useState(false);
   const [tester, setTester] = useState(run.tester);
   const [notes, setNotes] = useState(run.notes);
@@ -495,27 +519,47 @@ export function RunExecutionView({
 
         {/* View Mode Switcher */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-2.5 bg-slate-50 border-t border-slate-100 rounded-b-xl">
-          <div className="flex items-center rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold shadow-2xs">
-            <button
-              type="button"
-              onClick={() => setViewMode("split")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition",
-                viewMode === "split" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
-              )}
-            >
-              <Columns size={14} weight="bold" /> Split View
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("matrix")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition",
-                viewMode === "matrix" ? "bg-blue-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
-              )}
-            >
-              <SquaresFour size={14} weight="bold" /> Viewport Matrix (Mobile / Tab / Desktop)
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setViewMode("split")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition cursor-pointer",
+                  viewMode === "split" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                )}
+              >
+                <Columns size={14} weight="bold" /> Split View
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("matrix")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition cursor-pointer",
+                  viewMode === "matrix" ? "bg-blue-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                )}
+              >
+                <SquaresFour size={14} weight="bold" /> Viewport Matrix (Mobile / Tab / Desktop)
+              </button>
+            </div>
+
+            {viewMode === "split" && (
+              <button
+                type="button"
+                onClick={toggleCaseList}
+                className={cn(
+                  "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition select-none shadow-2xs",
+                  showCaseList
+                    ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                    : "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold"
+                )}
+                title={showCaseList ? "Hide cases list" : "Show cases list"}
+                aria-label={showCaseList ? "Hide cases list" : "Show cases list"}
+              >
+                <SidebarSimple size={14} weight="bold" />
+                <span>{showCaseList ? "Hide Cases" : "Show Cases"}</span>
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <Sparkle size={13} weight="fill" className="text-blue-600" />
@@ -544,64 +588,89 @@ export function RunExecutionView({
       ) : (
         <div className="grid gap-6 lg:grid-cols-12">
           {/* Left: Case list */}
-          <div className="lg:col-span-4 space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Cases ({total})</h3>
-              {!isCompleted && <span className="text-[10px] font-bold text-blue-500 animate-pulse">Auto-saving</span>}
-            </div>
-            <div className="max-h-[65vh] overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
-              {items.map((item, idx) => (
-                <button
-                  key={item.testCaseId}
-                  onClick={() => { setSelectedIdx(idx); setCaseStartTime(Date.now()); }}
-                  className={cn(
-                    "w-full text-left rounded-xl border-2 p-3 transition-all duration-200",
-                    selectedIdx === idx
-                      ? "border-blue-500 bg-blue-50/50 shadow-sm"
-                      : item.verdict === "Passed" ? "border-emerald-300 bg-emerald-50/30 hover:border-emerald-400"
-                      : item.verdict === "Failed" ? "border-rose-300 bg-rose-50/30 hover:border-rose-400"
-                      : item.verdict === "Blocked" ? "border-amber-300 bg-amber-50/30 hover:border-amber-400"
-                      : "border-slate-200 bg-white hover:border-blue-200"
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className={cn("h-2 w-2 rounded-full shrink-0",
+          {showCaseList && (
+            <div className="lg:col-span-4 space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Cases ({total})</h3>
+                <div className="flex items-center gap-2">
+                  {!isCompleted && <span className="text-[10px] font-bold text-blue-500 animate-pulse">Auto-saving</span>}
+                  <button
+                    type="button"
+                    onClick={toggleCaseList}
+                    title="Hide case list"
+                    aria-label="Hide case list"
+                    className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
+                  >
+                    <SidebarSimple size={14} weight="bold" />
+                  </button>
+                </div>
+              </div>
+              <div className="max-h-[65vh] overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
+                {items.map((item, idx) => (
+                  <button
+                    key={item.testCaseId}
+                    onClick={() => { setSelectedIdx(idx); setCaseStartTime(Date.now()); }}
+                    className={cn(
+                      "w-full text-left rounded-xl border-2 p-3 transition-all duration-200",
+                      selectedIdx === idx
+                        ? "border-blue-500 bg-blue-50/50 shadow-sm"
+                        : item.verdict === "Passed" ? "border-emerald-300 bg-emerald-50/30 hover:border-emerald-400"
+                        : item.verdict === "Failed" ? "border-rose-300 bg-rose-50/30 hover:border-rose-400"
+                        : item.verdict === "Blocked" ? "border-amber-300 bg-amber-50/30 hover:border-amber-400"
+                        : "border-slate-200 bg-white hover:border-blue-200"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className={cn("h-2 w-2 rounded-full shrink-0",
+                            item.verdict === "Passed" ? "bg-emerald-500"
+                            : item.verdict === "Failed" ? "bg-rose-500"
+                            : item.verdict === "Blocked" ? "bg-amber-500"
+                            : "bg-slate-300"
+                          )} />
+                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{item.tcId}</span>
+                        </div>
+                        <p className="text-sm font-semibold text-slate-700 truncate">{item.caseName}</p>
+                      </div>
+                      {item.verdict !== "Pending" && (
+                        <div className={cn("flex h-6 w-6 items-center justify-center rounded-md text-white shrink-0",
                           item.verdict === "Passed" ? "bg-emerald-500"
                           : item.verdict === "Failed" ? "bg-rose-500"
-                          : item.verdict === "Blocked" ? "bg-amber-500"
-                          : "bg-slate-300"
-                        )} />
-                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{item.tcId}</span>
-                      </div>
-                      <p className="text-sm font-semibold text-slate-700 truncate">{item.caseName}</p>
+                          : "bg-amber-500"
+                        )}>
+                          {item.verdict === "Passed" ? <CheckCircle size={13} weight="bold" />
+                            : item.verdict === "Failed" ? <XCircle size={13} weight="bold" />
+                            : <Warning size={13} weight="bold" />}
+                        </div>
+                      )}
                     </div>
-                    {item.verdict !== "Pending" && (
-                      <div className={cn("flex h-6 w-6 items-center justify-center rounded-md text-white shrink-0",
-                        item.verdict === "Passed" ? "bg-emerald-500"
-                        : item.verdict === "Failed" ? "bg-rose-500"
-                        : "bg-amber-500"
-                      )}>
-                        {item.verdict === "Passed" ? <CheckCircle size={13} weight="bold" />
-                          : item.verdict === "Failed" ? <XCircle size={13} weight="bold" />
-                          : <Warning size={13} weight="bold" />}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Right: Case detail */}
-          <div className="lg:col-span-8">
+          <div className={showCaseList ? "lg:col-span-8" : "lg:col-span-12"}>
             {selectedCase && (
               <div className="sticky top-6 space-y-5">
                 <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
                   {/* Case header */}
                   <div className="flex items-start justify-between gap-4 mb-6 pb-5 border-b border-slate-100">
                     <div className="flex items-center gap-4 min-w-0">
+                      {!showCaseList && (
+                        <button
+                          type="button"
+                          onClick={toggleCaseList}
+                          title="Show cases list"
+                          aria-label="Show cases list"
+                          className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-2xs mr-1"
+                        >
+                          <SidebarSimple size={14} weight="bold" />
+                          <span>Show Cases</span>
+                        </button>
+                      )}
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
                         <Play size={20} weight="fill" />
                       </div>
