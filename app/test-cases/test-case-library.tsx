@@ -104,6 +104,7 @@ export function TestCaseLibrary({
       if (!map.has(key)) {
         map.set(key, {
           key,
+          suiteId: s.id,
           suiteTitle: s.title || "Untitled Suite",
           suiteToken: s.publicToken || null,
           suiteStatus: s.status || "active",
@@ -124,6 +125,7 @@ export function TestCaseLibrary({
       if (!map.has(key)) {
         map.set(key, {
           key,
+          suiteId: c.testSuiteId,
           suiteTitle: c.suiteTitle || "Unassigned Suite",
           suiteToken: c.suiteToken,
           suiteStatus: c.suiteStatus,
