@@ -6,7 +6,6 @@ import {
   Checks,
   Table,
   Plus,
-  SidebarSimple,
 } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import {
@@ -60,30 +59,14 @@ export function TestCaseLibrary({
   const [showNewCaseModal, setShowNewCaseModal] = useState(false);
   const [planCases, setPlanCases] = useState<TestCase[] | null>(null);
   const [startingRun, setStartingRun] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(true);
 
   useEffect(() => {
     try {
-      const saved = window.localStorage.getItem("aksora-show-suite-sidebar");
-      if (saved !== null) {
-        setShowSidebar(saved === "true");
-      }
+      window.localStorage.removeItem("aksora-show-suite-sidebar");
     } catch {
       // Ignore storage errors
     }
   }, []);
-
-  const toggleSidebar = () => {
-    setShowSidebar((prev) => {
-      const next = !prev;
-      try {
-        window.localStorage.setItem("aksora-show-suite-sidebar", String(next));
-      } catch {
-        // Ignore storage errors
-      }
-      return next;
-    });
-  };
 
   const projectOptions = useMemo(() => {
     const set = new Set<string>();
@@ -254,28 +237,23 @@ export function TestCaseLibrary({
         suitesCount={filteredGroups.length}
         onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
         allConstant={ALL}
-        showSidebar={showSidebar}
-        onToggleSidebar={toggleSidebar}
       />
 
       <div>
         <div className="flex flex-col gap-4 lg:h-[calc(100vh-310px)] lg:min-h-[500px] lg:flex-row">
           {/* Left Pane: Test Suites */}
-          {showSidebar && (
-            <SuiteSidebarList
-              filteredGroups={filteredGroups}
-              allGroupsCount={groups.length}
-              selectedKey={selectedKey}
-              onSelectKey={(key) => setSelectedKey(key)}
-              onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
-              onRunSuite={handleRunSuite}
-              onToggleSidebar={toggleSidebar}
-              filterStatus={filterStatus}
-              filterAssignee={filterAssignee}
-              search={search}
-              allConstant={ALL}
-            />
-          )}
+          <SuiteSidebarList
+            filteredGroups={filteredGroups}
+            allGroupsCount={groups.length}
+            selectedKey={selectedKey}
+            onSelectKey={(key) => setSelectedKey(key)}
+            onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
+            onRunSuite={handleRunSuite}
+            filterStatus={filterStatus}
+            filterAssignee={filterAssignee}
+            search={search}
+            allConstant={ALL}
+          />
 
           {/* Right Pane: Test Cases */}
           <div className="flex min-h-[520px] flex-1 flex-col overflow-hidden">
@@ -292,16 +270,6 @@ export function TestCaseLibrary({
                     ? "Test cases live inside suites. Create your first suite on the left, then add cases manually or generate them with AI."
                     : "Choose any suite from the left panel to inspect, edit, or add test cases."}
                 </p>
-                {!showSidebar && groups.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={toggleSidebar}
-                    className="mt-1 inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs"
-                  >
-                    <SidebarSimple size={14} weight="bold" />
-                    <span>Show Suites Panel</span>
-                  </button>
-                )}
                 {groups.length === 0 && (
                   <button
                     type="button"
@@ -320,8 +288,6 @@ export function TestCaseLibrary({
                   onAddCase={() => setShowNewCaseModal(true)}
                   onRunSuite={() => handleRunSuite(selected)}
                   startingRun={startingRun}
-                  showSidebar={showSidebar}
-                  onToggleSidebar={toggleSidebar}
                 />
 
                 {displayCases.length === 0 ? (

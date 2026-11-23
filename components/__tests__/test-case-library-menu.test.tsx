@@ -203,22 +203,12 @@ describe("TestCaseLibrary menu", () => {
       />,
     );
 
-    // Initial state: Hide button is present, suites panel is visible
-    expect(screen.getAllByRole("button", { name: /hide test suites/i }).length).toBeGreaterThan(0);
+    // Suites panel is permanently visible and stays docked on screen
     expect(screen.getByText("Suites (1)")).not.toBeNull();
+    expect(screen.getAllByText("User Registration").length).toBeGreaterThan(0);
 
-    // Click Hide
-    fireEvent.click(screen.getAllByRole("button", { name: /hide test suites/i })[0]);
-
-    // Now suites panel is hidden, Show button is present
-    expect(screen.queryByText("Suites (1)")).toBeNull();
-    const showBtn = screen.getAllByRole("button", { name: /show test suites/i })[0];
-    expect(showBtn).not.toBeNull();
-
-    // Click Show
-    fireEvent.click(showBtn);
-
-    // Panel is restored
-    expect(screen.getByText("Suites (1)")).not.toBeNull();
+    // No collapse/hide toggles that cause panel to disappear
+    expect(screen.queryByRole("button", { name: /hide test suites/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /show test suites/i })).toBeNull();
   });
 });

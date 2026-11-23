@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { FolderSimple, Plus, Play, SidebarSimple } from "@phosphor-icons/react";
+import { FolderSimple, Plus, Play } from "@phosphor-icons/react";
 import type { SuiteGroup } from "./test-case-table";
 
 interface SuiteSidebarListProps {
@@ -12,7 +12,6 @@ interface SuiteSidebarListProps {
   onSelectKey: (key: string) => void;
   onOpenNewSuiteModal: () => void;
   onRunSuite?: (group: SuiteGroup) => void;
-  onToggleSidebar?: () => void;
   filterStatus: string;
   filterAssignee: string;
   search: string;
@@ -26,7 +25,6 @@ export function SuiteSidebarList({
   onSelectKey,
   onOpenNewSuiteModal,
   onRunSuite,
-  onToggleSidebar,
   filterStatus,
   filterAssignee,
   search,
@@ -35,22 +33,11 @@ export function SuiteSidebarList({
   if (filteredGroups.length === 0) {
     return (
       <div className="flex max-h-[320px] w-full shrink-0 flex-col gap-1 overflow-y-auto border-b border-gray-200/70 bg-transparent p-3 lg:h-full lg:max-h-none lg:w-[340px] lg:border-b-0 lg:border-r">
-        {onToggleSidebar && (
-          <div className="flex items-center justify-between pb-2 mb-1 px-1 border-b border-gray-200/60">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
-              Suites (0)
-            </span>
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              title="Hide test suites"
-              aria-label="Hide test suites"
-              className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
-            >
-              <SidebarSimple size={15} weight="bold" />
-            </button>
-          </div>
-        )}
+        <div className="flex items-center justify-between pb-2 mb-1 px-1 border-b border-gray-200/60">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+            Suites (0)
+          </span>
+        </div>
         <div className="flex h-full flex-col items-center justify-center gap-3 px-4 py-8 text-center text-gray-400">
           <FolderSimple size={32} weight="bold" />
           <div className="space-y-1">
@@ -82,22 +69,11 @@ export function SuiteSidebarList({
 
   return (
     <div className="flex max-h-[320px] w-full shrink-0 flex-col gap-1 overflow-y-auto border-b border-gray-200/70 bg-transparent p-3 lg:h-full lg:max-h-none lg:w-[340px] lg:border-b-0 lg:border-r">
-      {onToggleSidebar && (
-        <div className="flex items-center justify-between pb-2 mb-1 px-1 border-b border-gray-200/60">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
-            Suites ({filteredGroups.length})
-          </span>
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            title="Hide test suites"
-            aria-label="Hide test suites"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
-          >
-            <SidebarSimple size={15} weight="bold" />
-          </button>
-        </div>
-      )}
+      <div className="flex items-center justify-between pb-2 mb-1 px-1 border-b border-gray-200/60">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+          Suites ({filteredGroups.length})
+        </span>
+      </div>
       {filteredGroups.map((group) => {
         const isActive = (selectedKey ?? filteredGroups[0]?.key) === group.key;
         const displayCount =

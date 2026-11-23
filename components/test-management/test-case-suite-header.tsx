@@ -18,7 +18,6 @@ import {
   Plus,
   Play,
   ClockCounterClockwise,
-  SidebarSimple,
   Trash,
   Check,
 } from "@phosphor-icons/react";
@@ -30,8 +29,6 @@ interface TestCaseSuiteHeaderProps {
   onAddCase: () => void;
   onRunSuite: () => void;
   startingRun?: boolean;
-  showSidebar?: boolean;
-  onToggleSidebar?: () => void;
 }
 
 export function TestCaseSuiteHeader({
@@ -39,8 +36,6 @@ export function TestCaseSuiteHeader({
   onAddCase,
   onRunSuite,
   startingRun = false,
-  showSidebar = true,
-  onToggleSidebar,
 }: TestCaseSuiteHeaderProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -156,18 +151,6 @@ export function TestCaseSuiteHeader({
           </p>
         )}
         <div className="flex items-center gap-2">
-          {!showSidebar && onToggleSidebar && (
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              title="Show test suites"
-              aria-label="Show test suites"
-              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 shadow-2xs mr-1"
-            >
-              <SidebarSimple size={14} weight="bold" />
-              <span>Show Suites</span>
-            </button>
-          )}
           <h2 className="truncate text-base font-bold text-gray-900">
             {selected.suiteTitle}
           </h2>
