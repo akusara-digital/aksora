@@ -103,9 +103,6 @@ export function TestCaseEditorFooter({ cases }: TestCaseEditorStatsProps) {
   const blocked = cases.filter((row) => row.status === "Blocked").length;
   const pendingCount = cases.filter((row) => row.status === "Pending").length;
 
-  const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
-  const modKey = isMac ? "⌘" : "Ctrl";
-
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs text-gray-500">
       <div className="flex flex-wrap items-center gap-3">
@@ -120,12 +117,6 @@ export function TestCaseEditorFooter({ cases }: TestCaseEditorStatsProps) {
         {passed === 0 && failed === 0 && pendingCount === 0 && blocked === 0 && (
           <span className="text-gray-400">{t.noResultsYet}</span>
         )}
-      </div>
-      <div className="flex items-center gap-2 text-[11px] text-gray-400">
-        <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-mono text-[10px]">{modKey}+S</kbd>
-        <span>{t.save}</span>
-        <kbd className="ml-1 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-mono text-[10px]">Esc</kbd>
-        <span>{t.cancel}</span>
       </div>
     </div>
   );

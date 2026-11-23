@@ -426,7 +426,7 @@ export function QuickCreateCaseModal({
                 className="h-9 cursor-pointer rounded-lg bg-blue-600 px-5 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-xs"
               >
                 {saving && <CircleNotch size={14} className="animate-spin" />}
-                {saving ? "Adding..." : "Add Test Case ⌘↵"}
+                {saving ? "Adding..." : "Add Test Case"}
               </button>
             </div>
           </div>
