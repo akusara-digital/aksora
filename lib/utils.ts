@@ -19,8 +19,14 @@ export function isSafeHref(url: string): boolean {
 }
 
 function normalizeDate(value: string | Date): Date {
-  // SQLite stores "YYYY-MM-DD HH:MM:SS" (space). Browsers need ISO "T" separator.
-  const normalized = typeof value === "string" ? value.replace(" ", "T") : value;
+  if (typeof value !== "string") return new Date(value);
+  // Server stores "YYYY-MM-DD HH:MM:SS" (space, no offset) in UTC. Browsers need
+  // ISO "T" separator, and a "Z" suffix so it's parsed as UTC and displayed in
+  // the viewer's own local time zone instead of being misread as local time.
+  let normalized = value.replace(" ", "T");
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(normalized) && !/[Zz]|[+-]\d{2}:?\d{2}$/.test(normalized)) {
+    normalized += "Z";
+  }
   return new Date(normalized);
 }
 

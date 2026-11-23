@@ -13,9 +13,7 @@ import { ModuleDetailViewSidebar } from "@/components/module/module-detail-view-
 import { getDetailViewCrumbs, getModuleWorkspaceIcon } from "@/components/module/module-workspace-utils";
 import { SicmundusSyncModal } from "@/components/tasks/sicmundus-sync-modal";
 import { workLogToSicmundusProp } from "@/components/tasks/sicmundus-sync-parts";
-import { AiBugToCaseButton } from "@/components/bugs/ai-bug-to-case-button";
 import { AiRootCauseButton } from "@/components/bugs/ai-root-cause-button";
-import { BugTriageButton } from "@/components/bugs/bug-triage-button";
 import { BugTicketButton } from "@/components/bugs/bug-ticket-button";
 import { AiTaskToCasesButton } from "@/components/tasks/ai-task-to-cases-button";
 import { AiExportAutomationButton } from "@/components/test-management/ai-export-automation-button";
@@ -179,8 +177,6 @@ export function ModuleDetailView({
               actualResult={String(row.actualResult || "")}
               project={String(row.project || "")}
             />
-            <AiBugToCaseButton bug={row} />
-            <BugTriageButton bugId={row.id} />
             <BugTicketButton bugId={row.id} externalTicket={row.externalTicket} />
           </>
         )}
