@@ -62,7 +62,20 @@ export function BugSnapPreviewCard({ url }: { url: string }) {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-100 bg-indigo-50/50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+      >
+        <Camera size={14} weight="bold" />
+        Open BugSnap capture
+        <ArrowSquareOut size={12} />
+      </a>
+    );
+  }
 
   return (
     <div className="mt-2 overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white p-3.5 shadow-sm transition hover:border-indigo-200">
