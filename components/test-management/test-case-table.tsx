@@ -266,7 +266,7 @@ export function TestCaseTable({
 
   return (
     <>
-      <div className="w-full overflow-x-auto border-t border-slate-200">
+      <div className="w-full overflow-x-auto border border-slate-200 rounded-lg bg-white shadow-2xs">
         <DndContext id="tc-dnd" sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <table className="w-full min-w-[1700px] border-collapse border border-slate-200 text-xs">
             <thead className="sticky top-0 z-10">
@@ -336,6 +336,25 @@ export function TestCaseTable({
                   />
                 ))}
               </SortableContext>
+              {localCases.length > 0 && localCases.length < 5 &&
+                Array.from({ length: 5 - localCases.length }).map((_, i) => (
+                  <tr key={`empty-row-${i}`} className="border-b border-slate-100 h-11 select-none bg-slate-50/20">
+                    <td className="border-r border-slate-200 w-12" />
+                    <td className="border-r border-slate-200 px-3 py-3 text-slate-300 font-mono text-xs">-</td>
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td className="border-r border-slate-200" />
+                    <td />
+                  </tr>
+                ))}
             </tbody>
           </table>
           <DragOverlay dropAnimation={{ duration: 250, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }}>
