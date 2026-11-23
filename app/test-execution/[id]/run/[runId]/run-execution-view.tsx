@@ -696,18 +696,18 @@ export function RunExecutionView({
                       {selectedCase.preCondition && (
                         <section>
                           <h5 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Pre-conditions</h5>
-                          <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 whitespace-pre-line">{selectedCase.preCondition}</div>
+                          <p className="text-sm text-slate-700 whitespace-pre-line">{selectedCase.preCondition}</p>
                         </section>
                       )}
                       <section>
-                        <h5 className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-2">Test Steps</h5>
-                        <div className="text-sm text-slate-700 bg-blue-50/50 p-4 rounded-lg border border-blue-100 whitespace-pre-line">{selectedCase.testStep}</div>
+                        <h5 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Test Steps</h5>
+                        <p className="text-sm text-slate-700 whitespace-pre-line">{selectedCase.testStep}</p>
                       </section>
                     </div>
                     <div className="space-y-5">
                       <section>
-                        <h5 className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-2">Expected Result</h5>
-                        <div className="text-sm font-medium text-emerald-700 bg-emerald-50 p-4 rounded-lg border border-emerald-100 whitespace-pre-line">{selectedCase.expectedResult}</div>
+                        <h5 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Expected Result</h5>
+                        <p className="text-sm text-slate-700 whitespace-pre-line">{selectedCase.expectedResult}</p>
                       </section>
 
                       {/* Verdict panel */}
