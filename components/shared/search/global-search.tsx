@@ -48,12 +48,10 @@ const scopeColors: Record<SearchScope, { idle: string; active: string }> = {
 export function GlobalSearch({
  triggerClassName,
  triggerLabel ="Search...",
- triggerShortcut ="⌘K",
  compactTrigger = false,
 }: {
  triggerClassName?: string;
  triggerLabel?: string;
- triggerShortcut?: string;
  compactTrigger?: boolean;
 }) {
  const [open, setOpen] = useState(false);
@@ -345,9 +343,6 @@ export function GlobalSearch({
  {triggerLabel}
  </span>
  </div>
- <kbd className={cn("shrink-0 rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500", compactTrigger &&"hidden")}>
- {triggerShortcut}
- </kbd>
  </button>
 
  {mounted && open && createPortal(modal, document.body)}

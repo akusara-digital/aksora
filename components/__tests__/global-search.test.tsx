@@ -24,10 +24,9 @@ import { GlobalSearch } from "@/components/shared/search/global-search";
 
 describe("GlobalSearch", () => {
   it("renders the search trigger", () => {
-    const html = renderToStaticMarkup(<GlobalSearch triggerLabel="Search" triggerShortcut="Ctrl+K" />);
+    const html = renderToStaticMarkup(<GlobalSearch triggerLabel="Search" />);
 
     expect(html).toContain("Search");
-    expect(html).toContain("Ctrl+K");
   });
 });
 
