@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { FolderSimple, Plus, Play } from "@phosphor-icons/react";
+import { FolderSimple, Plus, Play, SidebarSimple } from "@phosphor-icons/react";
 import type { SuiteGroup } from "./test-case-table";
 
 interface SuiteSidebarListProps {
@@ -12,6 +12,8 @@ interface SuiteSidebarListProps {
   onSelectKey: (key: string) => void;
   onOpenNewSuiteModal: () => void;
   onRunSuite?: (group: SuiteGroup) => void;
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
   filterStatus: string;
   filterAssignee: string;
   search: string;
@@ -25,11 +27,50 @@ export function SuiteSidebarList({
   onSelectKey,
   onOpenNewSuiteModal,
   onRunSuite,
+  collapsed = false,
+  onToggleCollapsed,
   filterStatus,
   filterAssignee,
   search,
   allConstant,
 }: SuiteSidebarListProps) {
+  if (collapsed) {
+    return (
+      <div className="hidden lg:flex w-12 shrink-0 flex-col items-center border-r border-gray-200/70 bg-gray-50/50 py-3 gap-3 select-none">
+        <button
+          type="button"
+          onClick={onToggleCollapsed}
+          title="Show test suites"
+          aria-label="Show test suites"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900 shadow-2xs transition"
+        >
+          <SidebarSimple size={16} weight="bold" />
+        </button>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={onToggleCollapsed}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onToggleCollapsed?.();
+            }
+          }}
+          title={`Test Suites (${filteredGroups.length}) - Click to expand`}
+          className="flex flex-1 flex-col items-center gap-2 cursor-pointer text-gray-400 hover:text-gray-700 transition"
+        >
+          <FolderSimple size={20} weight="bold" className="text-gray-500" />
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-100 px-1 text-[10px] font-bold text-blue-700">
+            {filteredGroups.length}
+          </span>
+          <span className="[writing-mode:vertical-rl] rotate-180 text-[10px] font-bold uppercase tracking-wider text-gray-400 mt-2">
+            Suites
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   if (filteredGroups.length === 0) {
     return (
       <div className="flex max-h-[320px] w-full shrink-0 flex-col gap-1 overflow-y-auto border-b border-gray-200/70 bg-transparent p-3 lg:h-full lg:max-h-none lg:w-[340px] lg:border-b-0 lg:border-r">
@@ -37,6 +78,17 @@ export function SuiteSidebarList({
           <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
             Suites (0)
           </span>
+          {onToggleCollapsed && (
+            <button
+              type="button"
+              onClick={onToggleCollapsed}
+              title="Hide test suites"
+              aria-label="Hide test suites"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
+            >
+              <SidebarSimple size={15} weight="bold" />
+            </button>
+          )}
         </div>
         <div className="flex h-full flex-col items-center justify-center gap-3 px-4 py-8 text-center text-gray-400">
           <FolderSimple size={32} weight="bold" />
@@ -73,6 +125,17 @@ export function SuiteSidebarList({
         <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
           Suites ({filteredGroups.length})
         </span>
+        {onToggleCollapsed && (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            title="Hide test suites"
+            aria-label="Hide test suites"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
+          >
+            <SidebarSimple size={15} weight="bold" />
+          </button>
+        )}
       </div>
       {filteredGroups.map((group) => {
         const isActive = (selectedKey ?? filteredGroups[0]?.key) === group.key;

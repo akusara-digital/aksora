@@ -59,14 +59,30 @@ export function TestCaseLibrary({
   const [showNewCaseModal, setShowNewCaseModal] = useState(false);
   const [planCases, setPlanCases] = useState<TestCase[] | null>(null);
   const [startingRun, setStartingRun] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
 
   useEffect(() => {
     try {
-      window.localStorage.removeItem("aksora-show-suite-sidebar");
+      const saved = window.localStorage.getItem("aksora-show-suite-sidebar");
+      if (saved !== null) {
+        setShowSidebar(saved === "true");
+      }
     } catch {
       // Ignore storage errors
     }
   }, []);
+
+  const toggleSidebar = () => {
+    setShowSidebar((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem("aksora-show-suite-sidebar", String(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  };
 
   const projectOptions = useMemo(() => {
     const set = new Set<string>();
@@ -237,6 +253,8 @@ export function TestCaseLibrary({
         suitesCount={filteredGroups.length}
         onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
         allConstant={ALL}
+        showSidebar={showSidebar}
+        onToggleSidebar={toggleSidebar}
       />
 
       <div>
@@ -249,6 +267,8 @@ export function TestCaseLibrary({
             onSelectKey={(key) => setSelectedKey(key)}
             onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
             onRunSuite={handleRunSuite}
+            collapsed={!showSidebar}
+            onToggleCollapsed={toggleSidebar}
             filterStatus={filterStatus}
             filterAssignee={filterAssignee}
             search={search}
