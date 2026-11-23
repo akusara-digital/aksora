@@ -354,13 +354,16 @@ export function ModuleWorkspace({
     return result;
   }, [localRows, activeFilters, module, searchParams]);
   const preferredColumnOrder = useMemo(() => getPreferredColumnOrder(module), [module]);
-  const defaultVisibleColumns = config.columns
-    .filter((column) => preferredColumnOrder.includes(column.key))
-    .sort((a, b) => preferredColumnOrder.indexOf(a.key) - preferredColumnOrder.indexOf(b.key));
+  const defaultVisibleColumns = useMemo(
+    () =>
+      config.columns
+        .filter((column) => preferredColumnOrder.includes(column.key))
+        .sort((a, b) => preferredColumnOrder.indexOf(a.key) - preferredColumnOrder.indexOf(b.key)),
+    [config.columns, preferredColumnOrder],
+  );
   const defaultColumns = useMemo(
-    () => defaultVisibleColumns.length > 0 ? defaultVisibleColumns : config.columns.slice(0, Math.min(6, config.columns.length)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [module]
+    () => (defaultVisibleColumns.length > 0 ? defaultVisibleColumns : config.columns.slice(0, Math.min(6, config.columns.length))),
+    [defaultVisibleColumns, config.columns],
   );
   const defaultColumnKeys = useMemo(() => defaultColumns.map((c) => c.key), [defaultColumns]);
 
@@ -370,10 +373,17 @@ export function ModuleWorkspace({
     handleResetColumns,
   } = useColumnVisibility(module, defaultColumnKeys);
 
-  const visibleColumns = useMemo(
-    () => config.columns.filter((col) => visibleColumnKeys.includes(col.key)),
-    [config.columns, visibleColumnKeys],
-  );
+  const visibleColumns = useMemo(() => {
+    const filtered = config.columns.filter((col) => visibleColumnKeys.includes(col.key));
+    return filtered.sort((a, b) => {
+      const idxA = preferredColumnOrder.indexOf(a.key);
+      const idxB = preferredColumnOrder.indexOf(b.key);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return 0;
+    });
+  }, [config.columns, visibleColumnKeys, preferredColumnOrder]);
   const versionSequenceField = resolvedConfig.fields.find((field) => field.helperKind === "version-sequence");
   const versionSequenceDefault = useMemo(() => getNextVersion(getLatestVersion(localRows)), [localRows]);
   const versionSequenceLabel =

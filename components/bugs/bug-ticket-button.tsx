@@ -21,6 +21,8 @@ export interface BugTicketButtonProps {
   defaultModule?: string;
   defaultProject?: string;
   devOptions?: Array<{ label: string; value: string }>;
+  size?: "sm" | "md";
+  onTicketCreated?: (ticket: string) => void;
 }
 
 export function BugTicketButton({
@@ -30,6 +32,8 @@ export function BugTicketButton({
   defaultModule = "",
   defaultProject = "",
   devOptions = [],
+  size = "md",
+  onTicketCreated,
 }: BugTicketButtonProps) {
   const router = useRouter();
   const [linked, setLinked] = useState(String(externalTicket ?? "").trim());
@@ -57,11 +61,15 @@ export function BugTicketButton({
     }
   };
 
-  const handleOpenClick = async () => {
+  const handleOpenClick = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     const list = await loadTrackers();
     const jira = list.find((t) => t.kind === "jira");
-    if (!jira && list.length === 0) {
-      toast("No issue tracker connected. Go to Settings > Integrations to connect Jira.", "warning");
+    if (!jira) {
+      toast("Jira is not connected. Go to Settings > Integrations to connect Jira.", "warning");
       return;
     }
     setOpen(true);
@@ -89,8 +97,10 @@ export function BugTicketButton({
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || "Failed to create ticket.");
-      setLinked(json.data.externalTicket);
+      const newTicket = json.data.externalTicket || json.data.key || "";
+      setLinked(newTicket);
       setOpen(false);
+      onTicketCreated?.(newTicket);
       toast(`Ticket ${json.data.key} created and pushed to Jira!`, "success");
       router.refresh();
     } catch (err) {
@@ -113,21 +123,26 @@ export function BugTicketButton({
               href={linked}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className={cn(
-                "inline-flex h-8 items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100 hover:text-emerald-900 shadow-2xs",
+                "inline-flex items-center font-semibold rounded-full border border-emerald-300 bg-emerald-50 text-emerald-800 transition hover:bg-emerald-100 hover:text-emerald-900 shadow-2xs whitespace-nowrap",
+                size === "sm" ? "h-7 gap-1 px-2.5 text-[11px]" : "h-8 gap-1.5 px-3 text-xs",
               )}
               title={`View ${displayKey} in Jira`}
             >
-              <Check size={14} weight="bold" className="text-emerald-600" />
+              <Check size={size === "sm" ? 12 : 14} weight="bold" className="text-emerald-600" />
               <span>Pushed ({displayKey})</span>
-              <ArrowSquareOut size={13} weight="bold" className="text-emerald-600/70" />
+              <ArrowSquareOut size={size === "sm" ? 11 : 13} weight="bold" className="text-emerald-600/70" />
             </a>
           ) : (
             <span
-              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 shadow-2xs"
+              className={cn(
+                "inline-flex items-center font-semibold rounded-full border border-emerald-300 bg-emerald-50 text-emerald-800 shadow-2xs whitespace-nowrap",
+                size === "sm" ? "h-7 gap-1 px-2.5 text-[11px]" : "h-8 gap-1.5 px-3 text-xs",
+              )}
               title={`Jira Ticket: ${displayKey}`}
             >
-              <Check size={14} weight="bold" className="text-emerald-600" />
+              <Check size={size === "sm" ? 12 : 14} weight="bold" className="text-emerald-600" />
               <span>Pushed ({displayKey})</span>
             </span>
           )}
@@ -136,9 +151,16 @@ export function BugTicketButton({
         <button
           type="button"
           onClick={handleOpenClick}
-          className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 active:scale-95 cursor-pointer shadow-2xs"
+          disabled={creating}
+          className={cn(
+            "inline-flex items-center font-semibold transition active:scale-95 cursor-pointer shadow-2xs whitespace-nowrap",
+            size === "sm"
+              ? "h-7 gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 text-[11px] text-blue-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800"
+              : "h-8 gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50",
+          )}
+          title="Create Jira ticket"
         >
-          <Ticket size={14} weight="bold" className="text-slate-600" />
+          <Ticket size={size === "sm" ? 12 : 14} weight="bold" className={size === "sm" ? "text-blue-600" : "text-slate-600"} />
           <span>Create ticket</span>
         </button>
       )}

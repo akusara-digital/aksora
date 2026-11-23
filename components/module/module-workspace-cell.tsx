@@ -5,6 +5,7 @@ import { Check } from "@phosphor-icons/react";
 import { Badge } from "@/components/shared/badge";
 import { HighlightText } from "@/components/shared/highlight-text";
 import { InlineStatusEditor } from "@/components/module/inline-status-editor";
+import { BugTicketButton } from "@/components/bugs/bug-ticket-button";
 import { cn, formatDate, formatRelativeTime, formatDuration, calculateDurationFromTime } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
 import type { ModuleKey } from "@/lib/modules";
@@ -150,6 +151,18 @@ export function ModuleWorkspaceCell({ module, row, column, value: rawValue, onIn
         <Badge value={String(value)} displayValue={getStatusDisplay(module, String(value))} />
       ) : column.tone ? (
         <Badge value={String(value)} />
+      ) : column.key === "externalTicket" && module === "bugs" ? (
+        <BugTicketButton
+          bugId={row.id}
+          externalTicket={value || row.externalTicket}
+          defaultAssignee={String(row.suggestedDev || "")}
+          defaultModule={String(row.module || "")}
+          defaultProject={String(row.project || "")}
+          size="sm"
+          onTicketCreated={(newTicket) => {
+            onInlineUpdate?.(row.id, "externalTicket", newTicket);
+          }}
+        />
       ) : column.key === "externalTicket" ? (
         (() => {
           const rawTicket = String(value || "").trim();

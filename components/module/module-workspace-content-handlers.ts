@@ -207,12 +207,18 @@ export function useColumnVisibility(module: ModuleKey, defaultColumnKeys: string
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length >= 2) {
-          queueMicrotask(() => setVisibleColumnKeys(parsed));
+          const validParsed = parsed.filter((k) => typeof k === "string");
+          const missingDefaults = defaultColumnKeys.filter((k) => !validParsed.includes(k));
+          const merged = missingDefaults.length > 0 ? [...validParsed, ...missingDefaults] : validParsed;
+          if (module === "bugs" && !merged.includes("externalTicket")) {
+            merged.push("externalTicket");
+          }
+          queueMicrotask(() => setVisibleColumnKeys(merged));
         }
       } catch { /* ignore */ }
     }
     queueMicrotask(() => setColumnKeysHydrated(true));
-  }, [module, columnKeysHydrated]);
+  }, [module, columnKeysHydrated, defaultColumnKeys]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && columnKeysHydrated) {
