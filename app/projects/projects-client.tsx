@@ -279,9 +279,12 @@ export function ProjectsClient() {
                         {project.key || <FolderSimple size={18} weight="bold" />}
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition">
+                        <Link
+                          href={`/projects/${project.id}`}
+                          className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition"
+                        >
                           {project.name}
-                        </h3>
+                        </Link>
                         {project.key && (
                           <span className="inline-block font-mono text-[11px] text-slate-400">
                             [{project.key}]
@@ -344,7 +347,7 @@ export function ProjectsClient() {
                   {/* Counts / metrics */}
                   <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-center">
                     <Link
-                      href={`/test-plans?project=${encodeURIComponent(project.name)}`}
+                      href={`/projects/${project.id}?tab=tests`}
                       className="rounded-lg bg-slate-50 p-2 transition hover:bg-blue-50"
                     >
                       <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-slate-700">
@@ -354,7 +357,7 @@ export function ProjectsClient() {
                       <div className="text-[10px] text-slate-400 font-medium">Plans</div>
                     </Link>
                     <Link
-                      href={`/bugs?project=${encodeURIComponent(project.name)}`}
+                      href={`/projects/${project.id}?tab=bugs`}
                       className="rounded-lg bg-slate-50 p-2 transition hover:bg-rose-50"
                     >
                       <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-slate-700">
@@ -364,7 +367,7 @@ export function ProjectsClient() {
                       <div className="text-[10px] text-slate-400 font-medium">Bugs</div>
                     </Link>
                     <Link
-                      href={`/tasks?project=${encodeURIComponent(project.name)}`}
+                      href={`/projects/${project.id}?tab=tasks`}
                       className="rounded-lg bg-slate-50 p-2 transition hover:bg-emerald-50"
                     >
                       <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-slate-700">
@@ -382,10 +385,10 @@ export function ProjectsClient() {
                     {formatDate(project.createdAt)}
                   </span>
                   <Link
-                    href={`/test-plans/projects/${encodeURIComponent(project.name)}`}
+                    href={`/projects/${project.id}`}
                     className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 transition hover:text-blue-700"
                   >
-                    Overview
+                    View Project
                     <ArrowRight size={13} weight="bold" />
                   </Link>
                 </div>
