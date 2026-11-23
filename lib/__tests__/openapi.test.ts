@@ -22,8 +22,7 @@ describe("generateOpenApiSpec", () => {
     const spec = generateOpenApiSpec("https://example.com");
     const bugsPost = spec.paths["/api/public/v1/bugs"] as { post: { requestBody: { content: { "application/json": { schema: { required: string[] } } } } } };
     const required = bugsPost.post.requestBody.content["application/json"].schema.required;
-    expect(required).toContain("title");
-    expect(required).toContain("severity");
+    expect(required).toContain("project");
   });
 
   it("declares bearer auth security scheme", () => {

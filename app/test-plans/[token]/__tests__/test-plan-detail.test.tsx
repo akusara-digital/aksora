@@ -73,7 +73,7 @@ describe("TestPlanDetail", () => {
     expect(html).toContain("2 cases");
     expect(mocks.breadcrumb).toHaveBeenCalled();
     expect(mocks.breadcrumb.mock.calls[0][0].crumbs.map((crumb: { label: string }) => crumb.label)).toEqual([
-      "Dashboard",
+      "Test Management",
       "Test Plans",
       "Release Plan",
     ]);

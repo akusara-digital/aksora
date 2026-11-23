@@ -60,7 +60,7 @@ describe("SuiteDetail", () => {
     expect(html).toContain("Login works");
     expect(mocks.breadcrumb).toHaveBeenCalled();
     expect(mocks.breadcrumb.mock.calls[0][0].crumbs.map((crumb: { label: string }) => crumb.label)).toEqual([
-      "Dashboard",
+      "Test Management",
       "Test Suites",
       "Checkout Suite",
     ]);
