@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, DotsThree, PencilSimple, Trash, PaperPlaneTilt } from "@phosphor-icons/react";
+import { ArrowLeft, PencilSimple, Trash, PaperPlaneTilt } from "@phosphor-icons/react";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { CopyLinkButton } from "@/components/shared/copy-link-button";
 import { CollaborationIndicator } from "@/components/shared/collaboration-indicator";
@@ -145,9 +145,6 @@ export function ModuleDetailView({
               Edit
             </button>
           )}
-          <button className="p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700" aria-label="More actions">
-            <DotsThree size={18} weight="bold" />
-          </button>
         </div>
       </div>
 
