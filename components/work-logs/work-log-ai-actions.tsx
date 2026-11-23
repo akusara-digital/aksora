@@ -2,19 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Sparkle,
-  ClipboardText,
-  ArrowsClockwise,
-  Clock,
-  CalendarCheck,
-  CheckCircle,
-  WarningCircle,
-} from "@phosphor-icons/react";
+import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
-import { WorkLogQuickModal } from "./work-log-quick-modal";
 import { WorkLogTimesheetAuditModal } from "./work-log-timesheet-audit-modal";
 import { WorkLogFillGapModal } from "./work-log-fill-gap-modal";
 import { WorkLogPullActivityModal } from "./work-log-pull-activity-modal";
@@ -63,7 +54,6 @@ export function WorkLogAiActions() {
 
   // Modals state
   const [isPullOpen, setIsPullOpen] = useState(false);
-  const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isFillGapOpen, setIsFillGapOpen] = useState(false);
 
@@ -209,17 +199,6 @@ export function WorkLogAiActions() {
           </div>
         )}
 
-        {/* Quick Log AI */}
-        <button
-          type="button"
-          onClick={() => setIsQuickLogOpen(true)}
-          title="Quick natural language work log entry"
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50/80 px-2.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-xs cursor-pointer shrink-0"
-        >
-          <Sparkle size={13} weight="bold" className="text-blue-600 shrink-0" />
-          <span>Quick Log</span>
-        </button>
-
         {/* Unified Tools Dropdown Menu */}
         <WorkLogToolsMenu
           onOpenPull={() => setIsPullOpen(true)}
@@ -231,15 +210,6 @@ export function WorkLogAiActions() {
           activeModel={activeModel}
         />
       </div>
-
-      {/* Submodal 1: Quick Log (1 Sentence) */}
-      <WorkLogQuickModal
-        isOpen={isQuickLogOpen}
-        onClose={() => {
-          setIsQuickLogOpen(false);
-          fetchTodayStatus();
-        }}
-      />
 
       {/* Submodal 2: Monthly Timesheet Audit */}
       <WorkLogTimesheetAuditModal
