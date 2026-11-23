@@ -129,7 +129,7 @@ export const moduleConfigs: Record<ModuleKey, ModuleConfig> = {
       { name: "bugType", label: "Bug Type", kind: "select", options: bugTypeOptions, span: 1 },
       { name: "title", label: "Title", kind: "text", placeholder: "Short summary of the bug (e.g. Checkout button unresponsive on mobile)", span: 3 },
       { name: "preconditions", label: "Preconditions", kind: "textarea", rows: 2, placeholder: "e.g. User logged in with standard tier account", span: 3 },
-      { name: "stepsToReproduce", label: "Steps to Reproduce", kind: "textarea", rows: 4, placeholder: "1. Navigate to /checkout\n2. Click on payment method\n3. Observe error", span: 3 },
+      { name: "stepsToReproduce", label: "Description & Acceptance Criteria", kind: "textarea", rows: 4, placeholder: "Description:\n...\n\nAcceptance Criteria:\n☐ ...", span: 3 },
       { name: "expectedResult", label: "Expected Result", kind: "textarea", rows: 2, placeholder: "What should happen", span: 1 },
       { name: "actualResult", label: "Actual Result", kind: "textarea", rows: 2, placeholder: "What actually happened", span: 2 },
       { name: "severity", label: "Severity", kind: "select", options: severityOptions, span: 1 },

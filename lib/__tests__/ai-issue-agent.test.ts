@@ -98,4 +98,46 @@ describe("actionIssueAgent", () => {
 
     callLLMSpy.mockRestore();
   });
+
+  it("structures bugs with Description, Expected Result, Actual Result, Acceptance Criteria, and preserves BugSnap evidence URL", async () => {
+    const mockLlmResponse = {
+      content: JSON.stringify({
+        has_ticket_data: true,
+        chat_title: "Image Studio Brief Lost",
+        assistant_reply: "Drafted bug for Image Studio.",
+        project: "VanApp",
+        module: "Image Studio",
+        bugType: "Functional",
+        title: "[Image Studio] - Brief hilang dari form setelah proses generate gambar",
+        description: "Brief yang sudah diisi pengguna di Image Studio hilang dari form, sehingga pengguna harus mengisi ulang brief dan proses kerja terhambat. Dampak ini berpotensi menyebabkan kehilangan input dan menurunkan kepercayaan pengguna terhadap fitur.",
+        expectedResult: "Brief yang sudah diisi tetap tersimpan dan tampil di form Image Studio setelah proses generate berjalan atau selesai.",
+        actualResult: "Brief hilang dari form Image Studio dan kolom brief kembali kosong.",
+        acceptanceCriteria: "☐ Setelah pengguna mengisi brief lalu menjalankan generate, isi brief tetap identik dengan input awal ketika proses selesai, gagal, atau dibatalkan.\n☐ Setelah halaman Image Studio di-refresh atau pengguna berpindah tab lalu kembali, brief yang telah disimpan tampil kembali tanpa perlu diisi ulang.",
+        severity: "high",
+        priority: "P1",
+      }),
+      provider: "google" as const,
+      model: "gemini-2.0-flash",
+      usage: { promptTokens: 120, completionTokens: 100, totalTokens: 220 },
+    };
+
+    const callLLMSpy = vi.spyOn(aiService, "callLLM").mockResolvedValue(mockLlmResponse as unknown as aiService.CallLLMResult);
+
+    const promptText = "https://bugsnap.akusaraproject.my.id/v/4028ab27-4282-4c36-8229-082cfffca9b9\n\nbrief hilang setelah generate gambar di image studio";
+    const res = await actionIssueAgent(
+      { prompt: promptText, project: "VanApp" },
+      { provider: "google", model: "gemini-2.0-flash", apiKey: "test" }
+    );
+
+    expect(res.hasTicketData).toBe(true);
+    expect(res.ticket?.title).toBe("[Image Studio] - Brief hilang dari form setelah proses generate gambar");
+    expect(res.ticket?.module).toBe("Image Studio");
+    expect(res.ticket?.expectedResult).toBe("Brief yang sudah diisi tetap tersimpan dan tampil di form Image Studio setelah proses generate berjalan atau selesai.");
+    expect(res.ticket?.actualResult).toBe("Brief hilang dari form Image Studio dan kolom brief kembali kosong.");
+    expect(res.ticket?.stepsToReproduce).toContain("Description:\nBrief yang sudah diisi pengguna di Image Studio hilang dari form");
+    expect(res.ticket?.stepsToReproduce).toContain("Acceptance Criteria:\n☐ Setelah pengguna mengisi brief");
+    expect(res.ticket?.evidence).toBe("https://bugsnap.akusaraproject.my.id/v/4028ab27-4282-4c36-8229-082cfffca9b9");
+
+    callLLMSpy.mockRestore();
+  });
 });

@@ -280,17 +280,19 @@ export function StreamlinedBugForm({
           </div>
         </div>
 
-        {/* Row 3: STEPS TO REPRODUCE */}
+        {/* Row 3: DESCRIPTION & ACCEPTANCE CRITERIA / STEPS */}
         <div>
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
-            Steps to Reproduce
+            Description & Acceptance Criteria / Steps
           </label>
           <AutoResizeTextarea
             value={stepsToReproduce}
             onChange={(e) => setStepsToReproduce(e.target.value)}
-            rows={3}
-            placeholder={"1. Open checkout page\n2. Select payment method\n3. Click confirm"}
-            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
+            rows={4}
+            placeholder={
+              "Description:\nBrief yang diisi pengguna hilang setelah generate...\n\nAcceptance Criteria:\n☐ Setelah pengguna mengisi brief lalu generate, isi brief tetap tersimpan..."
+            }
+            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed font-sans"
           />
         </div>
 

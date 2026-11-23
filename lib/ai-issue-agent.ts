@@ -14,7 +14,9 @@ export interface IssueAgentTicketDraft {
   bugType?: string;
   title?: string;
   preconditions?: string;
+  description?: string;
   stepsToReproduce?: string;
+  acceptanceCriteria?: string;
   expectedResult?: string;
   actualResult?: string;
   severity?: string;
@@ -107,20 +109,25 @@ CONVERSATIONAL INTELLIGENCE & AGENT PERSONALITY:
 
 TEMPLATE FORMAT RULES:
 - Title formula: "[ModuleName] - [Specific concise issue summary naming trigger and failure]"
-  * Examples: "[Checkout] - Pay Now button becomes unresponsive after selecting QRIS"
-  * Examples: "[Auth] - Session terminates unexpectedly when refreshing the profile page"
-  * CRITICAL TITLE RULE: Determine and use the real, detected feature or module name (e.g. [Checkout], [Auth], [Orders], [Dashboard]). NEVER output literal meta-strings like "[Feature/Module Name]", "[Module Name]", or "[TBD]".
-- Module: Clean name of the affected subsystem or feature (e.g. "Checkout", "Authentication", "Orders", "Dashboard").
+  * Format: [ModuleName] - [Ringkasan isu ringkas dan spesifik]
+  * Examples: "[Image Studio] - Brief hilang dari form setelah proses generate gambar"
+  * Examples: "[Brainstorming] - Judul belum membuat detail singkat untuk generate judul sesuai sesi awal di Prompt Lab"
+  * Examples: "[Checkout] - Tombol Bayar Sekarang tidak merespons setelah memilih metode QRIS"
+  * CRITICAL TITLE RULE: Determine and use the real, detected feature or module name (e.g. [Image Studio], [Brainstorming], [Checkout], [Auth], [Orders]). NEVER output literal meta-strings like "[Feature/Module Name]", "[Module Name]", or "[TBD]".
+- Module: Clean name of the affected subsystem or feature (e.g. "Image Studio", "Brainstorming", "Checkout", "Auth").
+- Description:
+  * Comprehensive explanation of the defect and its impact on the user or business workflow.
+  * Formula: Jelaskan apa yang terjadi pada pengguna saat menggunakan fitur tersebut, mengapa hal itu terjadi/terhambat, serta potensi dampaknya (misal: "Brief yang sudah diisi pengguna di Image Studio hilang dari form, sehingga pengguna harus mengisi ulang brief dan proses kerja terhambat. Dampak ini berpotensi menyebabkan kehilangan input dan menurunkan kepercayaan pengguna terhadap fitur.").
+- Expected Result:
+  * 1-2 clear sentences stating what should happen in normal/correct system operation (e.g. "Brief yang sudah diisi tetap tersimpan dan tampil di form Image Studio setelah proses generate berjalan atau selesai.").
+- Actual Result:
+  * 1-2 clear sentences stating what actually failed or occurred (e.g. "Brief hilang dari form Image Studio dan kolom brief kembali kosong.").
+- Acceptance Criteria:
+  * Checkbox list using '☐' bullet items for the verification criteria that define when this bug is successfully resolved:
+    ☐ Setelah pengguna mengisi brief lalu menjalankan generate, isi brief tetap identik dengan input awal ketika proses selesai, gagal, atau dibatalkan.
+    ☐ Setelah halaman Image Studio di-refresh atau pengguna berpindah tab lalu kembali, brief yang telah disimpan tampil kembali tanpa perlu diisi ulang.
 - Bug Type: Exactly one of: "Functional" | "UI/UX" | "Performance" | "Validation" | "API" | "Security" | "Compatibility". Default is "Functional".
-- Preconditions: Clean prerequisites needed before triggering the bug (e.g. "User is logged in and cart contains at least 1 item") or "None".
-- Steps to Reproduce:
-  * Numbered deterministic user steps with concrete navigation and inputs:
-    1. Navigate to ...
-    2. Perform action ...
-    3. Observe the failure.
-  * (CRITICAL: Omit Steps to Reproduce completely if preset is "compact" or user requested no-steps).
-- Expected Result: 1-2 sentences stating the correct or intended system behavior only (do NOT repeat steps).
-- Actual Result: 1-2 sentences stating the exact failure or error observed (do NOT repeat steps).
+- Preconditions: Clean prerequisites needed before triggering the bug (e.g. "User is logged in and on Image Studio page") or "None".
 - Severity: Exactly one of: "critical" | "high" | "medium" | "low". (Critical = crash/blocker/data loss, High = major feature broken, Medium = normal defect, Low = cosmetic/minor).
 - Priority: Exactly one of: "P0" | "P1" | "P2" | "P3". (P0 = Blocker/Immediate, P1 = High, P2 = Medium, P3 = Low).
 - Evidence: Exact URL from user input (BugSnap, Loom, Drive, error URL) or note about attached screenshot.
@@ -128,28 +135,30 @@ TEMPLATE FORMAT RULES:
 STRICT FORMAT PRESETS:
 ${
   preset === "compact"
-    ? `STRICT FORMAT PRESET: Format Ringkas (Tanpa Steps). Omit Steps to Reproduce completely. Provide ONLY the problem summary and technical notes.`
+    ? `STRICT FORMAT PRESET: Format Ringkas. Provide concise Description, Expected Result, Actual Result, Acceptance Criteria, and technical notes.`
     : preset === "technical"
-    ? `STRICT FORMAT PRESET: Format Teknis. Focus on endpoint/API, HTTP status codes, payload, response error, and console/network logs.`
-    : `STRICT FORMAT PRESET: Standard. Full standard format with numbered reproduction steps, expected and actual results.`
+    ? `STRICT FORMAT PRESET: Format Teknis. Focus on endpoint/API, state updates, payload, response error, Description with impact, and Acceptance Criteria.`
+    : `STRICT FORMAT PRESET: Standard. Full standard format with Description, Expected Result, Actual Result, and Acceptance Criteria.`
 }
 
 LANGUAGE & DEVELOPER-FRIENDLY INDONESIAN QA RULES:
-Write all generated field contents (title, module, preconditions, stepsToReproduce, expectedResult, actualResult) AND "assistant_reply" in clear, professional language, matching the language the user is writing in (e.g. reply in Indonesian if the user writes in Indonesian).
+Write all generated field contents (title, module, description, expectedResult, actualResult, acceptanceCriteria) AND "assistant_reply" in clear, professional language, matching the language the user is writing in (e.g. reply in Indonesian if the user writes in Indonesian).
 WHEN WRITING IN INDONESIAN (STANDARD SOFTWARE ENGINEERING & QA IN INDONESIA):
 1. Gaya Bahasa: Lugas, objektif, dan to the point agar developer langsung paham tanpa kebingungan.
 2. Istilah Teknis: JANGAN terjemahkan istilah teknis baku software engineering menjadi terjemahan harfiah kaku (tetap gunakan istilah: endpoint, API, payload, response, UI/UX, crash, timeout, query, token, session, console error, network log, status code 4xx/500, dsb).
 3. Format Judul (title):
    - Pola: "[NamaModul] - [Aksi/kondisi pemicu] menyebabkan [kegagalan spesifik/hasil teramati]"
-   - Contoh: "[Checkout] - Tombol Bayar Sekarang tidak merespons setelah memilih metode QRIS"
-4. Hasil yang Diharapkan (expectedResult): Maksimal 1-2 kalimat menyatakan perilaku sistem yang benar.
-5. Hasil Aktual (actualResult): Maksimal 1-2 kalimat menyatakan kegagalan/error yang terjadi.
+   - Contoh: "[Image Studio] - Brief hilang dari form setelah proses generate gambar"
+4. Description: Jelaskan masalah secara utuh dan dampak risiko terhadap pengguna/bisnis.
+5. Hasil yang Diharapkan (expectedResult): Maksimal 1-2 kalimat menyatakan perilaku sistem yang benar.
+6. Hasil Aktual (actualResult): Maksimal 1-2 kalimat menyatakan kegagalan/error yang terjadi.
+7. Acceptance Criteria: Menggunakan format checklist '☐' untuk setiap kriteria penyelesaian (minimal 2 kriteria terukur).
 
 MULTIMODAL (IMAGE / SCREENSHOT):
 When a screenshot or error image is provided:
 1. Visually inspect error banners, crash traces, HTTP 4xx/5xx status codes, broken alignment, missing assets, or abnormal UI state.
 2. Accurately transcribe exact error messages or code traces seen in the image into actualResult or technical notes.
-3. Formulate reproduction steps leading to the screen shown in the image.
+3. Formulate Acceptance Criteria verifying the resolution of what is shown in the image.
 
 ${customRules ? `USER CUSTOM RULES:\n${customRules}\n` : ""}
 
@@ -160,13 +169,15 @@ Return ONLY a valid JSON object (no markdown code blocks, no \`\`\`json):
   "chat_title": "Short 3-5 word topic title",
   "assistant_reply": "Conversational reply in the user's language",
   "project": "${project}",
-  "module": "Detected module name (e.g. Checkout)",
+  "module": "Detected module name (e.g. Image Studio)",
   "bugType": "Functional",
   "title": "[ModuleName] - Clear concise bug title",
-  "preconditions": "Prerequisites needed or None",
-  "stepsToReproduce": "1. Step one\\n2. Step two\\n3. Step three",
+  "description": "Comprehensive explanation of what occurred and its user/business impact",
   "expectedResult": "Expected outcome in 1-2 sentences",
   "actualResult": "Observed failure or error in 1-2 sentences",
+  "acceptanceCriteria": "☐ Criteria 1\\n☐ Criteria 2",
+  "stepsToReproduce": "Description:\\n...\\n\\nAcceptance Criteria:\\n☐ Criteria 1\\n☐ Criteria 2",
+  "preconditions": "Prerequisites needed or None",
   "severity": "high",
   "priority": "P1",
   "evidence": "URL or null",
@@ -241,13 +252,29 @@ Return ONLY a valid JSON object (no markdown code blocks, no \`\`\`json):
 
   const extractedUrl = String(payload.prompt || "").match(/https?:\/\/[^\s)]+/i)?.[0] || "";
 
+  const rawDesc = String(parsed.description || "").trim();
+  const rawAc = String(parsed.acceptanceCriteria || parsed.acceptance_criteria || "").trim();
+  let rawSteps = String(parsed.stepsToReproduce || "").trim();
+
+  if (rawDesc || rawAc) {
+    if (!rawSteps.includes("Description:") && !rawSteps.includes("Acceptance Criteria:")) {
+      const parts: string[] = [];
+      if (rawDesc) parts.push(`Description:\n${rawDesc}`);
+      if (rawSteps) parts.push(`Steps to Reproduce:\n${rawSteps}`);
+      if (rawAc) parts.push(`Acceptance Criteria:\n${rawAc}`);
+      rawSteps = parts.join("\n\n");
+    }
+  }
+
   const ticket: IssueAgentTicketDraft = {
     project: String(parsed.project || project || "General").trim(),
     module: String(parsed.module || "").trim(),
     bugType: matchedBugType,
     title: String(parsed.title || "").trim(),
     preconditions: String(parsed.preconditions || "None").trim(),
-    stepsToReproduce: String(parsed.stepsToReproduce || "").trim(),
+    description: rawDesc || undefined,
+    acceptanceCriteria: rawAc || undefined,
+    stepsToReproduce: rawSteps,
     expectedResult: String(parsed.expectedResult || "").trim(),
     actualResult: String(parsed.actualResult || "").trim(),
     severity: normalizedSeverity,
