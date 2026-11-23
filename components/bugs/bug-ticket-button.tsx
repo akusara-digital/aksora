@@ -124,25 +124,19 @@ export function BugTicketButton({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className={cn(
-                "inline-flex items-center font-semibold rounded-full border border-emerald-300 bg-emerald-50 text-emerald-800 transition hover:bg-emerald-100 hover:text-emerald-900 shadow-2xs whitespace-nowrap",
-                size === "sm" ? "h-7 gap-1 px-2.5 text-[11px]" : "h-8 gap-1.5 px-3 text-xs",
-              )}
+              className="inline-flex items-center gap-1.5 rounded-sm border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 hover:text-emerald-900 shadow-2xs whitespace-nowrap"
               title={`View ${displayKey} in Jira`}
             >
-              <Check size={size === "sm" ? 12 : 14} weight="bold" className="text-emerald-600" />
+              <Check size={13} weight="bold" className="text-emerald-600" />
               <span>Pushed ({displayKey})</span>
-              <ArrowSquareOut size={size === "sm" ? 11 : 13} weight="bold" className="text-emerald-600/70" />
+              <ArrowSquareOut size={12} weight="bold" className="text-emerald-600/70" />
             </a>
           ) : (
             <span
-              className={cn(
-                "inline-flex items-center font-semibold rounded-full border border-emerald-300 bg-emerald-50 text-emerald-800 shadow-2xs whitespace-nowrap",
-                size === "sm" ? "h-7 gap-1 px-2.5 text-[11px]" : "h-8 gap-1.5 px-3 text-xs",
-              )}
+              className="inline-flex items-center gap-1.5 rounded-sm border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-2xs whitespace-nowrap"
               title={`Jira Ticket: ${displayKey}`}
             >
-              <Check size={size === "sm" ? 12 : 14} weight="bold" className="text-emerald-600" />
+              <Check size={13} weight="bold" className="text-emerald-600" />
               <span>Pushed ({displayKey})</span>
             </span>
           )}
@@ -152,15 +146,10 @@ export function BugTicketButton({
           type="button"
           onClick={handleOpenClick}
           disabled={creating}
-          className={cn(
-            "inline-flex items-center font-semibold transition active:scale-95 cursor-pointer shadow-2xs whitespace-nowrap",
-            size === "sm"
-              ? "h-7 gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 text-[11px] text-blue-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800"
-              : "h-8 gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50",
-          )}
+          className="inline-flex items-center gap-1.5 rounded-sm border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 active:scale-95 cursor-pointer shadow-2xs whitespace-nowrap"
           title="Create Jira ticket"
         >
-          <Ticket size={size === "sm" ? 12 : 14} weight="bold" className={size === "sm" ? "text-blue-600" : "text-slate-600"} />
+          <Ticket size={14} weight="bold" className="text-gray-500" />
           <span>Create ticket</span>
         </button>
       )}

@@ -41,21 +41,22 @@ describe("BugTicketButton", () => {
     expect(link.getAttribute("href")).toBe("https://jira.company.com/browse/BUG-170");
   });
 
-  it("renders compact 'Create ticket' button when size is 'sm'", () => {
+  it("renders 'Create ticket' button matching rectangular box (rounded-sm) style", () => {
     render(<BugTicketButton bugId={123} externalTicket="" size="sm" />);
 
     const button = screen.getByRole("button", { name: /create ticket/i });
     expect(button).toBeDefined();
-    expect(button.className).toContain("h-7");
-    expect(button.className).toContain("rounded-full");
+    expect(button.className).toContain("rounded-sm");
+    expect(button.className).toContain("border-gray-200");
   });
 
-  it("renders compact 'Pushed' badge when size is 'sm'", () => {
+  it("renders 'Pushed' badge matching rectangular box (rounded-sm) style", () => {
     render(<BugTicketButton bugId={123} externalTicket="BUG-170" size="sm" />);
 
     const badgeText = screen.getByText("Pushed (BUG-170)");
     expect(badgeText).toBeDefined();
     const container = badgeText.parentElement;
-    expect(container?.className).toContain("h-7");
+    expect(container?.className).toContain("rounded-sm");
+    expect(container?.className).toContain("border-emerald-200");
   });
 });
