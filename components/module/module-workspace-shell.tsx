@@ -522,6 +522,13 @@ export function ModuleWorkspaceShell({
  onClose={onCloseView}
  onEdit={onEditView}
  canEdit={canEdit}
+ canDelete={canDelete}
+ onDelete={() => {
+   if (viewingRow) {
+     onDeleteRow(viewingRow);
+     onCloseView();
+   }
+ }}
  module={module}
  initialTab={initialTab}
  onTabChange={onTabChange}

@@ -2,7 +2,11 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/shared/badge";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { ModalShell } from "@/components/ui/modal-shell";
+import { toast } from "@/components/ui/toast";
 import {
   CheckCircle,
   XCircle,
@@ -15,6 +19,8 @@ import {
   Play,
   ClockCounterClockwise,
   SidebarSimple,
+  Trash,
+  Check,
 } from "@phosphor-icons/react";
 import { AiGenerateCasesButton } from "@/components/test-management/ai-generate-cases-button";
 import type { SuiteGroup } from "@/components/test-management/test-case-table";
@@ -36,7 +42,88 @@ export function TestCaseSuiteHeader({
   showSidebar = true,
   onToggleSidebar,
 }: TestCaseSuiteHeaderProps) {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const [editTitle, setEditTitle] = useState(selected.suiteTitle || "");
+  const [editStatus, setEditStatus] = useState(selected.suiteStatus || "Active");
+  const [submittingEdit, setSubmittingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const targetSuiteId =
+    selected.suiteId ||
+    selected.cases[0]?.testSuiteId ||
+    (selected.key !== "unassigned" ? selected.key : null);
+
+  useEffect(() => {
+    setEditTitle(selected.suiteTitle || "");
+    setEditStatus(selected.suiteStatus || "Active");
+  }, [selected]);
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetSuiteId) return;
+    if (!editTitle.trim()) {
+      setEditError("Suite title is required.");
+      return;
+    }
+    setSubmittingEdit(true);
+    setEditError(null);
+
+    try {
+      const res = await fetch("/api/items/test-suites", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: targetSuiteId,
+          entry: {
+            title: editTitle.trim(),
+            status: editStatus,
+          },
+          title: editTitle.trim(),
+          status: editStatus,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to update test suite");
+      }
+
+      toast("Test suite updated successfully", "success");
+      setShowEditModal(false);
+      router.refresh();
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Failed to update test suite.");
+    } finally {
+      setSubmittingEdit(false);
+    }
+  };
+
+  const handleDeleteSuite = async () => {
+    if (!targetSuiteId) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/items/test-suites?id=${targetSuiteId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to delete test suite");
+      }
+      toast("Test suite deleted successfully", "success");
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to delete test suite", "error");
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -169,13 +256,26 @@ export function TestCaseSuiteHeader({
                   Run History
                 </Link>
                 <div className="my-1 border-t border-gray-100" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setEditTitle(selected.suiteTitle || "");
+                    setEditStatus(selected.suiteStatus || "Active");
+                    setShowEditModal(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-50 cursor-pointer"
+                >
+                  <PencilSimple size={16} weight="bold" />
+                  Rename / Edit Suite
+                </button>
                 <Link
                   href={`/test-cases/${suiteIdentifier}`}
                   className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <PencilSimple size={16} weight="bold" />
-                  Edit Test Case
+                  Edit Test Cases
                 </Link>
                 {selected.suiteToken && (
                   <Link
@@ -187,11 +287,104 @@ export function TestCaseSuiteHeader({
                     Open Suite Detail
                   </Link>
                 )}
+                <div className="my-1 border-t border-gray-100" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setShowDeleteModal(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50 cursor-pointer"
+                >
+                  <Trash size={16} weight="bold" />
+                  Delete Suite
+                </button>
               </div>
             )}
           </div>
         )}
       </div>
+
+      {/* ── Edit / Rename Suite Modal ── */}
+      <ModalShell
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="Edit / Rename Suite"
+        description="Update the title and status of this test suite."
+        icon={<PencilSimple size={20} weight="bold" className="text-blue-600" />}
+        maxWidth="md"
+      >
+        <form onSubmit={handleEditSubmit} className="space-y-4">
+          {editError && (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+              {editError}
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700">
+              Suite Title <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={editTitle}
+              onChange={(e) => {
+                setEditTitle(e.target.value);
+                if (editError) setEditError(null);
+              }}
+              placeholder="e.g. Authentication & Authorization"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+              autoFocus
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700">Status</label>
+            <select
+              value={editStatus}
+              onChange={(e) => setEditStatus(e.target.value)}
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+            >
+              <option value="Active">Active</option>
+              <option value="Draft">Draft</option>
+              <option value="Completed">Completed</option>
+              <option value="Archived">Archived</option>
+            </select>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowEditModal(false)}
+              disabled={submittingEdit}
+              className="h-9 rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submittingEdit || !editTitle.trim()}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+            >
+              <Check size={14} weight="bold" />
+              {submittingEdit ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </ModalShell>
+
+      {/* ── Delete Suite Confirmation ── */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title={`Delete Test Suite: ${selected.suiteTitle}`}
+        message="Are you sure you want to delete this test suite? All test cases inside this suite will also be deleted. This action cannot be undone."
+        type="danger"
+        confirmText={deleting ? "Deleting..." : "Delete Suite"}
+        cancelText="Cancel"
+        onConfirm={handleDeleteSuite}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 }

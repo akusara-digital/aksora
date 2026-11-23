@@ -56,6 +56,7 @@ export type TestCase = {
 
 export type SuiteGroup = {
   key: string;
+  suiteId?: string | number;
   suiteTitle: string;
   suiteToken: string | null;
   suiteStatus: string | null;

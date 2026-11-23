@@ -13,6 +13,8 @@ type ModuleWorkspaceModalsProps = {
  onReopenReasonChange: (value: string) => void;
  onReopenCancel: () => void;
  onReopenConfirm: () => void | Promise<void>;
+ canDelete?: boolean;
+ onDelete?: () => void;
 };
 
 export function ModuleWorkspaceModals({
@@ -24,6 +26,8 @@ export function ModuleWorkspaceModals({
  onReopenReasonChange,
  onReopenCancel,
  onReopenConfirm,
+ canDelete: _canDelete,
+ onDelete: _onDelete,
 }: ModuleWorkspaceModalsProps) {
  return (
  <>

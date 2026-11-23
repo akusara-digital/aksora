@@ -11,8 +11,10 @@ import {
   Users,
   Gear,
   SquaresFour,
+  PencilSimple,
 } from "@phosphor-icons/react";
 import { ProjectMembersModal } from "@/components/projects/project-members-modal";
+import { QuickEditProjectModal } from "@/components/projects/quick-edit-project-modal";
 import { QuickBugModal } from "@/components/bugs/quick-bug-modal";
 import { QuickTaskModal } from "@/components/projects/quick-task-modal";
 import {
@@ -91,6 +93,7 @@ export function ProjectHubView({
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [bugModalOpen, setBugModalOpen] = useState(false);
   const [membersModalOpen, setMembersModalOpen] = useState(false);
+  const [editProjectModalOpen, setEditProjectModalOpen] = useState(false);
 
   const isArchived = project.status === "archived";
 
@@ -150,6 +153,14 @@ export function ProjectHubView({
             >
               <Users size={14} weight="bold" />
               Members ({members.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditProjectModalOpen(true)}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-blue-600"
+            >
+              <PencilSimple size={14} weight="bold" />
+              Edit Project
             </button>
           </div>
         </div>
@@ -301,6 +312,17 @@ export function ProjectHubView({
         project={project}
         isOpen={membersModalOpen}
         onClose={() => setMembersModalOpen(false)}
+      />
+
+      {/* ── Quick Edit Project Modal ── */}
+      <QuickEditProjectModal
+        project={project}
+        isOpen={editProjectModalOpen}
+        onClose={() => setEditProjectModalOpen(false)}
+        onSuccess={(updated) => {
+          setProject((prev) => ({ ...prev, ...updated }));
+          router.refresh();
+        }}
       />
     </div>
   );

@@ -17,8 +17,10 @@ import {
   ArrowCounterClockwise,
   Trash,
   Users,
+  PencilSimple,
 } from "@phosphor-icons/react";
 import { QuickProjectModal } from "@/components/projects/quick-project-modal";
+import { QuickEditProjectModal } from "@/components/projects/quick-edit-project-modal";
 import { ProjectMembersModal } from "@/components/projects/project-members-modal";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { InlineAlert } from "@/components/ui/inline-alert";
@@ -50,6 +52,7 @@ export function ProjectsClient() {
   const [tab, setTab] = useState<TabFilter>("active");
   const [modalOpen, setModalOpen] = useState(false);
   const [membersProject, setMembersProject] = useState<ProjectItem | null>(null);
+  const [editTarget, setEditTarget] = useState<ProjectItem | null>(null);
 
   // Deletion state
   const [deleteTarget, setDeleteTarget] = useState<ProjectItem | null>(null);
@@ -318,6 +321,16 @@ export function ProjectsClient() {
                         )}
                       </button>
 
+                      {/* Edit / Rename button */}
+                      <button
+                        type="button"
+                        onClick={() => setEditTarget(project)}
+                        title="Edit / Rename project"
+                        className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition"
+                      >
+                        <PencilSimple size={14} weight="bold" />
+                      </button>
+
                       {/* Members / Team button */}
                       <button
                         type="button"
@@ -410,6 +423,19 @@ export function ProjectsClient() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onSuccess={() => fetchProjects()}
+      />
+
+      {/* Edit Project Modal */}
+      <QuickEditProjectModal
+        project={editTarget}
+        isOpen={Boolean(editTarget)}
+        onClose={() => setEditTarget(null)}
+        onSuccess={(updated) => {
+          setProjects((prev) =>
+            prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+          );
+          setEditTarget(null);
+        }}
       />
 
       {/* Protective Delete Confirmation Modal */}

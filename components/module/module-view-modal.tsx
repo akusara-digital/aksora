@@ -5,7 +5,7 @@ import { cn, formatDisplayText, formatDuration, calculateDurationFromTime } from
 import { getRoleLabel } from "@/lib/roles";
 import { HighlightText } from "@/components/shared/highlight-text";
 import { Badge } from "@/components/shared/badge";
-import { Note, PencilSimple, X, PaperPlaneTilt } from "@phosphor-icons/react";
+import { Note, PencilSimple, X, PaperPlaneTilt, Trash } from "@phosphor-icons/react";
 import { CopyLinkButton } from "@/components/shared/copy-link-button";
 import { CollaborationIndicator } from "@/components/shared/collaboration-indicator";
 import { useCollaborationPresence } from "@/hooks/use-collaboration-presence";
@@ -53,12 +53,26 @@ type ViewModalProps = {
   onClose: () => void;
   onEdit: () => void;
   canEdit: boolean;
+  canDelete?: boolean;
+  onDelete?: () => void;
   module: string;
   initialTab?: string | null;
   onTabChange?: (tab: string) => void;
 };
 
-export function ViewModal({ row, config, fieldIcons, onClose, onEdit, canEdit, module, initialTab, onTabChange }: ViewModalProps) {
+export function ViewModal({
+  row,
+  config,
+  fieldIcons,
+  onClose,
+  onEdit,
+  canEdit,
+  canDelete,
+  onDelete,
+  module,
+  initialTab,
+  onTabChange,
+}: ViewModalProps) {
   const ref = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<string>(() => {
@@ -364,6 +378,16 @@ export function ViewModal({ row, config, fieldIcons, onClose, onEdit, canEdit, m
             >
               <PaperPlaneTilt size={13} weight="bold" />
               Sync to Sicmundus
+            </button>
+          )}
+          {canDelete && onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="inline-flex h-8 items-center gap-1.5 rounded border border-rose-200 bg-rose-50 px-3 text-xs font-bold text-rose-600 transition hover:bg-rose-100 hover:text-rose-700"
+            >
+              <Trash size={12} weight="bold" />
+              Delete
             </button>
           )}
           {canEdit && (

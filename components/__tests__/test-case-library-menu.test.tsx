@@ -45,6 +45,8 @@ vi.mock("@phosphor-icons/react", () => ({
   SidebarSimple: (props: Record<string, unknown>) => <svg data-testid="sidebar-simple" {...props} />,
   CaretDown: (props: Record<string, unknown>) => <svg data-testid="caret-down" {...props} />,
   ClockCounterClockwise: (props: Record<string, unknown>) => <svg data-testid="clock-counter-clockwise" {...props} />,
+  Check: (props: Record<string, unknown>) => <svg data-testid="check" {...props} />,
+  Trash: (props: Record<string, unknown>) => <svg data-testid="trash" {...props} />,
 }));
 
 import { TestCaseLibrary } from "@/app/test-cases/test-case-library";
@@ -82,10 +84,10 @@ describe("TestCaseLibrary menu", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /open test case menu/i }));
-    expect(screen.getByText("Edit Test Case")).not.toBeNull();
+    expect(screen.getByText("Edit Test Cases")).not.toBeNull();
 
     fireEvent.pointerDown(document.body);
-    expect(screen.queryByText("Edit Test Case")).toBeNull();
+    expect(screen.queryByText("Edit Test Cases")).toBeNull();
   });
 
   it("filters test cases by project and status", () => {

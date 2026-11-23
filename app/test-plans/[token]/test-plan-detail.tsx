@@ -25,7 +25,13 @@ import {
   Share,
   Check,
   ListChecks,
+  PencilSimple,
+  Trash,
 } from "@phosphor-icons/react";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { ModalShell } from "@/components/ui/modal-shell";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import { toast } from "@/components/ui/toast";
 import {
   PlanScopeChecklistModal,
   type AvailableSuite,
@@ -115,6 +121,97 @@ export function TestPlanDetail({
  const [filterStatusMap, setFilterStatusMap] = useState<Record<string, string>>({});
  const [activeTab, setActiveTab] = useState<"all" |"attention" |"empty">("all");
  const [copied, setCopied] = useState(false);
+ const [currentPlan, setCurrentPlan] = useState<Plan>(plan);
+ const [showEditModal, setShowEditModal] = useState(false);
+ const [showDeleteModal, setShowDeleteModal] = useState(false);
+ const [deleting, setDeleting] = useState(false);
+
+ // Edit form state
+ const [editTitle, setEditTitle] = useState(plan.title || "");
+ const [editSprint, setEditSprint] = useState(plan.sprint || "");
+ const [editStatus, setEditStatus] = useState(plan.status || "Pending");
+ const [editStartDate, setEditStartDate] = useState(plan.startDate ? plan.startDate.split("T")[0] : "");
+ const [editEndDate, setEditEndDate] = useState(plan.endDate ? plan.endDate.split("T")[0] : "");
+ const [editScope, setEditScope] = useState(plan.scope || "");
+ const [editNotes, setEditNotes] = useState(plan.notes || "");
+ const [submittingEdit, setSubmittingEdit] = useState(false);
+ const [editError, setEditError] = useState<string | null>(null);
+
+ const resetEditForm = (p: Plan) => {
+   setEditTitle(p.title || "");
+   setEditSprint(p.sprint || "");
+   setEditStatus(p.status || "Pending");
+   setEditStartDate(p.startDate ? p.startDate.split("T")[0] : "");
+   setEditEndDate(p.endDate ? p.endDate.split("T")[0] : "");
+   setEditScope(p.scope || "");
+   setEditNotes(p.notes || "");
+   setEditError(null);
+ };
+
+ const handleEditSubmit = async (e: React.FormEvent) => {
+   e.preventDefault();
+   if (!editTitle.trim()) {
+     setEditError("Title is required.");
+     return;
+   }
+   setSubmittingEdit(true);
+   setEditError(null);
+
+   const updates = {
+     title: editTitle.trim(),
+     sprint: editSprint.trim(),
+     status: editStatus,
+     startDate: editStartDate,
+     endDate: editEndDate,
+     scope: editScope.trim(),
+     notes: editNotes.trim(),
+   };
+
+   try {
+     const res = await fetch("/api/items/test-plans", {
+       method: "PATCH",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify({
+         id: currentPlan.id,
+         entry: updates,
+         ...updates,
+       }),
+     });
+
+     if (!res.ok) {
+       const data = await res.json().catch(() => ({}));
+       throw new Error(data.error || "Failed to update test plan");
+     }
+
+     toast("Test plan updated successfully", "success");
+     setCurrentPlan((prev) => ({ ...prev, ...updates }));
+     setShowEditModal(false);
+     router.refresh();
+   } catch (err) {
+     setEditError(err instanceof Error ? err.message : "Failed to update test plan.");
+   } finally {
+     setSubmittingEdit(false);
+   }
+ };
+
+ const handleDeletePlan = async () => {
+   setDeleting(true);
+   try {
+     const res = await fetch(`/api/items/test-plans?id=${currentPlan.id}`, {
+       method: "DELETE",
+     });
+     if (!res.ok) {
+       const data = await res.json().catch(() => ({}));
+       throw new Error(data.error || "Failed to delete test plan");
+     }
+     toast("Test plan deleted", "success");
+     router.push("/test-plans");
+   } catch (err) {
+     toast(err instanceof Error ? err.message : "Failed to delete test plan", "error");
+     setDeleting(false);
+     setShowDeleteModal(false);
+   }
+ };
 
  const parsedScope = useMemo<{ suiteIds: number[]; caseIds: number[] } | null>(() => {
    if (!plan.scope) return null;
@@ -226,11 +323,32 @@ export function TestPlanDetail({
 
  {/* Title + meta */}
  <div className="flex-1 min-w-0">
- <div className="flex items-center gap-3 mb-3">
+ <div className="flex flex-wrap items-center gap-2.5 mb-3">
  <Link href="/test-plans" className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-blue-600 transition">
  <ArrowLeft size={15} weight="bold" />
  </Link>
- <Badge value={plan.status} />
+ <Badge value={currentPlan.status} />
+ <button
+  type="button"
+  onClick={() => {
+    resetEditForm(currentPlan);
+    setShowEditModal(true);
+  }}
+  className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 h-8 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition shadow-2xs cursor-pointer"
+  title="Edit / Rename Plan"
+ >
+  <PencilSimple size={13} weight="bold" />
+  Edit Plan
+ </button>
+ <button
+  type="button"
+  onClick={() => setShowDeleteModal(true)}
+  className="flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 px-3 h-8 text-xs font-bold text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition shadow-2xs cursor-pointer"
+  title="Delete Plan"
+ >
+  <Trash size={13} weight="bold" />
+  Delete Plan
+ </button>
  <button
   type="button"
   onClick={() => setShowScopeModal(true)}
@@ -239,7 +357,7 @@ export function TestPlanDetail({
   <ListChecks size={14} weight="bold" />
   Checklist Scope ({parsedScope ? `${parsedScope.caseIds.length} Cases` : `${suites.length} Suites`})
  </button>
- {plan.publicToken && (
+ {currentPlan.publicToken && (
  <button
  onClick={copyReportLink}
  className="flex items-center gap-1.5 rounded-md border border-violet-200 bg-violet-50 px-3 h-8 text-xs font-bold text-violet-600 hover:bg-violet-100 transition"
@@ -250,26 +368,26 @@ export function TestPlanDetail({
  )}
  </div>
  <h1 className="text-3xl font-black tracking-tight text-slate-900 leading-tight mb-4">
- {plan.title ||"Untitled Plan"}
+ {currentPlan.title ||"Untitled Plan"}
  </h1>
  <div className="flex flex-wrap gap-4 text-sm">
- {plan.project && (
- <Link href={`/test-plans/projects/${encodeURIComponent(plan.project)}`} className="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 transition">
+ {currentPlan.project && (
+ <Link href={`/test-plans/projects/${encodeURIComponent(currentPlan.project)}`} className="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 transition">
  <Tag size={13} weight="bold" className="text-blue-500" />
- <span className="font-semibold text-slate-700">{plan.project}</span>
+ <span className="font-semibold text-slate-700">{currentPlan.project}</span>
  </Link>
  )}
- {plan.sprint && (
- <span className="flex items-center gap-1.5 text-slate-500"><CircleNotch size={13} weight="bold" className="text-indigo-500" /><span className="font-semibold text-slate-700">{plan.sprint}</span></span>
+ {currentPlan.sprint && (
+ <span className="flex items-center gap-1.5 text-slate-500"><CircleNotch size={13} weight="bold" className="text-indigo-500" /><span className="font-semibold text-slate-700">{currentPlan.sprint}</span></span>
  )}
- {plan.assignee && (
- <span className="flex items-center gap-1.5 text-slate-500"><User size={13} weight="bold" className="text-slate-400" /><span className="font-semibold text-slate-700">{plan.assignee}</span></span>
+ {currentPlan.assignee && (
+ <span className="flex items-center gap-1.5 text-slate-500"><User size={13} weight="bold" className="text-slate-400" /><span className="font-semibold text-slate-700">{currentPlan.assignee}</span></span>
  )}
- {(plan.startDate || plan.endDate) && (
- <span className="flex items-center gap-1.5 text-slate-500"><CalendarBlank size={13} weight="bold" className="text-slate-400" /><span className="font-semibold text-slate-700">{formatDate(plan.startDate)} - {formatDate(plan.endDate)}</span></span>
+ {(currentPlan.startDate || currentPlan.endDate) && (
+ <span className="flex items-center gap-1.5 text-slate-500"><CalendarBlank size={13} weight="bold" className="text-slate-400" /><span className="font-semibold text-slate-700">{formatDate(currentPlan.startDate)} - {formatDate(currentPlan.endDate)}</span></span>
  )}
  </div>
- {(parsedScope || plan.scope || plan.notes) && (
+ {(parsedScope || currentPlan.scope || currentPlan.notes) && (
  <div className="mt-4 text-sm text-slate-500 leading-relaxed border-t border-slate-100 pt-4 max-w-2xl">
   {parsedScope ? (
    <div className="space-y-1.5">
@@ -277,10 +395,10 @@ export function TestPlanDetail({
      <Checks size={14} weight="bold" />
      Scope Checklist: {parsedScope.caseIds.length} test cases selected across {suites.length} suites
     </div>
-    {plan.notes && <p className="text-xs text-slate-500">{plan.notes}</p>}
+    {currentPlan.notes && <p className="text-xs text-slate-500">{currentPlan.notes}</p>}
    </div>
   ) : (
-   <p>{plan.scope || plan.notes}</p>
+   <p>{currentPlan.scope || currentPlan.notes}</p>
   )}
  </div>
  )}
@@ -579,14 +697,155 @@ export function TestPlanDetail({
  <PlanScopeChecklistModal
   isOpen={showScopeModal}
   onClose={() => setShowScopeModal(false)}
-  planId={plan.id}
-  planTitle={plan.title || "Test Plan"}
+  planId={currentPlan.id}
+  planTitle={currentPlan.title || "Test Plan"}
   availableSuites={availableSuites}
   currentlyLinkedSuiteIds={suites.map((s) => s.id)}
   currentlyLinkedCaseIds={parsedScope?.caseIds}
   onSuccess={() => {
     router.refresh();
   }}
+ />
+
+ {/* ── Edit / Rename Plan Modal ── */}
+ <ModalShell
+   isOpen={showEditModal}
+   onClose={() => setShowEditModal(false)}
+   title="Edit / Rename Plan"
+   description="Update plan name, sprint, status, duration, scope, and notes."
+   icon={<PencilSimple size={20} weight="bold" className="text-blue-600" />}
+   maxWidth="lg"
+ >
+   <form onSubmit={handleEditSubmit} className="space-y-4">
+     {editError && (
+       <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+         {editError}
+       </div>
+     )}
+
+     <div className="space-y-1.5">
+       <label className="text-xs font-bold text-slate-700">
+         Plan Title <span className="text-rose-500">*</span>
+       </label>
+       <input
+         type="text"
+         required
+         value={editTitle}
+         onChange={(e) => {
+           setEditTitle(e.target.value);
+           if (editError) setEditError(null);
+         }}
+         placeholder="e.g. Sprint 24 Regression Test Plan"
+         className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+         autoFocus
+       />
+     </div>
+
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+       <div className="space-y-1.5">
+         <label className="text-xs font-bold text-slate-700">Sprint</label>
+         <input
+           type="text"
+           value={editSprint}
+           onChange={(e) => setEditSprint(e.target.value)}
+           placeholder="e.g. Sprint 24"
+           className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+         />
+       </div>
+
+       <div className="space-y-1.5">
+         <label className="text-xs font-bold text-slate-700">Status</label>
+         <select
+           value={editStatus}
+           onChange={(e) => setEditStatus(e.target.value)}
+           className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+         >
+           <option value="Draft">Draft</option>
+           <option value="Pending">Pending</option>
+           <option value="In Progress">In Progress</option>
+           <option value="Completed">Completed</option>
+           <option value="Archived">Archived</option>
+         </select>
+       </div>
+     </div>
+
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+       <div className="space-y-1.5">
+         <label className="text-xs font-bold text-slate-700">Start Date</label>
+         <input
+           type="date"
+           value={editStartDate}
+           onChange={(e) => setEditStartDate(e.target.value)}
+           className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+         />
+       </div>
+
+       <div className="space-y-1.5">
+         <label className="text-xs font-bold text-slate-700">End Date</label>
+         <input
+           type="date"
+           value={editEndDate}
+           onChange={(e) => setEditEndDate(e.target.value)}
+           className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+         />
+       </div>
+     </div>
+
+     <div className="space-y-1.5">
+       <label className="text-xs font-bold text-slate-700">Scope</label>
+       <AutoResizeTextarea
+         value={editScope}
+         onChange={(e) => setEditScope(e.target.value)}
+         rows={2}
+         maxHeight={150}
+         placeholder="Testing scope description or modules included..."
+         className="p-3 text-xs"
+       />
+     </div>
+
+     <div className="space-y-1.5">
+       <label className="text-xs font-bold text-slate-700">Notes</label>
+       <AutoResizeTextarea
+         value={editNotes}
+         onChange={(e) => setEditNotes(e.target.value)}
+         rows={3}
+         maxHeight={200}
+         placeholder="Additional test plan notes, objectives, or instructions..."
+         className="p-3 text-xs"
+       />
+     </div>
+
+     <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+       <button
+         type="button"
+         onClick={() => setShowEditModal(false)}
+         disabled={submittingEdit}
+         className="h-9 rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+       >
+         Cancel
+       </button>
+       <button
+         type="submit"
+         disabled={submittingEdit || !editTitle.trim()}
+         className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+       >
+         <Check size={14} weight="bold" />
+         {submittingEdit ? "Saving..." : "Save Changes"}
+       </button>
+     </div>
+   </form>
+ </ModalShell>
+
+ {/* ── Delete Plan Confirmation ── */}
+ <ConfirmModal
+   isOpen={showDeleteModal}
+   title={`Delete Test Plan: ${currentPlan.title || "Untitled"}`}
+   message="Are you sure you want to delete this test plan? This action cannot be undone."
+   type="danger"
+   confirmText={deleting ? "Deleting..." : "Delete Plan"}
+   cancelText="Cancel"
+   onConfirm={handleDeletePlan}
+   onCancel={() => setShowDeleteModal(false)}
  />
  </div>
  );
