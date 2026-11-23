@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 import { ModuleFilterBar, type FilterValue } from "@/components/module/module-filter-bar";
 import { SavedViews } from "@/components/module/saved-views";
 import { QuickBugButton } from "@/components/bugs/quick-bug-button";
-import { QaCopilotButton } from "@/components/shared/qa-copilot-button";
 import { TestSessionsToolsMenu } from "@/components/test-sessions/test-sessions-tools-menu";
 import { WorkLogAiActions } from "@/components/work-logs/work-log-ai-actions";
 import { ModuleMoreActionsMenu } from "@/components/module/module-more-actions-menu";
@@ -107,8 +106,6 @@ export function ModuleWorkspaceHeader({
                   className="h-8 w-full border border-gray-200 bg-white pl-8 pr-3 text-[13px] outline-none transition-colors focus:border-blue-500"
                 />
               </div>
-
-              {(module === "tasks" || module === "test-cases") && <QaCopilotButton />}
 
               {module === "test-sessions" && <TestSessionsToolsMenu />}
 

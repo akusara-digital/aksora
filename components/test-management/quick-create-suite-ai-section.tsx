@@ -98,7 +98,7 @@ export function QuickCreateSuiteAiSection({
       }));
 
       onGenerated(formatted);
-      toast(`Generated ${formatted.length} test cases with QA Copilot.`, "success");
+      toast(`Generated ${formatted.length} test cases with AI.`, "success");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Failed to generate test cases.", "error");
     } finally {
@@ -114,7 +114,7 @@ export function QuickCreateSuiteAiSection({
             <Sparkle size={15} weight="bold" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-slate-900">QA Copilot Generator</h4>
+            <h4 className="text-xs font-bold text-slate-900">AI Case Generator</h4>
             <p className="text-[11px] text-slate-500">
               Auto-generate structured test cases from suite name & scope notes.
             </p>
@@ -174,7 +174,7 @@ export function QuickCreateSuiteAiSection({
             ) : (
               <>
                 <Sparkle size={14} weight="bold" />
-                {existingCount > 0 ? "Regenerate with AI" : "Generate with QA Copilot"}
+                {existingCount > 0 ? "Regenerate with AI" : "Generate with AI"}
               </>
             )}
           </button>
@@ -182,7 +182,7 @@ export function QuickCreateSuiteAiSection({
 
         {!suiteTitle.trim() && (
           <p className="text-[11px] text-amber-600 font-medium">
-            * Please enter a Suite Name above first so QA Copilot can understand the scope.
+            * Please enter a Suite Name above first so AI can understand the scope.
           </p>
         )}
       </div>
