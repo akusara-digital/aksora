@@ -16,7 +16,10 @@
 - **Strict Scope**: Modify only requested files and logic; no unprompted drive-by refactorings.
 - **Preserve Encoding**: Never corrupt non-ASCII characters or introduce BOM (`-Encoding utf8NoBOM`).
 - **No Hallucinated Gates**: Do not invent fake allowlists, blocklists, or access barriers.
-- **Verification**: Run `npx tsc --noEmit` and `pnpm db:health` before concluding tasks.
+- **Verification & Fast Testing**:
+  - `npx tsc --noEmit` — ensure 0 new TypeScript errors.
+  - `pnpm db:health` — ensure 56 tables in sync if DB schema was modified.
+  - `pnpm test` (or `pnpm test <file>`) — runs ONLY relevant and changed tests to keep verification fast (<15s). NEVER run the full 170+ test suite unless explicitly asked for full regression (use `pnpm test:all`).
 
 ## Multi-Agent Git Safety & Local Commit Rule (MANDATORY)
 1. **Commit Locally Often (Safety Net)**:
@@ -34,3 +37,4 @@
 ## Git & Pre-Push Rules (CRITICAL)
 - **Mandatory Pre-Push Routine**: Selalu jalankan `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`) untuk menyegarkan knowledge graph (hapus history snapshot lama) dan bump `version` di `package.json` sebelum push.
 - **NEVER git push to remote origin** unless explicitly instructed with the exact word "push". Casual affirmations ("gas", "lanjut", "sip") are NOT permission to push. Local commit is required once task passes verification.
+- **NEVER run full test suites** during routine task verification; always use fast relevant tests (`pnpm test`). Full regression (`pnpm test:all`) is reserved for release or explicit CI checks.

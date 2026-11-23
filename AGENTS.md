@@ -74,10 +74,10 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 2. **Preserve Character Encoding**: Dilarang merusak karakter non-ASCII (©, ·, —, é) atau menyisipkan BOM. Selalu gunakan internal edit tools atau `-Encoding utf8NoBOM`. Pastikan tidak ada mojibake setelah edit.
 3. **No Hallucinated Constraints or Features**: Jangan pernah mengarang allowlist email, blocklist, approval gate, atau klaim restriksi akses di kode maupun copy UI tanpa instruksi eksplisit dan verifikasi kode sumber.
 4. **Test Integrity**: Jangan mengubah test agar cocok dengan klaim/teks buatan sendiri. Dilarang menyembunyikan elemen dengan `hidden`, `sr-only`, atau `display: none` semata-mata untuk memanipulasi test agar lulus.
-5. **Pre-Completion Verification**: Selalu verifikasi sebelum melapor selesai:
+5. **Pre-Completion Verification & Fast Testing**: Selalu verifikasi sebelum melapor selesai:
    - `npx tsc --noEmit` — pastikan 0 error TypeScript baru.
    - `pnpm db:health` — pastikan 56 tabel sinkron jika ada perubahan skema DB.
-   - `pnpm test` (atau `pnpm test <file>`) — menjalankan hanya test terkait dan relevan agar proses test cepat (gunakan `pnpm test:all` jika diminta full regression).
+   - `pnpm test` (atau `pnpm test <file>`) — menjalankan HANYA test terkait dan relevan secara otomatis berdasarkan git diff/status agar proses verifikasi cepat (<15s). JANGAN menjalankan full test suite (`pnpm test:all` atau `vitest run`) kecuali diminta full regression secara eksplisit.
 6. **Filter by workspaceId**: Pastikan selalu filter berdasarkan `workspaceId` (kecuali superadmin). Log semua CRUD via `logActivity()`.
 7. **Validate Session**: Validasi session pada setiap mutating route. Gunakan validasi Zod dari `lib/modules.ts`.
 8. **API Standard**: `{ data }` untuk success, `{ error: string }` + status code untuk failure.
@@ -95,7 +95,7 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 - Add SQLite or `isPostgres` branching.
 - Use `/test-case-management` — it's `/test-cases`.
 - Generate `.md` spec files — implement directly.
-- Run full test suites unless asked.
+- Run full test suites (`pnpm test:all` / `vitest run`) unless explicitly requested; always use fast relevant tests (`pnpm test`).
 - Put files flat in `components/` root.
 - Duplicate logic from `lib/data-helpers.ts` or `lib/utils.ts`.
 
