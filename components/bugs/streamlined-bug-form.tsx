@@ -81,6 +81,16 @@ export function StreamlinedBugForm({
       if (initialData.preconditions !== undefined) setPreconditions(String(initialData.preconditions || ""));
       if (initialData.evidence !== undefined) setEvidence(String(initialData.evidence || ""));
       if (initialData.relatedItems !== undefined) setRelatedItems(String(initialData.relatedItems || ""));
+
+      if (
+        initialData.evidence ||
+        initialData.module ||
+        initialData.preconditions ||
+        initialData.suggestedDev ||
+        initialData.relatedItems
+      ) {
+        setShowOptional(true);
+      }
     }
   }, [initialData]);
 

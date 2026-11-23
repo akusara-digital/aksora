@@ -8,7 +8,8 @@ import {
   Lightning,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
+import { isAiConfigured, getActiveAiCredentials, getActiveAiConfig } from "@/lib/ai-keys";
+import { AI_PROVIDER_LABELS, type SupportedProvider } from "@/lib/ai-types";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { toast } from "@/components/ui/toast";
 import { compressImageToWebp } from "@/lib/image-compress";
@@ -19,7 +20,7 @@ export interface AiIssueAgentContentProps {
   defaultProject?: string;
   selectedProject?: string;
   onSwitchToManual: (draft: IssueAgentTicketDraft) => void;
-  onDirectSubmit: (entry: Record<string, unknown>, createAnother?: boolean) => Promise<void> | void;
+  onDirectSubmit?: (entry: Record<string, unknown>, createAnother?: boolean) => Promise<void> | void;
   onCancel: () => void;
   pending?: boolean;
 }
@@ -34,7 +35,10 @@ export function AiIssueAgentContent({
 }: AiIssueAgentContentProps) {
   const [showUnconfigured, setShowUnconfigured] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [actionType, setActionType] = useState<"auto" | "review" | null>(null);
+  const [activeEngine, setActiveEngine] = useState<{ provider: string; model: string }>({
+    provider: "",
+    model: "",
+  });
 
   // Prompt & Options
   const [inputNotes, setInputNotes] = useState("");
@@ -47,13 +51,18 @@ export function AiIssueAgentContent({
 
   const activeProject = selectedProject || defaultProject || "General";
 
+  // Read active AI config on mount
+  useEffect(() => {
+    setActiveEngine(getActiveAiConfig());
+  }, []);
+
   // Handle keyboard shortcut (Ctrl+Enter / Cmd+Enter)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         if (!loading && !pending) {
-          void handleProcess("auto");
+          void handleProcess();
         }
       }
     };
@@ -87,8 +96,7 @@ export function AiIssueAgentContent({
     }
   };
 
-
-  const handleProcess = async (targetAction: "auto" | "review") => {
+  const handleProcess = async () => {
     if (!inputNotes.trim() && !imageBase64) {
       toast("Please describe the defect or attach a screenshot.", "error");
       textareaRef.current?.focus();
@@ -101,7 +109,6 @@ export function AiIssueAgentContent({
     }
 
     setLoading(true);
-    setActionType(targetAction);
 
     try {
       const credentials = getActiveAiCredentials();
@@ -137,39 +144,19 @@ export function AiIssueAgentContent({
         actualResult: inputNotes.trim(),
       };
 
-      const finalEvidence = imageBase64 || ticket.evidence || "";
+      // Detect any URL pasted in the prompt (e.g. BugSnap, Loom, or screenshot link)
+      const detectedUrl = inputNotes.match(/https?:\/\/[^\s)]+/i)?.[0] || "";
+      const finalEvidence = imageBase64 || ticket.evidence || detectedUrl || "";
 
-      if (targetAction === "review") {
-        toast("Draft structured. Review and tweak before saving.", "success");
-        onSwitchToManual({
-          ...ticket,
-          evidence: finalEvidence,
-        });
-      } else {
-        // Direct auto-create
-        const payload: Record<string, unknown> = {
-          title: ticket.title || inputNotes.trim().slice(0, 80),
-          project: activeProject,
-          severity: ticket.severity || "medium",
-          priority: ticket.priority || "P2",
-          bugType: ticket.bugType || "Functional",
-          stepsToReproduce: ticket.stepsToReproduce || "",
-          expectedResult: ticket.expectedResult || "",
-          actualResult: ticket.actualResult || "",
-          module: ticket.module || "",
-          evidence: finalEvidence,
-          preconditions: ticket.preconditions || "",
-          status: "open",
-        };
-
-        await onDirectSubmit(payload, false);
-        toast("Bug created successfully!", "success");
-      }
+      toast("Draft structured. Review and tweak before saving.", "success");
+      onSwitchToManual({
+        ...ticket,
+        evidence: finalEvidence,
+      });
     } catch (err) {
       toast(err instanceof Error ? err.message : "Failed to structure issue", "error");
     } finally {
       setLoading(false);
-      setActionType(null);
     }
   };
 
@@ -214,30 +201,50 @@ export function AiIssueAgentContent({
 
           {/* Inner Action Bar */}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2.5">
-          {/* Left Action Buttons */}
-          <div className="flex items-center gap-1.5">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void handleAttachImage(file);
-                e.target.value = "";
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition cursor-pointer"
-            >
-              <ImageIcon size={13} weight="bold" className="text-slate-500" />
-              <span>Attach Screenshot</span>
-            </button>
+            {/* Left Action Buttons */}
+            <div className="flex items-center gap-1.5">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleAttachImage(file);
+                  e.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition cursor-pointer"
+              >
+                <ImageIcon size={13} weight="bold" className="text-slate-500" />
+                <span>Attach Screenshot</span>
+              </button>
+            </div>
+
+            {/* Right: Active AI Engine from settings */}
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+              <span
+                className={cn(
+                  "inline-block h-1.5 w-1.5 rounded-full",
+                  activeEngine.provider ? "bg-emerald-500" : "bg-amber-400"
+                )}
+              />
+              <span>
+                AI Engine:{" "}
+                <span className="font-semibold text-slate-700">
+                  {activeEngine.provider
+                    ? `${AI_PROVIDER_LABELS[activeEngine.provider as SupportedProvider]?.label || activeEngine.provider}${
+                        activeEngine.model ? ` (${activeEngine.model})` : ""
+                      }`
+                    : "Not configured (Settings)"}
+                </span>
+              </span>
+            </div>
           </div>
         </div>
-      </div>
       </div>
 
       {/* Footer Controls */}
@@ -253,28 +260,16 @@ export function AiIssueAgentContent({
 
         <button
           type="button"
-          onClick={() => void handleProcess("review")}
-          disabled={loading || pending}
-          className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50/70 px-4 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition cursor-pointer disabled:opacity-50"
-        >
-          {loading && actionType === "review" && (
-            <CircleNotch size={13} className="animate-spin text-blue-700" />
-          )}
-          Structure & Review
-        </button>
-
-        <button
-          type="button"
-          onClick={() => void handleProcess("auto")}
+          onClick={() => void handleProcess()}
           disabled={loading || pending}
           className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
         >
-          {loading && actionType === "auto" ? (
+          {loading ? (
             <CircleNotch size={13} className="animate-spin text-white" />
           ) : (
             <Lightning size={13} weight="bold" />
           )}
-          <span>Auto-Create Bug</span>
+          <span>Structure & Review</span>
         </button>
       </div>
 

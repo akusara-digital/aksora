@@ -239,6 +239,8 @@ Return ONLY a valid JSON object (no markdown code blocks, no \`\`\`json):
   const matchedBugType =
     allowedBugTypes.find((t) => t.toLowerCase() === rawBugType.toLowerCase()) || "Functional";
 
+  const extractedUrl = String(payload.prompt || "").match(/https?:\/\/[^\s)]+/i)?.[0] || "";
+
   const ticket: IssueAgentTicketDraft = {
     project: String(parsed.project || project || "General").trim(),
     module: String(parsed.module || "").trim(),
@@ -250,7 +252,7 @@ Return ONLY a valid JSON object (no markdown code blocks, no \`\`\`json):
     actualResult: String(parsed.actualResult || "").trim(),
     severity: normalizedSeverity,
     priority: normalizedPriority,
-    evidence: String(parsed.evidence || (latestImageBase64 ? "Attached screenshot" : "")).trim(),
+    evidence: String(parsed.evidence || extractedUrl || (latestImageBase64 ? "Attached screenshot" : "")).trim(),
     suspectedCause: parsed.suspectedCause ? String(parsed.suspectedCause).trim() : undefined,
   };
 

@@ -4,6 +4,8 @@
  * Persists reliably across sessions until explicitly disconnected by the user.
  */
 
+import { CONFIGURABLE_PROVIDERS } from "@/lib/ai-types";
+
 const STORAGE_KEYS = "aksora_ai_keys";
 const STORAGE_ACTIVE = "aksora_ai_active";
 const STORAGE_9ROUTER_PUBLIC = "aksora_9router_public";
@@ -106,13 +108,32 @@ export function getActiveAiConfig(): { provider: string; model: string } {
   }
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_ACTIVE) || "{}");
-    return {
-      provider: typeof saved.provider === "string" ? saved.provider : "",
-      model: typeof saved.model === "string" ? saved.model : "",
-    };
+    const provider = typeof saved.provider === "string" ? saved.provider : "";
+    const model = typeof saved.model === "string" ? saved.model : "";
+    if (provider) {
+      return { provider, model };
+    }
   } catch {
-    return { provider: "", model: "" };
+    // ignore
   }
+
+  // Fallback: check if any provider has valid keys or public config saved in settings
+  try {
+    const pub = get9RouterPublicConfig();
+    if (pub.url) {
+      return { provider: "9router-public", model: pub.selectedModel || "" };
+    }
+    const validKeys = getValidKeyMap();
+    for (const p of CONFIGURABLE_PROVIDERS) {
+      if (validKeys[p]) {
+        return { provider: p, model: "" };
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return { provider: "", model: "" };
 }
 
 export function getActiveAiCredentials(): {

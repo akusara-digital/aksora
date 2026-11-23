@@ -243,6 +243,11 @@ export function useAISettings() {
         models: state.models,
         selectedModel: state.selectedModel,
       });
+      if (state.urlInput?.trim() && (!activeProvider || !getActiveAiConfig().provider)) {
+        setActiveProvider("9router-public");
+        setActiveModel(state.selectedModel || "");
+        setActiveAiConfig("9router-public", state.selectedModel || "");
+      }
       toast("Public router config saved", "success");
       setProviderStates((prev) => ({
         ...prev,
@@ -253,6 +258,12 @@ export function useAISettings() {
 
     if (state.keyInput.trim()) {
       setApiKey(provider, state.keyInput.trim());
+      if (!activeProvider || !getActiveAiConfig().provider) {
+        const modelToUse = state.selectedModel || state.models[0] || "";
+        setActiveProvider(provider);
+        setActiveModel(modelToUse);
+        setActiveAiConfig(provider, modelToUse);
+      }
       setProviderStates((prev) => ({
         ...prev,
         [provider]: { ...prev[provider], status: "saved" },
