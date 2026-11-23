@@ -284,6 +284,7 @@ export function SidebarNavItem({
     <Link
       ref={linkRef}
       href={targetHref}
+      prefetch={true}
       onMouseEnter={handleMouseEnter}
       onFocus={handleFocus}
       onMouseLeave={hideTooltip}

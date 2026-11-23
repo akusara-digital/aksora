@@ -388,12 +388,19 @@ export async function ensureSchemaBootstrap(deps: DbBootstrapDeps) {
   if (!deps.getSchemaInitPromise()) {
     deps.setSchemaInitPromise((async () => {
       try {
+        // Fast-path: check migration version first. If DB is already at the latest version,
+        // bypass 68+ redundant CREATE TABLE and ALTER TABLE queries entirely.
+        const currentVersion = await getMigrationVersion(deps);
+        if (currentVersion >= CURRENT_MIGRATION_VERSION) {
+          globalBootstrap.__schemaBootstrapDone = true;
+          return;
+        }
+
         await execSchemaSql(schemaTableSql, deps);
         await applyMissingColumns(deps);
         await ensureKanbanSortOrderColumns(deps);
 
         if (!globalBootstrap.__schemaBootstrapDone) {
-          const currentVersion = await getMigrationVersion(deps);
           if (currentVersion < CURRENT_MIGRATION_VERSION) {
             await backfillSearchTokenEntityIdInt(deps);
             await execSchemaSql(schemaIndexSql, deps);

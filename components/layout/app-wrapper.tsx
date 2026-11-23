@@ -82,7 +82,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
     if (!currentWs) {
       const currentParams = new URLSearchParams(searchParams?.toString() || "");
       currentParams.set("ws", user.workspaceUuid);
-      router.replace(`${pathname}?${currentParams.toString()}`);
+      window.history.replaceState(null, "", `${pathname}?${currentParams.toString()}`);
     } else if (currentWs !== user.workspaceUuid) {
       const matching = user.memberships?.find((m) => m.uuid === currentWs);
       if (matching) {

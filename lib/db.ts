@@ -47,7 +47,7 @@ async function getPostgresPool() {
       const poolConfig = {
         connectionString,
         max: isNeon ? 5 : 10,
-        min: isNeon ? 0 : 1,
+        min: isNeon ? 1 : 1,
         idleTimeoutMillis: 60000,
         connectionTimeoutMillis: isNeon ? 15000 : 10000,
         allowExitOnIdle: true,
@@ -335,5 +335,13 @@ export async function getDbHealthInfo() {
 export async function resetTables() {
   const tableNames = tables.map((table) => `"${table.name}"`);
   await db.exec(`TRUNCATE ${tableNames.join(", ")} RESTART IDENTITY CASCADE;`);
+}
+
+// Self-warm the database pool and verify schema in the background on server boot
+// so the very first user query incurs zero cold-start delay.
+if (typeof window === "undefined" && databaseUrl && process.env.NODE_ENV !== "test") {
+  setTimeout(() => {
+    ensureSchema().catch(() => {});
+  }, 0);
 }
 
