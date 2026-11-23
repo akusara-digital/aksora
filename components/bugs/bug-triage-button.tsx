@@ -6,12 +6,11 @@ import { Sparkle } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
-import { TriageBadge } from "@/components/bugs/triage-badge";
 import { cn } from "@/lib/utils";
 
 type Triage = { tier: string; confidence: number; reasoning: string; suggestedSeverity: string };
 
-export function BugTriageButton({ bugId, tier, confidence }: { bugId: number | string; tier?: unknown; confidence?: unknown }) {
+export function BugTriageButton({ bugId }: { bugId: number | string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Triage | null>(null);
@@ -44,7 +43,6 @@ export function BugTriageButton({ bugId, tier, confidence }: { bugId: number | s
   return (
     <>
       <div className="flex items-center gap-2">
-        <TriageBadge tier={result?.tier ?? tier} confidence={result?.confidence ?? confidence} />
         <button
           type="button"
           onClick={run}

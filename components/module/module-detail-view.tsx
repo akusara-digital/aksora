@@ -180,7 +180,7 @@ export function ModuleDetailView({
               project={String(row.project || "")}
             />
             <AiBugToCaseButton bug={row} />
-            <BugTriageButton bugId={row.id} tier={row.triageTier} confidence={row.triageConfidence} />
+            <BugTriageButton bugId={row.id} />
             <BugTicketButton bugId={row.id} externalTicket={row.externalTicket} />
           </>
         )}

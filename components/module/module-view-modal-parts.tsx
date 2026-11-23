@@ -1,10 +1,9 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { ArrowSquareOut } from "@phosphor-icons/react";
 import { HighlightText } from "@/components/shared/highlight-text";
 import { ActivityTimeline } from "@/components/activity/activity-timeline";
-import { BugSnapPreviewCard } from "@/components/shared/bugsnap-preview-card";
 import { MediaLightbox } from "@/components/shared/media-lightbox";
 
 /** Image file extensions for evidence preview */
@@ -84,12 +83,6 @@ export function renderEvidence(
     return <p className="text-xs text-gray-800 font-semibold break-all">{displayValue}</p>;
   }
 
-  // Detect BugSnap captures
-  const isBugSnap = /bugsnap[^\s]*\/v\/[a-zA-Z0-9_-]+/i.test(displayValue);
-  if (isBugSnap) {
-    return <BugSnapPreviewCard url={displayValue} />;
-  }
-
   if (isImageUrl(displayValue)) {
     return (
       <div className="space-y-2">
@@ -121,8 +114,8 @@ export function renderEvidence(
 
   return (
     <a href={displayValue} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 break-all text-xs text-blue-600 hover:underline">
-      <ArrowSquareOut size={12} weight="bold" className="shrink-0" />
       {displayValue}
+      <ArrowSquareOut size={12} weight="bold" className="shrink-0" />
     </a>
   );
 }
