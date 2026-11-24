@@ -137,7 +137,11 @@ describe("Unified Project Hub Page (/projects/[id])", () => {
     expect(mocks.pageShell).toHaveBeenCalledWith(
       expect.objectContaining({
         title: "Core Platform",
-        crumbs: [{ label: "Projects", href: "/projects" }, { label: "Core Platform" }],
+        crumbs: [
+          { label: "My Space", href: "/projects" },
+          { label: "Projects", href: "/projects" },
+          { label: "Core Platform" },
+        ],
       }),
       undefined,
     );

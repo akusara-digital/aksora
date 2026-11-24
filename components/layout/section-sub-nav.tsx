@@ -126,7 +126,7 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
   {
     match: (p) => p.startsWith("/notes") || p.startsWith("/vault") || p.startsWith("/meeting-notes") || p.startsWith("/work-logs"),
     tabs: [
-      { href: "/work-logs", label: "Work Logs", icon: ClockCountdown },
+      { href: "/work-logs", label: "Daily Work", icon: ClockCountdown },
       { href: "/notes", label: "Personal Notes", icon: NotePencil },
       { href: "/meeting-notes", label: "Meeting Notes", icon: Note },
       { href: "/vault", label: "Password Vault", icon: LockKey },

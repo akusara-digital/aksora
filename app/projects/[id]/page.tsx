@@ -170,6 +170,7 @@ export default async function ProjectDetailPage({
       title={project.name}
       description={project.description || "Manage engineering assets and collaborate with your team."}
       crumbs={[
+        { label: "My Space", href: "/projects" },
         { label: "Projects", href: "/projects" },
         { label: project.name },
       ]}

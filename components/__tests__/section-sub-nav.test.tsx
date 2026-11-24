@@ -64,14 +64,14 @@ describe("SectionSubNav", () => {
     expect(html).not.toContain("Sprints Backlog");
   });
 
-  it("renders Notes & Vault tabs including Work Logs and Meeting Notes when on /notes, /meeting-notes, or /work-logs", () => {
+  it("renders Notes & Vault tabs including Daily Work and Meeting Notes when on /notes, /meeting-notes, or /work-logs", () => {
     currentPathname = "/meeting-notes";
     let html = renderToStaticMarkup(<SectionSubNav />);
     expect(html).toContain('href="/work-logs"');
     expect(html).toContain('href="/notes"');
     expect(html).toContain('href="/meeting-notes"');
     expect(html).toContain('href="/vault"');
-    expect(html).toContain("Work Logs");
+    expect(html).toContain("Daily Work");
     expect(html).toContain("Personal Notes");
     expect(html).toContain("Meeting Notes");
     expect(html).toContain("Password Vault");
@@ -79,7 +79,7 @@ describe("SectionSubNav", () => {
     currentPathname = "/work-logs";
     html = renderToStaticMarkup(<SectionSubNav />);
     expect(html).toContain('href="/work-logs"');
-    expect(html).toContain("Work Logs");
+    expect(html).toContain("Daily Work");
   });
 
   it("renders consolidated 3-hub Reports navigation tabs", () => {

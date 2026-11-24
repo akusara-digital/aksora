@@ -12,7 +12,7 @@ export default function NotesPage() {
       icon={<NotePencil size={22} weight="bold" />}
       title="Personal Notes"
       description="Your private notes. Only you can see these."
-      crumbs={[{ label: "Notes & Vault", href: "/work-logs" }, { label: "Personal Notes" }]}
+      crumbs={[{ label: "Notes & Vault", href: "/notes" }, { label: "Personal Notes" }]}
     >
       <Suspense fallback={<Skeleton className="h-72 w-full" />}>
         <NotesClient />

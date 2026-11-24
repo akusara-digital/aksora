@@ -33,8 +33,8 @@ describe("TopBreadcrumbs", () => {
         <TopBreadcrumbs />
       </BreadcrumbProvider>
     );
-    expect(html).toContain("Notes &amp; Vault");
-    expect(html).toContain("Work Logs");
+    expect(html).toContain("Work Items");
+    expect(html).toContain("Daily Work");
   });
 
   it("derives default breadcrumbs for /reports/test-coverage at the top", () => {
@@ -45,7 +45,7 @@ describe("TopBreadcrumbs", () => {
       </BreadcrumbProvider>
     );
     expect(html).toContain("Reports");
-    expect(html).toContain("Test Coverage");
+    expect(html).toContain("Quality &amp; Coverage");
   });
 
   it("derives default breadcrumbs for /tasks and /bugs", () => {
@@ -61,6 +61,7 @@ describe("TopBreadcrumbs", () => {
 
   it("derives hierarchical breadcrumbs for detail sub-pages", () => {
     expect(getDefaultCrumbsForPath("/projects/12")).toEqual([
+      { label: "My Space", href: "/projects" },
       { label: "Projects", href: "/projects" },
       { label: "Project Hub" },
     ]);

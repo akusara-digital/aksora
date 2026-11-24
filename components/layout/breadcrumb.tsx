@@ -23,6 +23,25 @@ function appendWs(href: string, ws: string | null): string {
   }
 }
 
+const SETTINGS_SUB_TITLES: Record<string, string> = {
+  profile: "Profile & Security",
+  appearance: "Appearance",
+  notifications: "Notifications",
+  "api-keys": "API Keys",
+  support: "Help & Support",
+  "test-case-setup": "Test Case Setup",
+  environments: "Environments",
+  automation: "Automation",
+  workspace: "Workspace & Plan",
+  workspaces: "Workspace Members",
+  users: "Workspace Members",
+  roles: "Role Management",
+  ai: "AI Engine & Keys",
+  "ai-usage": "AI Token Usage",
+  integrations: "Integrations",
+  webhooks: "Webhooks",
+};
+
 export function getDefaultCrumbsForPath(pathname: string): Crumb[] {
   const p = pathname.split("?")[0].replace(/\/$/, "") || "/";
 
@@ -30,10 +49,14 @@ export function getDefaultCrumbsForPath(pathname: string): Crumb[] {
     return [{ label: "Dashboard" }];
   }
   if (p === "/projects") {
-    return [{ label: "My Space", href: "/my-work" }, { label: "Projects" }];
+    return [{ label: "My Space", href: "/projects" }, { label: "Projects" }];
   }
   if (p.startsWith("/projects/")) {
-    return [{ label: "Projects", href: "/projects" }, { label: "Project Hub" }];
+    return [
+      { label: "My Space", href: "/projects" },
+      { label: "Projects", href: "/projects" },
+      { label: "Project Hub" },
+    ];
   }
   if (p.startsWith("/test-cases/detail/")) {
     return [{ label: "Test Management", href: "/test-cases" }, { label: "Cases & Suites", href: "/test-cases" }, { label: "Case Detail" }];
@@ -93,29 +116,34 @@ export function getDefaultCrumbsForPath(pathname: string): Crumb[] {
     return [{ label: "Reports", href: "/weekly-report" }, { label: "Delivery & Team", href: "/reports/sprint-burndown" }, { label: "Workload Heatmap" }];
   }
   if (p === "/deployments") {
-    return [{ label: "Workspace", href: "/tasks" }, { label: "Deployments" }];
+    return [{ label: "Reports", href: "/weekly-report" }, { label: "Deployments" }];
   }
   if (p === "/weekly-report") {
     return [{ label: "Reports", href: "/weekly-report" }, { label: "Weekly Report" }];
   }
   if (p === "/work-logs") {
-    return [{ label: "Notes & Vault", href: "/work-logs" }, { label: "Work Logs" }];
+    return [{ label: "Work Items", href: "/tasks" }, { label: "Daily Work" }];
   }
   if (p === "/notes") {
-    return [{ label: "Notes & Vault", href: "/work-logs" }, { label: "Personal Notes" }];
+    return [{ label: "Notes & Vault", href: "/notes" }, { label: "Personal Notes" }];
   }
   if (p === "/meeting-notes") {
-    return [{ label: "Notes & Vault", href: "/work-logs" }, { label: "Meeting Notes" }];
+    return [{ label: "Notes & Vault", href: "/notes" }, { label: "Meeting Notes" }];
   }
   if (p === "/vault") {
-    return [{ label: "Notes & Vault", href: "/work-logs" }, { label: "Password Vault" }];
+    return [{ label: "Notes & Vault", href: "/notes" }, { label: "Password Vault" }];
   }
   if (p === "/settings") {
     return [{ label: "Dashboard", href: "/dashboard" }, { label: "Settings" }];
   }
   if (p.startsWith("/settings/")) {
-    const sub = p.replace("/settings/", "").replace(/-/g, " ");
-    const capSub = sub.charAt(0).toUpperCase() + sub.slice(1);
+    const slug = p.replace("/settings/", "").split("/")[0];
+    const capSub =
+      SETTINGS_SUB_TITLES[slug] ||
+      slug
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
     return [
       { label: "Dashboard", href: "/dashboard" },
       { label: "Settings", href: "/settings" },
@@ -123,9 +151,9 @@ export function getDefaultCrumbsForPath(pathname: string): Crumb[] {
     ];
   }
   if (p === "/my-work") {
-    return [{ label: "My Space", href: "/my-work" }, { label: "My Work" }];
+    return [{ label: "My Space", href: "/projects" }, { label: "My Work" }];
   }
-  if (p === "/activity") {
+  if (p === "/activity" || p === "/activity-log") {
     return [{ label: "Dashboard", href: "/dashboard" }, { label: "Activity Log" }];
   }
 
