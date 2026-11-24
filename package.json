@@ -29,6 +29,7 @@
     "db:smoke-crud": "node scripts/db-smoke-crud.mjs",
     "db:health:ci": "pnpm db:health",
     "analyze": "set ANALYZE=true& next build",
+    "domain:setup": "node scripts/setup-domain.mjs",
     "sicmundus:agent": "node scripts/sicmundus-agent.mjs",
     "sicmundus:same": "node scripts/sicmundus-agent.mjs --reuse",
     "sicmundus:fill": "node scripts/sicmundus-agent.mjs --fill-gaps",
