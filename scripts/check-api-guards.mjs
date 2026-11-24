@@ -21,7 +21,6 @@ const allowedPublic = new Set([
   "app/api/auth/forgot-password/route.ts",
   "app/api/auth/reset-password/route.ts",
   "app/api/auth/verify-mfa/route.ts",
-  "app/api/auth/verify-otp/route.ts",
   "app/api/invites/[token]/accept/route.ts",
   "app/api/health/ai-gateway/route.ts",
   "app/api/vitals/route.ts",

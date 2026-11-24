@@ -317,6 +317,9 @@ export async function verifySessionToken(token: string | undefined | null) {
   }
 }
 
+type CachedUserRow = { id: number; uuid?: string; password: string; company?: string; role?: string; workspaceId?: number | null; activeWorkspaceId?: number | null };
+const userDbRowCache = new Map<number, { row: CachedUserRow; exp: number }>();
+
 async function getCurrentUserUncached() {
   const apiUser = apiUserContext.getStore();
   if (apiUser) {
@@ -362,15 +365,25 @@ async function getCurrentUserUncached() {
     if (decoded.id && decoded.name !== undefined && decoded.role !== undefined && decoded.company !== undefined) {
       let validUserId = decoded.id;
       let userDbRow: { id: number; uuid?: string; password: string; company?: string; role?: string; workspaceId?: number | null; activeWorkspaceId?: number | null } | undefined;
-      // Verify session hasn't been revoked and user exists in current DB
+      // Verify session hasn't been revoked and user exists in current DB (with fast 15s in-memory TTL)
       try {
         const { db } = await import("./db");
-        userDbRow = await db.get<{ id: number; uuid?: string; password: string; company?: string; role?: string; workspaceId?: number | null; activeWorkspaceId?: number | null }>(
-          'SELECT "id", "uuid", "password", "company", "role", "workspaceId", "activeWorkspaceId" FROM "User" WHERE "id" = CAST(? AS INTEGER)',
-          [decoded.id],
-        );
+        const cached = userDbRowCache.get(decoded.id);
+        if (cached && Date.now() < cached.exp) {
+          userDbRow = cached.row;
+        } else {
+          userDbRow = await db.get<CachedUserRow>(
+            'SELECT "id", "uuid", "password", "company", "role", "workspaceId", "activeWorkspaceId" FROM "User" WHERE "id" = CAST(? AS INTEGER)',
+            [decoded.id],
+          );
+          if (userDbRow) {
+            userDbRowCache.set(decoded.id, { row: userDbRow, exp: Date.now() + 15_000 });
+          }
+        }
+
         if (userDbRow) {
           if (decoded.pv && userDbRow.password && userDbRow.password.slice(0, 16) !== decoded.pv) {
+            userDbRowCache.delete(decoded.id);
             return null; // Password changed - session revoked
           }
         } else if (decoded.email) {

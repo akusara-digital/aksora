@@ -56,8 +56,6 @@ vi.mock("@/components/module/module-view-modal-parts", () => ({
   renderEvidence: () => null,
 }));
 
-vi.mock("@/components/bugs/ai-bug-to-case-button", () => ({ AiBugToCaseButton: () => null }));
-vi.mock("@/components/bugs/bug-triage-button", () => ({ BugTriageButton: () => null }));
 vi.mock("@/components/bugs/bug-ticket-button", () => ({ BugTicketButton: () => null }));
 vi.mock("@/components/tasks/ai-task-to-cases-button", () => ({ AiTaskToCasesButton: () => null }));
 vi.mock("@/components/test-management/ai-export-automation-button", () => ({ AiExportAutomationButton: () => null }));

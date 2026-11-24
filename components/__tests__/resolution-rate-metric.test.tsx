@@ -42,10 +42,6 @@ vi.mock("@/components/ui/skeleton", () => ({
   ChartSkeleton: () => <div />,
 }));
 
-vi.mock("@/components/dashboard/dashboard-drawer", () => ({
-  DashboardDrawer: () => <div />,
-}));
-
 vi.mock("@/components/dashboard/dashboard-standup-modal", () => ({
   DashboardStandupModal: () => <div />,
 }));
