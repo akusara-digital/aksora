@@ -54,7 +54,7 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 |------|-------|
 | Module field | `lib/module-config-definitions.ts` → `lib/db-schema.ts` → form component |
 | CRUD | `lib/data.ts` → `lib/data-helpers.ts` → `app/api/items/` |
-| Dashboard | `lib/data-dashboard.ts` → `components/dashboard/` |
+| Dashboard | `lib/data.ts` (`data-dashboard-*.ts`) → `components/dashboard/` |
 | Auth | `lib/auth.ts` → `lib/auth-core.ts` → `app/api/auth/` |
 | Test management | `lib/test-management-data.ts` → `components/test-management/` |
 | Search | `lib/search-index.ts` → `components/shared/search/` |
