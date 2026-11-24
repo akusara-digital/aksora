@@ -38,18 +38,18 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
       ],
     },
     {
+      title: t.groupTestManagement || "Test Management",
+      items: [
+        { href: "/test-cases", label: t.testCases || t.testRepository || "Test Cases", icon: Checks },
+        { href: "/test-execution", label: t.testRuns || t.testExecution || t.testSessions || "Test Runs", icon: PlayCircle },
+      ],
+    },
+    {
       title: t.groupWorkItems || t.groupWorkAndDefects || "Work Items",
       items: [
         { href: "/tasks", label: t.tasks || t.tasksAndSprints || "Tasks", icon: Kanban },
         { href: "/bugs", label: t.bugs || t.bugsAndIssues || "Bugs", icon: Bug },
         { href: "/work-logs", label: t.dailyWork || t.workLog || "Daily Work", icon: ClockCountdown },
-      ],
-    },
-    {
-      title: t.groupTestManagement || "Test Management",
-      items: [
-        { href: "/test-cases", label: t.testCases || t.testRepository || "Test Cases", icon: Checks },
-        { href: "/test-execution", label: t.testRuns || t.testExecution || t.testSessions || "Test Runs", icon: PlayCircle },
       ],
     },
     {

@@ -111,19 +111,19 @@ describe("Sidebar", () => {
     expect(groups[0].title).toBe("MY SPACE");
     expect(groups[0].items.map((i) => i.href)).toEqual(["/my-work", "/projects"]);
 
-    // Group 1: Work Items
-    expect(groups[1].title).toBe("Work Items");
+    // Group 1: Test Management
+    expect(groups[1].title).toBe("Test Management");
     expect(groups[1].items.map((i) => i.href)).toEqual([
+      "/test-cases",
+      "/test-execution",
+    ]);
+
+    // Group 2: Work Items
+    expect(groups[2].title).toBe("Work Items");
+    expect(groups[2].items.map((i) => i.href)).toEqual([
       "/tasks",
       "/bugs",
       "/work-logs",
-    ]);
-
-    // Group 2: Test Management
-    expect(groups[2].title).toBe("Test Management");
-    expect(groups[2].items.map((i) => i.href)).toEqual([
-      "/test-cases",
-      "/test-execution",
     ]);
 
     // Group 3: Reports
