@@ -126,27 +126,6 @@ export function QuickCreateSuiteModal({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Handle Ctrl+Enter / Cmd+Enter
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        e.preventDefault();
-        if (!saving && !isAiProcessing) {
-          if (mode === "ai") {
-            void handleAiAutoCreate();
-          } else {
-            void handleManualSubmit();
-          }
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  });
-
-  if (!isOpen) return null;
-
   // Case row helpers
   const addInitialCaseRow = () => {
     if (initialCases.length >= 10) {
@@ -388,6 +367,27 @@ export function QuickCreateSuiteModal({
       aiTextareaRef.current?.focus();
     }, 50);
   };
+
+  // Handle Ctrl+Enter / Cmd+Enter
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (!saving && !isAiProcessing) {
+          if (mode === "ai") {
+            void handleAiAutoCreate();
+          } else {
+            void handleManualSubmit();
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6">

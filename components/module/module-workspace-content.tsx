@@ -496,7 +496,7 @@ export function ModuleWorkspace({
       values.assignee = user.name.trim();
     }
     return values;
-  }, [initialFormValues, activeFilters, user?.name]);
+  }, [initialFormValues, activeFilters, user]);
 
   // Memoized: large object passed to useModuleWorkspaceActions, avoids recreation every render
   const actionArgs = useMemo(() => ({

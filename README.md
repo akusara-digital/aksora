@@ -1,63 +1,61 @@
 # Aksora — One Team. One Flow.
 
-Aksora is the modern workspace for engineering teams. Plan sprints, execute test sessions, track bugs and tasks, run standups, and auto-generate weekly reports — in one integrated app. No more spreadsheets, scattered docs, or context-switching between five tools.
+Aksora is the all-in-one engineering workspace designed to unify software quality, execution, and project workflows. It brings test planning, manual & exploratory test execution, bug tracking, sprint management, standup notes, and auto-generated weekly quality reports into a single, cohesive interface.
 
 Built by [Akusara Digital](https://akusaradigital.com).
 
-## What Aksora Does (Function → Benefit)
+---
 
-| Capability | Benefit |
-|-----------|---------|
-| **Test planning & suites** | Organize scenarios into reusable plans/suites linked to sprints. Launch ready in minutes, not months. |
-| **Test case library** | Preconditions, steps, expected results, Excel import. Reuse across releases — no re-typing. |
-| **Execution sessions** | Run sessions, record pass/fail/blocked live. Pass rates per cycle, instantly. |
-| **Bug tracking** | Severity, priority, assignee, evidence. Full lifecycle open → verified. |
-| **Tasks & sprint board** | Kanban, sprint planning, role-based statuses. Dev + QA stay in sync. |
-| **Dashboard & reports** | Quality health score, burndown, heatmaps, weekly digest — generated automatically. |
-| **Standup & meeting notes** | Capture daily syncs and decisions in one place. |
-| **Activity audit** | Every create/edit/delete logged with full traceability. |
+## Live Links
 
-**Roles:** superadmin · admin · fe · be · fullstack · qa · pm · ai
+- **Live App (Vercel)**: [https://aksora-orpin.vercel.app](https://aksora-orpin.vercel.app)
+- **Production Domain**: [https://aksora.akusaraproject.my.id](https://aksora.akusaraproject.my.id)
 
-## Stack
+---
 
-Next.js 16 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` · PostgreSQL (Docker lokal + Neon prod) · `pg` (lokal) / `@neondatabase/serverless` (Neon)
+## What is Aksora?
 
-## Local Setup
+Traditional software teams waste hours context-switching between fragmented tools—spreadsheets for test cases, disparate issue trackers for bugs, standalone Kanban boards for development tasks, and separate documents for meeting syncs.
 
-1. Copy `.env.example` to `.env`
-2. Set `AUTH_SECRET`
-3. Set `DATABASE_URL` (PostgreSQL connection string for local Docker or Neon)
-4. Initialize or reset database if needed: `pnpm db:reset`
-5. Seed demo data (optional): `pnpm db:seed`
-6. Start dev server: `pnpm dev`
+**Aksora solves this by providing one integrated system of record for engineering and QA:**
 
-## Quality Checks & Knowledge Graph
+1. **Test Management & Test Suites**
+   - Design reusable test suites and plans mapped to feature releases and sprints.
+   - Rich test case authoring with preconditions, step-by-step actions, expected outcomes, and bulk Excel import/export.
+   - Run interactive execution sessions with real-time pass, fail, and blocked status recording.
 
-```bash
-pnpm test            # fast relevant/changed tests only (vitest)
-pnpm test:all        # full regression test suite (all 170+ test files)
-pnpm precheck        # eslint + tsc --noEmit + next build
-pnpm ci:check        # test + precheck (same as GitHub Actions)
-pnpm db:health       # verify DB schema integrity
-pnpm graphify:update # rebuild AST knowledge graph
-pnpm graphify:query  # query graph context
-```
+2. **Streamlined Defect & Bug Lifecycle**
+   - Capture defect reports with priority, severity, steps to reproduce, screenshot attachments, and assignees.
+   - Track defects through their complete lifecycle from open triage to fix verification and closure.
+   - Integrated Jira and external tracker dispatch.
 
-Run these before any release.
+3. **Sprint Planning & Task Boards**
+   - Role-based Kanban workflows connecting developers, QAs, product managers, and engineering leadership.
+   - Sprint lifecycle management with live burndown metrics and progress tracking.
 
-## Local Login
+4. **Automated Quality Dashboards & Reports**
+   - High-level overview of quality health scores, test execution coverage, pass/fail trends, and defect severity heatmaps.
+   - Auto-generated weekly digest reports that eliminate manual status compilation.
 
-Use the email/password configured in `.env` (`SEED_ADMIN_EMAIL` & `SEED_ADMIN_PASSWORD`) or register a new workspace owner on clean databases. Login is email + password only.
+5. **Daily Standups & Activity Traceability**
+   - Centralized daily standup logging, blockers, and architectural sync notes.
+   - Comprehensive audit logging recording every create, update, and delete action for end-to-end traceability.
 
-## Versioning
+---
 
-- Every push to `main` MUST bump the `version` in `package.json` (semver). See `AGENTS.md`.
-- Don't push unless asked.
+## Built For Modern Engineering Roles
 
-## Notes
+Aksora features role-based access control and customized workflows tailored for:
+- **Product Managers & Team Leads** (`pm`, `admin`, `superadmin`)
+- **Quality Assurance Engineers** (`qa`)
+- **Frontend, Backend & Fullstack Engineers** (`fe`, `be`, `fullstack`)
+- **Automated AI Agents & Runners** (`ai`)
 
-- Production uses Neon PostgreSQL (`@neondatabase/serverless`). Local dev uses PostgreSQL (`pg` or Docker).
-- Postgres only — no SQLite.
-- Maintenance routes (`sql-run`, `reset-db`) are disabled by default; explicit env flags required.
-- `AUTH_SECRET` must be non-empty.
+---
+
+## Technology Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org) (App Router, Turbopack)
+- **UI & Styling**: [Tailwind CSS v4](https://tailwindcss.com) & [@phosphor-icons/react](https://phosphoricons.com)
+- **Database & Persistence**: PostgreSQL via `@neondatabase/serverless` (Production / Neon) & `pg` (Local)
+- **Deployment & Hosting**: [Vercel](https://vercel.com)

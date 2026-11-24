@@ -94,23 +94,6 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
     return () => clearTimeout(timer);
   }, [open, optionsLoaded, project]);
 
-  useEffect(() => {
-    if (!open) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-      } else if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        void handleSubmit();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, type, project, customProject, title, description, priority, severity, category, assignee, submitting]);
-
-  if (!open) return null;
-
   const activeProject = project === "__custom__" || projects.length === 0 ? customProject.trim() : project;
 
   const projectOptions = useMemo(() => {
@@ -224,6 +207,23 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
       setSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        void handleSubmit();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, type, project, customProject, title, description, priority, severity, category, assignee, submitting]);
+
+  if (!open) return null;
 
   return (
     <div role="dialog" aria-modal="true" aria-labelledby="global-create-modal-title" className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">

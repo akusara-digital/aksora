@@ -80,6 +80,22 @@ export function StreamlinedBugForm({
   const [showJiraModal, setShowJiraModal] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<Record<string, unknown> | null>(null);
 
+  // Optional collapsible details
+  const [showOptional, setShowOptional] = useState(() => {
+    return Boolean(
+      initialData?.suggestedDev ||
+      initialData?.module ||
+      initialData?.preconditions ||
+      initialData?.evidence ||
+      initialData?.relatedItems,
+    );
+  });
+  const [suggestedDev, setSuggestedDev] = useState(() => String(initialData?.suggestedDev || ""));
+  const [moduleName, setModuleName] = useState(() => String(initialData?.module || ""));
+  const [preconditions, setPreconditions] = useState(() => String(initialData?.preconditions || ""));
+  const [evidence, setEvidence] = useState(() => String(initialData?.evidence || ""));
+  const [relatedItems, setRelatedItems] = useState(() => String(initialData?.relatedItems || ""));
+
   useEffect(() => {
     let active = true;
     fetch("/api/issue-trackers")
@@ -126,36 +142,6 @@ export function StreamlinedBugForm({
       }
     }
   }, [initialData]);
-
-  // Optional collapsible details
-  const [showOptional, setShowOptional] = useState(() => {
-    return Boolean(
-      initialData?.suggestedDev ||
-      initialData?.module ||
-      initialData?.preconditions ||
-      initialData?.evidence ||
-      initialData?.relatedItems,
-    );
-  });
-  const [suggestedDev, setSuggestedDev] = useState(() => String(initialData?.suggestedDev || ""));
-  const [moduleName, setModuleName] = useState(() => String(initialData?.module || ""));
-  const [preconditions, setPreconditions] = useState(() => String(initialData?.preconditions || ""));
-  const [evidence, setEvidence] = useState(() => String(initialData?.evidence || ""));
-  const [relatedItems, setRelatedItems] = useState(() => String(initialData?.relatedItems || ""));
-
-  // Keyboard shortcut Ctrl+Enter / Cmd+Enter
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        e.preventDefault();
-        if (!pending) {
-          triggerSubmit();
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  });
 
   const triggerSubmit = () => {
     const effectiveProject = selectedProject || project;
@@ -223,6 +209,20 @@ export function StreamlinedBugForm({
     e.preventDefault();
     triggerSubmit();
   };
+
+  // Keyboard shortcut Ctrl+Enter / Cmd+Enter
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (!pending) {
+          triggerSubmit();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
 
   const isEditing = Boolean(initialData?.id);
   const showProjectInBody = !selectedProject && projectOptions.length > 0;

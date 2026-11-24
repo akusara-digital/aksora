@@ -75,20 +75,6 @@ export function AiIssueAgentContent({
     }
   };
 
-  // Handle keyboard shortcut (Ctrl+Enter / Cmd+Enter)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        e.preventDefault();
-        if (!loading && !pending) {
-          void handleProcess();
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  });
-
   const handleAttachImage = async (file: File) => {
     try {
       const compressed = await compressImageToWebp(file, { maxDimension: 1440, quality: 0.8 });
@@ -183,6 +169,20 @@ export function AiIssueAgentContent({
       setLoading(false);
     }
   };
+
+  // Handle keyboard shortcut (Ctrl+Enter / Cmd+Enter)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (!loading && !pending) {
+          void handleProcess();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
 
   return (
     <div className="flex flex-col justify-between min-h-[480px] sm:min-h-[510px] p-4 sm:p-5 text-xs text-slate-800">

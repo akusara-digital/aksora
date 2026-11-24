@@ -193,6 +193,7 @@ export function TopBreadcrumbs() {
 
 export function Breadcrumb({ crumbs, className }: { crumbs: Crumb[]; className?: string }) {
   const { setCrumbs, isInsideProvider } = useBreadcrumbContext();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (isInsideProvider) {
@@ -207,7 +208,6 @@ export function Breadcrumb({ crumbs, className }: { crumbs: Crumb[]; className?:
   }
 
   // Fallback for tests or isolated usage outside the provider
-  const searchParams = useSearchParams();
   const ws = searchParams?.get("ws");
 
   return (
