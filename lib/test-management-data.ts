@@ -85,26 +85,32 @@ export async function getTestPlanByToken(token: string) {
 
 export async function getTestPlanById(planId: string | number) {
   const scope = await getReadScope();
-  const id = String(planId ?? "");
+  const id = String(planId ?? "").trim();
+  if (!id) return null;
   const cached = getCached<ReturnType<typeof normalizeTestPlanRow> | null>(cacheKey("plan-id", scope, id));
   if (cached !== null) return cached;
   const item = await db.get(
-    `SELECT id, company, "publicToken", title, project, sprint, scope, status, "startDate", "endDate", assignee, notes, "updatedAt" FROM "TestPlan" WHERE "id" = CAST(? AS INTEGER) AND "deletedAt" IS NULL ${scope.andWhere}`,
-    [planId, ...scope.params],
+    `SELECT id, company, "publicToken", title, project, sprint, scope, status, "startDate", "endDate", assignee, notes, "updatedAt" FROM "TestPlan" WHERE (CAST(id AS TEXT) = ? OR "publicToken" = ?) AND "deletedAt" IS NULL ${scope.andWhere}`,
+    [id, id, ...scope.params],
   ) as Record<string, unknown> | undefined;
   if (!item) return null;
   return setCached(cacheKey("plan-id", scope, id), normalizeTestPlanRow(item));
 }
 
-export async function getTestSuitesByPlanId(planId: string) {
+export async function getTestSuitesByPlanId(planId: string, planToken?: string) {
   const scope = await getReadScope();
-  const cached = getCached<Array<ReturnType<typeof normalizeTestSuiteRow>>>(cacheKey("suites-plan", scope, planId));
+  const pId = String(planId ?? "").trim();
+  const pToken = String(planToken ?? pId).trim();
+  const cached = getCached<Array<ReturnType<typeof normalizeTestSuiteRow>>>(cacheKey("suites-plan", scope, `${pId}:${pToken}`));
   if (cached !== null) return cached;
   const rows = await selectAll(
-    `SELECT id, company, "publicToken", "testPlanId", title, assignee, status, notes, "updatedAt" FROM "TestSuite" WHERE "testPlanId" = ? AND "deletedAt" IS NULL ${scope.andWhere} ORDER BY "updatedAt" DESC`,
-    [planId, ...scope.params],
+    `SELECT id, company, "publicToken", "testPlanId", title, assignee, status, notes, "updatedAt" 
+     FROM "TestSuite" 
+     WHERE ("testPlanId" = ? OR (COALESCE(?, '') != '' AND "testPlanId" = ?)) AND "deletedAt" IS NULL ${scope.andWhere} 
+     ORDER BY "updatedAt" DESC`,
+    [pId, pToken, pToken, ...scope.params],
   );
-  return setCached(cacheKey("suites-plan", scope, planId), rows.map((item) => normalizeTestSuiteRow(item)));
+  return setCached(cacheKey("suites-plan", scope, `${pId}:${pToken}`), rows.map((item) => normalizeTestSuiteRow(item)));
 }
 
 export async function getReleaseNotes() {
@@ -149,13 +155,15 @@ export async function getQualityTrend() {
 
 export async function getTestSuite(id: string | number) {
   const scope = await getReadScope();
+  const sId = String(id ?? "").trim();
+  if (!sId) return null;
 
   const item = await db.get(
-    `SELECT id, company, "publicToken", "testPlanId", title, assignee, status, notes, "updatedAt" FROM "TestSuite" WHERE id = CAST(? AS INTEGER) AND "deletedAt" IS NULL ${scope.andWhere}`,
-    [id, ...scope.params],
+    `SELECT id, company, "publicToken", "testPlanId", title, assignee, status, notes, "updatedAt" FROM "TestSuite" WHERE (CAST(id AS TEXT) = ? OR "publicToken" = ?) AND "deletedAt" IS NULL ${scope.andWhere}`,
+    [sId, sId, ...scope.params],
   ) as Record<string, unknown> | undefined;
   if (!item) return null;
-  return { ...item, code: codeFromId("SUITE", Number(id)) };
+  return { ...item, code: codeFromId("SUITE", Number(item.id)) };
 }
 
 export async function getTestCasesByIdStrings(idStrings: string) {
@@ -401,8 +409,8 @@ export async function getAllTestCasesWithSuite() {
             ts.assignee AS "suiteAssignee",
             tp.title AS "planTitle", tp.project AS "planProject"
      FROM "TestCase" tc
-      LEFT JOIN "TestSuite" ts ON ts.id = CAST(tc."testSuiteId" AS INTEGER) AND ts."deletedAt" IS NULL
-      LEFT JOIN "TestPlan" tp ON tp.id = CAST(ts."testPlanId" AS INTEGER) AND tp."deletedAt" IS NULL
+      LEFT JOIN "TestSuite" ts ON (CAST(ts.id AS TEXT) = tc."testSuiteId" OR (ts."publicToken" != '' AND ts."publicToken" = tc."testSuiteId")) AND ts."deletedAt" IS NULL
+      LEFT JOIN "TestPlan" tp ON (CAST(tp.id AS TEXT) = ts."testPlanId" OR (tp."publicToken" != '' AND tp."publicToken" = ts."testPlanId")) AND tp."deletedAt" IS NULL
      WHERE tc."deletedAt" IS NULL${tcWhere}
      ORDER BY tc."testSuiteId" ASC, tc.id ASC`,
     scope.params,
@@ -429,7 +437,7 @@ export async function getAllTestSuitesWithPlan() {
     `SELECT ts.id, ts.title, ts."publicToken", ts.status, ts.assignee, ts."testPlanId",
             tp.title AS "planTitle", tp.project AS "planProject"
      FROM "TestSuite" ts
-      LEFT JOIN "TestPlan" tp ON tp.id = CAST(ts."testPlanId" AS INTEGER) AND tp."deletedAt" IS NULL
+      LEFT JOIN "TestPlan" tp ON (CAST(tp.id AS TEXT) = ts."testPlanId" OR (tp."publicToken" != '' AND tp."publicToken" = ts."testPlanId")) AND tp."deletedAt" IS NULL
      WHERE ts."deletedAt" IS NULL${tsWhere}
      ORDER BY ts.id DESC`,
     scope.params,

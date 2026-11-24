@@ -41,7 +41,7 @@ export async function getSuiteResults(query: string, companyClause: string, comp
     `SELECT ts.id, ts.title, ts.status, ts.assignee, ts.notes, ts."publicToken", ts."testPlanId",
             tp.title AS planTitle, tp.project AS planProject, ts."updatedAt"
      FROM "TestSuite" ts
-     LEFT JOIN "TestPlan" tp ON tp.id = CAST(ts."testPlanId" AS INTEGER) AND tp."deletedAt" IS NULL
+     LEFT JOIN "TestPlan" tp ON (CAST(ts."testPlanId" AS TEXT) = CAST(tp."id" AS TEXT) OR (tp."publicToken" != '' AND ts."testPlanId" = tp."publicToken")) AND tp."deletedAt" IS NULL
      WHERE ts."deletedAt" IS NULL
        ${tokenClause.clause + companyClause.replace(/"company"/g, 'ts."company"').replace(/"workspaceId"/g, 'ts."workspaceId"') + filter.clause.replace(/"assignee"/g, 'ts."assignee"')}
      ORDER BY ts."updatedAt" DESC

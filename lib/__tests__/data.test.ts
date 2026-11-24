@@ -789,7 +789,7 @@ describe("module row queries", () => {
     const rows = await getAllTestCasesWithSuite();
 
     expect(mocks.db.query).toHaveBeenCalledWith(
-      expect.stringContaining('LEFT JOIN "TestSuite" ts ON ts.id = CAST(tc."testSuiteId" AS INTEGER)'),
+      expect.stringContaining('LEFT JOIN "TestSuite" ts ON (CAST(ts.id AS TEXT) = tc."testSuiteId"'),
       ["acme"],
     );
     expect(rows[0]).toMatchObject({

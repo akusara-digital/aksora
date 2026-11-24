@@ -10,8 +10,8 @@ export async function getTestCaseResults(query: string, companyClause: string, c
               tc."testSuiteId", ts.title AS suiteTitle, ts."publicToken" AS suiteToken,
               tp.title AS planTitle, tp.project AS planProject, tc."updatedAt"
        FROM "TestCase" tc
-  LEFT JOIN "TestSuite" ts ON ts.id = CAST(tc."testSuiteId" AS INTEGER) AND ts."deletedAt" IS NULL
-  LEFT JOIN "TestPlan" tp ON tp.id = CAST(ts."testPlanId" AS INTEGER) AND tp."deletedAt" IS NULL
+  LEFT JOIN "TestSuite" ts ON (CAST(ts."id" AS TEXT) = tc."testSuiteId" OR (ts."publicToken" != '' AND tc."testSuiteId" = ts."publicToken")) AND ts."deletedAt" IS NULL
+  LEFT JOIN "TestPlan" tp ON (CAST(ts."testPlanId" AS TEXT) = CAST(tp."id" AS TEXT) OR (tp."publicToken" != '' AND ts."testPlanId" = tp."publicToken")) AND tp."deletedAt" IS NULL
        WHERE tc."deletedAt" IS NULL AND tc.id = ?
          ${companyClause.replace(/"company"/g, 'tc."company"').replace(/"workspaceId"/g, 'tc."workspaceId"')}
        ORDER BY tc."updatedAt" DESC
@@ -56,8 +56,8 @@ export async function getTestCaseResults(query: string, companyClause: string, c
               tc."testSuiteId", ts.title AS suiteTitle, ts."publicToken" AS suiteToken,
               tp.title AS planTitle, tp.project AS planProject, tc."updatedAt"
      FROM "TestCase" tc
-  LEFT JOIN "TestSuite" ts ON ts.id = CAST(tc."testSuiteId" AS INTEGER) AND ts."deletedAt" IS NULL
-  LEFT JOIN "TestPlan" tp ON tp.id = CAST(ts."testPlanId" AS INTEGER) AND tp."deletedAt" IS NULL
+  LEFT JOIN "TestSuite" ts ON (CAST(ts."id" AS TEXT) = tc."testSuiteId" OR (ts."publicToken" != '' AND tc."testSuiteId" = ts."publicToken")) AND ts."deletedAt" IS NULL
+  LEFT JOIN "TestPlan" tp ON (CAST(ts."testPlanId" AS TEXT) = CAST(tp."id" AS TEXT) OR (tp."publicToken" != '' AND ts."testPlanId" = tp."publicToken")) AND tp."deletedAt" IS NULL
      WHERE tc."deletedAt" IS NULL
        ${tokenClause.clause + companyClause.replace(/"company"/g, 'tc."company"').replace(/"workspaceId"/g, 'tc."workspaceId"') + filter.clause.replace(/"assignee"/g, 'ts."assignee"')}
      ORDER BY tc."updatedAt" DESC
