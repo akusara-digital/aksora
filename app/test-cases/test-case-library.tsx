@@ -253,8 +253,6 @@ export function TestCaseLibrary({
         suitesCount={filteredGroups.length}
         onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
         allConstant={ALL}
-        showSidebar={showSidebar}
-        onToggleSidebar={toggleSidebar}
       />
 
       <div>
