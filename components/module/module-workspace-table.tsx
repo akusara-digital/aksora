@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useId, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -20,7 +21,10 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { ModuleEmptyState } from "@/components/module/module-empty-state";
 import { ModulePagination } from "@/components/module/module-pagination";
 import { PAGE_SIZE } from "@/lib/pagination";
-import { CheckSquare, Square, MinusSquare, Trash } from "@phosphor-icons/react";
+import { CheckSquare, Square, MinusSquare, Trash, Ticket, ArrowsClockwise } from "@phosphor-icons/react";
+import { toast } from "@/components/ui/toast";
+import { PushToJiraModal } from "@/components/bugs/push-to-jira-modal";
+import { cn } from "@/lib/utils";
 import type { ModuleKey } from "@/lib/modules";
 import { SortableRow, type TableRow, type Column } from "@/components/module/module-workspace-table-row";
 
@@ -93,11 +97,85 @@ export function ModuleWorkspaceTable({
   reorderable,
 }: ModuleWorkspaceTableProps) {
   const dndId = useId();
+  const router = useRouter();
   const hasSelection = selectedIds && selectedIds.size > 0;
   const allSelected = visibleRows.length > 0 && selectedIds && visibleRows.every((row) => selectedIds.has(row.id));
   const someSelected = selectedIds && selectedIds.size > 0 && !allSelected;
   const [activeRow, setActiveRow] = useState<TableRow | null>(null);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
+
+  const [bulkJiraModalOpen, setBulkJiraModalOpen] = useState(false);
+  const [bulkJiraPushing, setBulkJiraPushing] = useState(false);
+  const [bulkJiraSyncing, setBulkJiraSyncing] = useState(false);
+
+  const selectedBugs = useMemo(() => {
+    if (module !== "bugs" || !selectedIds || selectedIds.size === 0) return [];
+    return visibleRows.filter((r) => selectedIds.has(r.id));
+  }, [module, visibleRows, selectedIds]);
+
+  const unpushedBugs = useMemo(
+    () => selectedBugs.filter((b) => !String(b.externalTicket || "").trim()),
+    [selectedBugs],
+  );
+
+  const pushedBugs = useMemo(
+    () => selectedBugs.filter((b) => Boolean(String(b.externalTicket || "").trim())),
+    [selectedBugs],
+  );
+
+  const handleConfirmBulkPush = async (config: { assignee: string; environment: string; scope: string }) => {
+    setBulkJiraPushing(true);
+    try {
+      const bugIds = unpushedBugs.map((b) => Number(b.id));
+      const res = await fetch("/api/bugs/bulk-ticket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bugIds,
+          assignee: config.assignee,
+          environment: config.environment,
+          scope: config.scope,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "Failed to bulk push bugs to Jira.");
+      const count = json.data?.successCount || 0;
+      toast(`Successfully pushed ${count} bug(s) to Jira!`, "success");
+      setBulkJiraModalOpen(false);
+      onToggleSelectAll?.();
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to bulk push bugs.", "error");
+    } finally {
+      setBulkJiraPushing(false);
+    }
+  };
+
+  const handleBulkSyncJira = async () => {
+    setBulkJiraSyncing(true);
+    try {
+      const bugIds = pushedBugs.map((b) => Number(b.id));
+      const res = await fetch("/api/bugs/bulk-sync-jira", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bugIds }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "Failed to sync Jira statuses.");
+      const { syncedCount, updatedCount } = json.data || {};
+      if (updatedCount > 0) {
+        toast(`Synced ${syncedCount} bug(s) from Jira (${updatedCount} status updated).`, "success");
+      } else {
+        toast(`Synced ${syncedCount} bug(s) from Jira. All statuses already up to date.`, "info");
+      }
+      onToggleSelectAll?.();
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to sync Jira statuses.", "error");
+    } finally {
+      setBulkJiraSyncing(false);
+    }
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -292,11 +370,37 @@ export function ModuleWorkspaceTable({
     >
       {/* Bulk action toolbar */}
       {hasSelection && (
-        <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 animate-in fade-in duration-100">
-          <span className="text-xs font-semibold text-blue-700">
+        <div className="mb-3 flex flex-wrap items-center gap-2.5 rounded-lg border border-blue-200 bg-blue-50/80 px-4 py-2 animate-in fade-in duration-100 shadow-2xs">
+          <span className="text-xs font-semibold text-blue-800">
             {selectedIds.size} selected
           </span>
           <div className="h-4 w-px bg-blue-200" />
+
+          {/* Bulk Push to Jira */}
+          {module === "bugs" && unpushedBugs.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setBulkJiraModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-xs font-semibold transition active:scale-95 shadow-2xs cursor-pointer"
+            >
+              <Ticket size={13} weight="bold" />
+              <span>Push to Jira ({unpushedBugs.length})</span>
+            </button>
+          )}
+
+          {/* Bulk Sync Jira Status */}
+          {module === "bugs" && pushedBugs.length > 0 && (
+            <button
+              type="button"
+              onClick={handleBulkSyncJira}
+              disabled={bulkJiraSyncing}
+              className="inline-flex items-center gap-1.5 rounded-sm border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-800 px-3 py-1.5 text-xs font-semibold transition active:scale-95 shadow-2xs cursor-pointer disabled:opacity-50"
+            >
+              <ArrowsClockwise size={13} weight="bold" className={cn(bulkJiraSyncing && "animate-spin text-emerald-600")} />
+              <span>Sync Jira Status ({pushedBugs.length})</span>
+            </button>
+          )}
+
           {canEdit && statusOptions && statusOptions.length > 0 && onBulkStatusChange && (
             <div className="flex items-center gap-1.5">
               <span className="text-xs text-blue-900 font-medium">Status:</span>
@@ -308,7 +412,7 @@ export function ModuleWorkspaceTable({
                   }
                 }}
                 defaultValue=""
-                className="rounded-md border border-blue-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-blue-500 focus:outline-none"
+                className="rounded-sm border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 hover:border-blue-400 focus:border-blue-500 focus:outline-none cursor-pointer shadow-2xs"
               >
                 <option value="" disabled>Change status...</option>
                 {statusOptions.map((opt) => (
@@ -330,7 +434,7 @@ export function ModuleWorkspaceTable({
                   }
                 }}
                 defaultValue=""
-                className="rounded-md border border-blue-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-blue-500 focus:outline-none"
+                className="rounded-sm border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 hover:border-blue-400 focus:border-blue-500 focus:outline-none cursor-pointer shadow-2xs"
               >
                 <option value="" disabled>Assign to...</option>
                 {assigneeOptions.map((opt) => (
@@ -345,16 +449,16 @@ export function ModuleWorkspaceTable({
             <button
               type="button"
               onClick={onBulkDelete}
-              className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-white px-2.5 py-1 text-xs font-medium text-rose-600 transition hover:bg-rose-50"
+              className="inline-flex items-center gap-1.5 rounded-sm border border-rose-200 bg-white px-2.5 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 active:scale-95 cursor-pointer shadow-2xs"
             >
-              <Trash size={14} weight="bold" />
+              <Trash size={13} weight="bold" />
               Delete
             </button>
           )}
           <button
             type="button"
             onClick={onToggleSelectAll}
-            className="ml-auto text-xs font-semibold text-blue-600 hover:text-blue-800"
+            className="ml-auto text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
           >
             Clear selection
           </button>
@@ -418,6 +522,18 @@ export function ModuleWorkspaceTable({
         onNext={onNextPage}
         onGoToPage={onGoToPage}
       />
+
+      {bulkJiraModalOpen && (
+        <PushToJiraModal
+          isOpen={bulkJiraModalOpen}
+          onClose={() => setBulkJiraModalOpen(false)}
+          defaultModule={String(unpushedBugs[0]?.module || "")}
+          defaultProject={String(unpushedBugs[0]?.project || "")}
+          submitting={bulkJiraPushing}
+          hideSaveWithoutPush={true}
+          onConfirmPush={handleConfirmBulkPush}
+        />
+      )}
     </div>
   );
 }

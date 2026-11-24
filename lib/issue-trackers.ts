@@ -342,6 +342,95 @@ export async function testTracker(tracker: TrackerRow): Promise<string> {
   throw new Error(`Unsupported tracker kind: ${tracker.kind}`);
 }
 
+export interface TicketStatusResult {
+  key: string;
+  statusName: string;
+  categoryKey?: string;
+  mappedStatus: string;
+}
+
+export function mapJiraStatusToBugStatus(jiraStatusName: string, statusCategoryKey?: string): string {
+  const norm = jiraStatusName.trim().toLowerCase();
+  if (norm.includes("reject") || norm.includes("won't fix") || norm.includes("wontfix") || norm.includes("declined") || norm.includes("invalid")) {
+    return "rejected";
+  }
+  if (norm.includes("close") || norm === "resolved" || norm === "done" || statusCategoryKey === "done") {
+    return "closed";
+  }
+  if (norm.includes("progress") || norm.includes("dev") || statusCategoryKey === "indeterminate") {
+    return "in_progress";
+  }
+  if (norm.includes("retest") || norm.includes("verify") || norm.includes("qa")) {
+    return "ready_to_retest";
+  }
+  if (norm.includes("test")) {
+    return "need_to_test";
+  }
+  return "open";
+}
+
+export async function fetchTicketStatus(tracker: TrackerRow, issueKeyOrUrl: string): Promise<TicketStatusResult> {
+  const secret = secretOf(tracker);
+  const match = issueKeyOrUrl.match(/([A-Z0-9]+-\d+)/i);
+  const key = match ? match[1].toUpperCase() : issueKeyOrUrl.trim();
+
+  if (tracker.kind === "jira") {
+    const cfg = parseConfig(tracker, "jira");
+    const origin = await jiraOrigin(cfg.host);
+
+    const res = await fetch(`${origin}/rest/api/3/issue/${encodeURIComponent(key)}?fields=status,resolution`, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${cfg.email}:${secret}`).toString("base64")}`,
+        Accept: "application/json",
+      },
+      redirect: "error",
+    });
+    if (!res.ok) throw await readError(res, "Jira");
+    const json = (await res.json()) as {
+      key: string;
+      fields?: {
+        status?: {
+          name?: string;
+          statusCategory?: { key?: string; name?: string };
+        };
+      };
+    };
+
+    const statusName = json.fields?.status?.name || "Unknown";
+    const categoryKey = json.fields?.status?.statusCategory?.key;
+    const mappedStatus = mapJiraStatusToBugStatus(statusName, categoryKey);
+
+    return {
+      key: json.key || key,
+      statusName,
+      categoryKey,
+      mappedStatus,
+    };
+  }
+
+  if (tracker.kind === "github") {
+    const cfg = parseConfig(tracker, "github");
+    const issueNum = key.replace(/^[^\d]+/, "");
+    const res = await fetch(`https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/issues/${encodeURIComponent(issueNum)}`, {
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": "Aksora-QA-Hub",
+      },
+    });
+    if (!res.ok) throw await readError(res, "GitHub");
+    const json = (await res.json()) as { state?: string };
+    const statusName = json.state === "closed" ? "Closed" : "Open";
+    return {
+      key,
+      statusName,
+      mappedStatus: json.state === "closed" ? "closed" : "open",
+    };
+  }
+
+  throw new Error(`Syncing status is not supported for ${tracker.kind}.`);
+}
+
 /** Trackers are workspace-owned; only admins/superadmins and PMs may change them. */
 export function canManageTrackers(role: string | null | undefined, company: string | null | undefined) {
   return isManagementAdmin(role, company) || normalizeRole(role) === "pm";

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowSquareOut, Ticket, Check } from "@phosphor-icons/react";
+import { ArrowSquareOut, Ticket, Check, ArrowsClockwise } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import { PushToJiraModal } from "./push-to-jira-modal";
 import { cn } from "@/lib/utils";
@@ -40,10 +40,32 @@ export function BugTicketButton({
   const [open, setOpen] = useState(false);
   const [trackers, setTrackers] = useState<TrackerOption[] | null>(null);
   const [creating, setCreating] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     setLinked(String(externalTicket ?? "").trim());
   }, [externalTicket]);
+
+  const handleSyncStatus = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setSyncing(true);
+    try {
+      const res = await fetch(`/api/bugs/${bugId}/ticket/sync`, { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "Failed to sync status.");
+      if (json.data?.changed) {
+        toast(`Jira status: "${json.data.statusName}". Bug status updated to "${json.data.newStatus}".`, "success");
+      } else {
+        toast(`Jira status: "${json.data?.statusName || "up to date"}". Already in sync.`, "info");
+      }
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to sync status.", "error");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const loadTrackers = async (): Promise<TrackerOption[]> => {
     if (trackers) return trackers;
@@ -117,7 +139,7 @@ export function BugTicketButton({
   return (
     <>
       {linked ? (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {isUrl ? (
             <a
               href={linked}
@@ -140,6 +162,17 @@ export function BugTicketButton({
               <span>Pushed ({displayKey})</span>
             </span>
           )}
+
+          <button
+            type="button"
+            onClick={handleSyncStatus}
+            disabled={syncing}
+            className="inline-flex items-center gap-1 rounded-sm border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition active:scale-95 cursor-pointer shadow-2xs disabled:opacity-50"
+            title="Sync status from Jira"
+          >
+            <ArrowsClockwise size={12} weight="bold" className={cn("text-slate-500", syncing && "animate-spin text-blue-600")} />
+            <span>Sync</span>
+          </button>
         </div>
       ) : (
         <button
