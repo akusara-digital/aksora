@@ -162,8 +162,16 @@ export async function getDashboardProjects() {
   return projects;
 }
 
+const optionsCache = new Map<string, { data: unknown; expiresAt: number }>();
+
 export async function getProjectOptions() {
   const { andWhere, params } = getAccessScope(await getCurrentUser());
+  const cacheKey = `project-opts:${andWhere}:${JSON.stringify(params)}`;
+  const cached = optionsCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data as Array<{ value: string; label: string }>;
+  }
+
   const projectRows = await selectAll(
     `SELECT "name" as value, "name" as label, "key"
      FROM "Project"
@@ -172,10 +180,12 @@ export async function getProjectOptions() {
     params,
   );
   if (projectRows.length > 0) {
-    return projectRows.map((r) => ({
+    const result = projectRows.map((r) => ({
       value: String(r.value ?? ""),
       label: r.key ? `[${String(r.key)}] ${String(r.label ?? "")}` : String(r.label ?? ""),
     }));
+    optionsCache.set(cacheKey, { data: result, expiresAt: Date.now() + 30000 });
+    return result;
   }
   const rows = await selectAll(
     `SELECT DISTINCT "project" as value FROM "TestPlan"
@@ -183,7 +193,9 @@ export async function getProjectOptions() {
      ORDER BY "project" ASC`,
     params,
   );
-  return rows.map((row) => ({ value: String(row.value ?? ""), label: String(row.value ?? "") }));
+  const result = rows.map((row) => ({ value: String(row.value ?? ""), label: String(row.value ?? "") }));
+  optionsCache.set(cacheKey, { data: result, expiresAt: Date.now() + 30000 });
+  return result;
 }
 
 export async function getBacklogOptions() {
@@ -203,6 +215,12 @@ export async function getBacklogOptions() {
 
 export async function getAssigneeOptions() {
   const { andWhere, params } = getAccessScope(await getCurrentUser());
+  const cacheKey = `assignee-opts:${andWhere}:${JSON.stringify(params)}`;
+  const cached = optionsCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data as Array<{ value: string; label: string; role?: string }>;
+  }
+
   const rows = await selectAll(
     `SELECT DISTINCT COALESCE("name", "email") as value, "role"
      FROM "User"
@@ -211,7 +229,7 @@ export async function getAssigneeOptions() {
      ORDER BY COALESCE("name", "email") ASC`,
     params,
   );
-  return rows
+  const result = rows
     .filter((row) => normalizeRole(String(row.role ?? "")) !== "admin")
     .map((row) => {
       const name = String(row.value ?? "").trim();
@@ -223,6 +241,8 @@ export async function getAssigneeOptions() {
       };
     })
     .filter((row) => Boolean(row.value));
+  optionsCache.set(cacheKey, { data: result, expiresAt: Date.now() + 30000 });
+  return result;
 }
 
 export async function getTestPlanReferenceRows() {

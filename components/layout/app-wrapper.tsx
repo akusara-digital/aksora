@@ -143,7 +143,9 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   useEffect(() => {
     if (isStandalone) return;
-    void refreshUser();
+    if (!user) {
+      void refreshUser();
+    }
     const t = setTimeout(() => {
       fetch("/api/notifications")
         .then((r) => r.json())
@@ -151,7 +153,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
         .catch(() => {});
     }, 5000);
     return () => clearTimeout(t);
-  }, [isStandalone, pathname]);
+  }, [isStandalone, pathname, user]);
 
   useEffect(() => {
     const handler = () => {

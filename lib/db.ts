@@ -44,9 +44,10 @@ async function getPostgresPool() {
         }
       }
 
+      const isDev = process.env.NODE_ENV !== "production";
       const poolConfig = {
         connectionString,
-        max: isNeon ? 5 : 10,
+        max: isDev ? 15 : (isNeon ? 5 : 10),
         min: isNeon ? 1 : 1,
         idleTimeoutMillis: 60000,
         connectionTimeoutMillis: isNeon ? 15000 : 10000,

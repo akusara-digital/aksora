@@ -274,28 +274,14 @@ export function SidebarNavItem({
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
     showTooltip(e, item.label);
-    try {
-      router.prefetch(targetHref);
-    } catch {
-      // noop
-    }
-  };
-
-  const handleFocus = () => {
-    try {
-      router.prefetch(targetHref);
-    } catch {
-      // noop
-    }
   };
 
   return (
     <Link
       ref={linkRef}
       href={targetHref}
-      prefetch={true}
+      prefetch={false}
       onMouseEnter={handleMouseEnter}
-      onFocus={handleFocus}
       onMouseLeave={hideTooltip}
       className={cn(
         "group relative flex h-9.5 items-center text-[13px] font-medium transition-colors duration-100 outline-none rounded-md",
