@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
+const mocks = vi.hoisted(() => ({ pathname: "/test-execution/session-1" }));
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/test-execution/session-1",
+  usePathname: () => mocks.pathname,
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     prefetch: vi.fn(),
@@ -83,6 +85,28 @@ describe("Sidebar", () => {
     expect(html).not.toMatch(/href="\/test-suites"[^>]*bg-sky-50/);
     // Footer utility items render in the sidebar
     expect(html).toContain('href="/settings"');
+  });
+
+  it("highlights only My Work (not Dashboard) when on /my-work", () => {
+    mocks.pathname = "/my-work";
+    const html = renderToStaticMarkup(
+      <Sidebar collapsed={false} onToggle={() => {}} userRole="admin" />,
+    );
+    mocks.pathname = "/test-execution/session-1";
+
+    expect(html).toMatch(/href="\/my-work"[^>]*bg-sky-50/);
+    expect(html).not.toMatch(/href="\/dashboard"[^>]*bg-sky-50/);
+  });
+
+  it("highlights only Dashboard (not My Work) when on /dashboard", () => {
+    mocks.pathname = "/dashboard";
+    const html = renderToStaticMarkup(
+      <Sidebar collapsed={false} onToggle={() => {}} userRole="admin" />,
+    );
+    mocks.pathname = "/test-execution/session-1";
+
+    expect(html).toMatch(/href="\/dashboard"[^>]*bg-sky-50/);
+    expect(html).not.toMatch(/href="\/my-work"[^>]*bg-sky-50/);
   });
 
   it("organizes main nav into a Dashboard shortcut + 4 balanced groups (9 items) + compact footer utilities", () => {

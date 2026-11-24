@@ -178,12 +178,12 @@ export function SidebarNavItem({
   const isProjectDetailRoute = pathname.startsWith("/test-plans/projects/");
 
   const isMyWorkGroup =
-    (item.href === "/my-work" || item.href === "/dashboard") &&
-    (pathname === "/my-work" ||
-      pathname.startsWith("/my-work/") ||
-      pathname === "/dashboard" ||
-      pathname.startsWith("/dashboard/") ||
-      pathname === "/");
+    item.href === "/my-work" &&
+    (pathname === "/my-work" || pathname.startsWith("/my-work/"));
+
+  const isDashboardGroup =
+    item.href === "/dashboard" &&
+    (pathname === "/dashboard" || pathname.startsWith("/dashboard/") || pathname === "/");
 
   const isTestCasesGroup =
     item.href === "/test-cases" &&
@@ -230,6 +230,7 @@ export function SidebarNavItem({
   const active =
     pathname === item.href ||
     isMyWorkGroup ||
+    isDashboardGroup ||
     isTestCasesGroup ||
     isTestExecutionGroup ||
     isTasksGroup ||
