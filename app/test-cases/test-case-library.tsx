@@ -209,6 +209,25 @@ export function TestCaseLibrary({
     : [];
   const suggestedTcId = `TC-${String((selected?.cases.length ?? 0) + 1).padStart(3, "0")}`;
 
+  const allVisibleCases = useMemo(() => {
+    return cases.filter((c) => {
+      if (filterProject !== ALL && c.planProject !== filterProject) return false;
+      if (filterStatus !== ALL && c.status !== filterStatus) return false;
+      if (filterAssignee !== ALL && (c.assignee || c.suiteAssignee) !== filterAssignee) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        const matches =
+          c.caseName?.toLowerCase().includes(q) ||
+          c.tcId?.toLowerCase().includes(q) ||
+          c.suiteTitle?.toLowerCase().includes(q) ||
+          c.planProject?.toLowerCase().includes(q) ||
+          c.assignee?.toLowerCase().includes(q);
+        if (!matches) return false;
+      }
+      return true;
+    });
+  }, [cases, filterProject, filterStatus, filterAssignee, search]);
+
   const handleRunSuite = async (suiteGroup?: SuiteGroup | null) => {
     const target = suiteGroup || selected;
     if (!target) {
@@ -347,15 +366,13 @@ export function TestCaseLibrary({
         onCreated={(newSuiteId) => setSelectedKey(newSuiteId)}
       />
 
-      {selected && (
-        <QuickCreateCaseModal
-          isOpen={showNewCaseModal}
-          suiteId={String(selected.cases[0]?.testSuiteId || selected.key || "")}
-          suiteTitle={selected.suiteTitle}
-          suggestedTcId={suggestedTcId}
-          onClose={() => setShowNewCaseModal(false)}
-        />
-      )}
+      <QuickCreateCaseModal
+        isOpen={showNewCaseModal}
+        suiteId={String(selected?.cases[0]?.testSuiteId || selected?.key || suites[0]?.id || "")}
+        suiteTitle={selected?.suiteTitle || suites[0]?.title || ""}
+        suggestedTcId={suggestedTcId}
+        onClose={() => setShowNewCaseModal(false)}
+      />
 
       {planCases && (
         <CreatePlanFromCasesModal

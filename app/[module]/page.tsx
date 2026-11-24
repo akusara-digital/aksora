@@ -392,6 +392,10 @@ export default async function ModulePage({
       initialFormValues.priority = "Medium";
     }
 
+    if (moduleKey === "tasks" && !initialFormValues.category) {
+      initialFormValues.category = "Feature";
+    }
+
     if (!initialFormValues.status) {
       if (moduleKey === "tasks") initialFormValues.status = "To Do";
       else if (moduleKey === "bugs") initialFormValues.status = "Open";

@@ -495,8 +495,11 @@ export function ModuleWorkspace({
     if (user?.name?.trim() && !values.assignee) {
       values.assignee = user.name.trim();
     }
+    if (module === "tasks" && !values.category) {
+      values.category = "Feature";
+    }
     return values;
-  }, [initialFormValues, activeFilters, user]);
+  }, [initialFormValues, activeFilters, user, module]);
 
   // Memoized: large object passed to useModuleWorkspaceActions, avoids recreation every render
   const actionArgs = useMemo(() => ({

@@ -56,7 +56,7 @@ export async function updateModuleRecord(module: ModuleKey, id: string | number,
         `UPDATE "Task"
          SET "title" = ?, "project" = ?, "relatedFeature" = ?, "category" = ?, "status" = ?, "priority" = ?, "durationMinutes" = ?, "startDate" = ?, "endDate" = ?, "description" = ?, "acceptanceCriteria" = ?, "notes" = ?, "evidence" = ?, "relatedItems" = ?, "assignee" = ?, "updatedAt" = CURRENT_TIMESTAMP
          WHERE "id" = CAST(? AS INTEGER)${companyFilter}`,
-        [data.title, data.project, data.relatedFeature ?? "", data.category, data.status, data.priority, data.durationMinutes !== undefined ? (Number(data.durationMinutes) || 0) : 0, data.startDate ?? "", data.endDate ?? "", data.description, data.acceptanceCriteria ?? "", data.notes ?? "", data.evidence ?? "", data.relatedItems ?? "", data.assignee ?? "", id, ...companyParam]
+        [data.title, data.project, data.relatedFeature ?? "", data.category || "Feature", data.status || "todo", data.priority || "P2", data.durationMinutes !== undefined ? (Number(data.durationMinutes) || 0) : 0, data.startDate ?? "", data.endDate ?? "", data.description ?? "", data.acceptanceCriteria ?? "", data.notes ?? "", data.evidence ?? "", data.relatedItems ?? "", data.assignee ?? "", id, ...companyParam]
       );
       await logActivity(company, "Task", String(data.title), "Updated", `Task ${data.title} updated to ${data.status}`, actor, undefined, workspaceId);
       invalidateDashboardCache(company);

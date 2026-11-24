@@ -196,7 +196,7 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
       const res = await runInsert(
         `INSERT INTO "Task" ("company", "workspaceId", "projectId", "publicToken", "title", "project", "relatedFeature", "category", "status", "priority", "durationMinutes", "startDate", "endDate", "description", "acceptanceCriteria", "notes", "evidence", "relatedItems", "assignee", "uuid")
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [company, workspaceId, projectId, publicToken, data.title, data.project, data.relatedFeature ?? "", data.category, data.status, data.priority, data.durationMinutes ? Number(data.durationMinutes) || 0 : 0, data.startDate ?? "", data.endDate ?? "", data.description, data.acceptanceCriteria ?? "", data.notes ?? "", data.evidence ?? "", data.relatedItems ?? "", data.assignee ?? "", randomUUID()],
+        [company, workspaceId, projectId, publicToken, data.title, data.project, data.relatedFeature ?? "", data.category || "Feature", data.status || "todo", data.priority || "P2", data.durationMinutes ? Number(data.durationMinutes) || 0 : 0, data.startDate ?? "", data.endDate ?? "", data.description ?? "", data.acceptanceCriteria ?? "", data.notes ?? "", data.evidence ?? "", data.relatedItems ?? "", data.assignee ?? "", randomUUID()],
       );
       await logActivity(company, "Task", String(data.title), "Created", `New task assigned: ${data.title}`, actor, publicToken, workspaceId);
       invalidateDashboardCache(company);

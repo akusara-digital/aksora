@@ -273,5 +273,59 @@ describe("bugs module validation & mandatory rules", () => {
       expect((tcResult.data as Record<string, string>).evidence).toBe(testCaseEntry.evidence);
     }
   });
+
+  it("enforces ONLY title and project as required fields for tasks", () => {
+    const taskFields = moduleConfigs.tasks.fields;
+    const requiredFields = taskFields.filter((f) => f.required);
+    expect(requiredFields.map((f) => f.name).sort()).toEqual(["project", "title"].sort());
+
+    const emptyForm = new FormData();
+    const emptyErrors = getRequiredFieldErrors(taskFields, emptyForm);
+    expect(Object.keys(emptyErrors).sort()).toEqual(["project", "title"].sort());
+
+    const minimalEntry = { title: "New Feature Task", project: "Project Alpha" };
+    const result = safeParseModuleEntry("tasks", minimalEntry);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toMatchObject({
+        title: "New Feature Task",
+        project: "Project Alpha",
+        category: "Feature",
+        status: "todo",
+        priority: "P2",
+        description: "",
+      });
+    }
+  });
+
+  it("enforces relaxed essential-only mandatory fields for other modules", () => {
+    // test-cases: only suite ID, tc ID, scenario name
+    const tcRequired = moduleConfigs["test-cases"].fields.filter((f) => f.required).map((f) => f.name);
+    expect(tcRequired.sort()).toEqual(["caseName", "tcId", "testSuiteId"].sort());
+
+    // test-plans: only title and project
+    const tpRequired = moduleConfigs["test-plans"].fields.filter((f) => f.required).map((f) => f.name);
+    expect(tpRequired.sort()).toEqual(["project", "title"].sort());
+
+    // test-suites: only title
+    const tsRequired = moduleConfigs["test-suites"].fields.filter((f) => f.required).map((f) => f.name);
+    expect(tsRequired).toEqual(["title"]);
+
+    // sprints: only name
+    const sprintRequired = moduleConfigs.sprints.fields.filter((f) => f.required).map((f) => f.name);
+    expect(sprintRequired).toEqual(["name"]);
+
+    // deployments: only date, version, project
+    const depRequired = moduleConfigs.deployments.fields.filter((f) => f.required).map((f) => f.name);
+    expect(depRequired.sort()).toEqual(["date", "project", "version"].sort());
+
+    // assignees: only name
+    const assigneeRequired = moduleConfigs.assignees.fields.filter((f) => f.required).map((f) => f.name);
+    expect(assigneeRequired).toEqual(["name"]);
+
+    // work-logs: only date, project, description
+    const wlRequired = moduleConfigs["work-logs"].fields.filter((f) => f.required).map((f) => f.name);
+    expect(wlRequired.sort()).toEqual(["date", "description", "project"].sort());
+  });
 });
 

@@ -157,13 +157,25 @@ export const taskSchema = z.object({
   title: requiredText("Title"),
   project: requiredText("Project"),
   relatedFeature: optionalText,
-  category: z.enum(["Feature", "Enhancement", "Bug Fix", "Tech Debt", "Research", "Support", "Refactor", "Documentation", "Improvement"]),
-  status: z.enum(["backlog", "todo", "in_progress", "need_to_test", "completed", "hold", "doing", "review", "done", "blocked"]),
-  priority: z.enum(["P0", "P1", "P2", "P3"]),
+  category: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "Feature" : v),
+    z.enum(["Feature", "Enhancement", "Bug Fix", "Tech Debt", "Research", "Support", "Refactor", "Documentation", "Improvement"]).default("Feature"),
+  ),
+  status: z.preprocess(
+    (v) => {
+      const s = String(v ?? "").trim().toLowerCase().replace(/\s+/g, "_");
+      return s === "to_do" ? "todo" : (s || "todo");
+    },
+    z.enum(["backlog", "todo", "in_progress", "need_to_test", "completed", "hold", "doing", "review", "done", "blocked"]).default("todo"),
+  ),
+  priority: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "P2" : String(v).toUpperCase()),
+    z.enum(["P0", "P1", "P2", "P3"]).default("P2"),
+  ),
   durationMinutes: z.union([z.string(), z.number()]).optional().default(""),
   startDate: z.string().optional().default(""),
   endDate: z.string().optional().default(""),
-  description: requiredText("Description"),
+  description: optionalText,
   acceptanceCriteria: optionalText,
   evidence: urlField,
   prUrl: optionalText,
@@ -211,8 +223,8 @@ export const testCaseSchema = z.object({
   assignee: optionalText,
   typeCase: z.preprocess((v) => (v === "" || v === undefined ? undefined : v), z.enum(["Positive", "Negative"]).default("Positive")),
   preCondition: optionalText,
-  testStep: requiredText("Test Step"),
-  expectedResult: requiredText("Expected Result"),
+  testStep: optionalText,
+  expectedResult: optionalText,
   actualResult: optionalText,
   status: z.preprocess((v) => (v === "" || v === undefined ? undefined : v), z.enum(["Pending", "Passed", "Failed", "Blocked"]).default("Pending")),
   priority: z.preprocess((v) => (v === "" || v === undefined ? undefined : v), z.enum(["Critical", "High", "Medium", "Low"]).default("Medium")),
@@ -239,7 +251,10 @@ export const testPlanSchema = z.object({
   scope: optionalText,
   startDate: z.string().optional().default(""),
   endDate: z.string().optional().default(""),
-  status: z.enum(["draft", "active", "completed", "closed", "archived"]),
+  status: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "active" : String(v).toLowerCase()),
+    z.enum(["draft", "active", "completed", "closed", "archived"]).default("active"),
+  ),
   assignee: optionalText,
   notes: optionalText,
 });
@@ -248,7 +263,10 @@ export const sprintSchema = z.object({
   name: requiredText("Sprint Name"),
   startDate: z.string().optional().default(""),
   endDate: z.string().optional().default(""),
-  status: z.enum(["planning", "active", "completed"]),
+  status: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "active" : String(v).toLowerCase()),
+    z.enum(["planning", "active", "completed"]).default("active"),
+  ),
   goal: optionalText,
 });
 
@@ -263,13 +281,16 @@ export const testSessionSchema = z.object({
   date: z.string().min(1, "Date is required"),
   project: requiredText("Project"),
   sprint: optionalText,
-  tester: requiredText("Tester"),
+  tester: optionalText,
   scope: optionalText,
   totalCases: z.string().optional().default(""),
   passed: z.string().optional().default(""),
   failed: z.string().optional().default(""),
   blocked: z.string().optional().default(""),
-  result: z.enum(["pass", "fail", "blocked", "in_progress"]),
+  result: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "pass" : String(v).toLowerCase()),
+    z.enum(["pass", "fail", "blocked", "in_progress"]).default("pass"),
+  ),
   notes: optionalText,
   evidence: urlField,
 });
@@ -303,7 +324,10 @@ export const assigneeSchema = z.object({
   role: optionalText,
   email: z.string().trim().email("Invalid email format").optional().or(z.literal("")),
   skills: optionalText,
-  status: z.enum(["active", "inactive"]),
+  status: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "active" : String(v).toLowerCase()),
+    z.enum(["active", "inactive"]).default("active"),
+  ),
 });
 
 export const workLogCategoryOptions: Option[] = [
@@ -324,7 +348,10 @@ export const workLogSchema = z.object({
   startTime: optionalText,
   endTime: optionalText,
   durationMinutes: z.union([z.string(), z.number()]).optional().default(""),
-  category: requiredText("Category"),
+  category: z.preprocess(
+    (v) => (!v || String(v).trim() === "" ? "development" : String(v).toLowerCase()),
+    optionalText.default("development"),
+  ),
   project: requiredText("Project"),
   description: requiredText("Description"),
   output: optionalText,
