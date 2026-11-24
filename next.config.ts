@@ -42,9 +42,9 @@ const nextConfig: NextConfig = {
           value: [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://www.gstatic.com",
-            "style-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline' https://accounts.google.com https://www.gstatic.com",
             "img-src 'self' data: blob: https://www.gstatic.com https://lh3.googleusercontent.com https://*.akusaraproject.my.id",
-            "font-src 'self' data:",
+            "font-src 'self' data: https://fonts.gstatic.com",
             "connect-src 'self' https://accounts.google.com https://www.gstatic.com https://*.akusaraproject.my.id",
             "frame-src 'self' https://accounts.google.com https://www.gstatic.com",
             "frame-ancestors 'none'",

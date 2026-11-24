@@ -13,6 +13,7 @@ const publicPaths = [
   "/api/auth/reset-password",
   "/api/auth/me",
   "/api/health",
+  "/api/vitals",
   "/api/public/v1",
   "/api/public/run-signoff/",
   // Machine endpoints: every route below authenticates with an API key (or session) itself.
