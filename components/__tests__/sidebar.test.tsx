@@ -85,8 +85,9 @@ describe("Sidebar", () => {
     expect(html).toContain('href="/settings"');
   });
 
-  it("organizes main nav into 4 balanced groups (8 items) + compact footer utilities", () => {
+  it("organizes main nav into a Dashboard shortcut + 4 balanced groups (9 items) + compact footer utilities", () => {
     const mockDict = {
+      dashboard: "Dashboard",
       mySpace: "MY SPACE",
       myWork: "My Work",
       groupWorkItems: "Work Items",
@@ -106,32 +107,36 @@ describe("Sidebar", () => {
     const groups = getGroups(mockDict);
     const footerItems = getFooterItems(mockDict);
 
-    // Group 0: MY SPACE
-    expect(groups[0].title).toBe("MY SPACE");
-    expect(groups[0].items.map((i) => i.href)).toEqual(["/projects", "/my-work"]);
+    // Group 0: Dashboard shortcut (no title)
+    expect(groups[0].title).toBe("");
+    expect(groups[0].items.map((i) => i.href)).toEqual(["/dashboard"]);
 
-    // Group 1: Test Management
-    expect(groups[1].title).toBe("Test Management");
-    expect(groups[1].items.map((i) => i.href)).toEqual([
+    // Group 1: MY SPACE
+    expect(groups[1].title).toBe("MY SPACE");
+    expect(groups[1].items.map((i) => i.href)).toEqual(["/projects", "/my-work"]);
+
+    // Group 2: Test Management
+    expect(groups[2].title).toBe("Test Management");
+    expect(groups[2].items.map((i) => i.href)).toEqual([
       "/test-cases",
       "/test-execution",
     ]);
 
-    // Group 2: Work Items
-    expect(groups[2].title).toBe("Work Items");
-    expect(groups[2].items.map((i) => i.href)).toEqual([
+    // Group 3: Work Items
+    expect(groups[3].title).toBe("Work Items");
+    expect(groups[3].items.map((i) => i.href)).toEqual([
       "/tasks",
       "/bugs",
       "/work-logs",
     ]);
 
-    // Group 3: Reports
-    expect(groups[3].title).toBe("Reports");
-    expect(groups[3].items.map((i) => i.href)).toEqual([
+    // Group 4: Reports
+    expect(groups[4].title).toBe("Reports");
+    expect(groups[4].items.map((i) => i.href)).toEqual([
       "/weekly-report",
     ]);
 
-    expect(groups).toHaveLength(4);
+    expect(groups).toHaveLength(5);
     expect(footerItems.map((i) => i.href)).toEqual(["/settings"]);
 
     // Ensure no duplicate routes across main nav + footer
@@ -140,7 +145,7 @@ describe("Sidebar", () => {
       ...footerItems.map((i) => i.href),
     ];
     expect(allHrefs.length).toBe(new Set(allHrefs).size);
-    expect(allHrefs.length).toBe(9);
+    expect(allHrefs.length).toBe(10);
   });
 
   it("exposes Settings footer utility to all roles (including non-admin QA/FE)", () => {

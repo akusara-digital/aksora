@@ -30,7 +30,7 @@ export function getDefaultCrumbsForPath(pathname: string): Crumb[] {
     return [{ label: "Dashboard" }];
   }
   if (p === "/projects") {
-    return [{ label: "Dashboard", href: "/dashboard" }, { label: "Projects" }];
+    return [{ label: "My Space", href: "/my-work" }, { label: "Projects" }];
   }
   if (p.startsWith("/projects/")) {
     return [{ label: "Projects", href: "/projects" }, { label: "Project Hub" }];
@@ -123,7 +123,7 @@ export function getDefaultCrumbsForPath(pathname: string): Crumb[] {
     ];
   }
   if (p === "/my-work") {
-    return [{ label: "Dashboard", href: "/dashboard" }, { label: "My Work" }];
+    return [{ label: "My Space", href: "/my-work" }, { label: "My Work" }];
   }
   if (p === "/activity") {
     return [{ label: "Dashboard", href: "/dashboard" }, { label: "Activity Log" }];

@@ -138,27 +138,27 @@ export function Sidebar({
                   hideTooltip={hideTooltip}
                 />
               ))}
+
+              {/* Utility Links (Settings) — part of the scrollable nav, not pinned */}
+              {footerItems.length > 0 && (
+                <div className="space-y-0.5">
+                  {footerItems.map((item) => (
+                    <SidebarNavItem
+                      key={item.href}
+                      item={item}
+                      pathname={pathname}
+                      collapsed={collapsed}
+                      showTooltip={showTooltip}
+                      hideTooltip={hideTooltip}
+                    />
+                  ))}
+                </div>
+              )}
             </nav>
           </div>
 
-          {/* Bottom actions */}
+          {/* Bottom actions (always pinned) */}
           <div className="mt-auto border-t border-slate-200 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            {/* Utility Links (Notes & Vault, Settings) */}
-            {footerItems.length > 0 && (
-              <div className={cn("space-y-0.5 pb-2 mb-2 border-b border-slate-200", collapsed ? "px-1" : "px-0")}>
-                {footerItems.map((item) => (
-                  <SidebarNavItem
-                    key={item.href}
-                    item={item}
-                    pathname={pathname}
-                    collapsed={collapsed}
-                    showTooltip={showTooltip}
-                    hideTooltip={hideTooltip}
-                  />
-                ))}
-              </div>
-            )}
-
             {/* Sister App (BugSnap) */}
             <div className="pb-1.5 mb-1.5 border-b border-slate-200">
               <a

@@ -30,6 +30,12 @@ export type SidebarGroup = { title: string; items: SidebarItem[] };
 export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
   return [
     {
+      title: "",
+      items: [
+        { href: "/dashboard", label: t.dashboard || "Dashboard", icon: SquaresFour },
+      ],
+    },
+    {
       title: t.mySpace || "MY SPACE",
       items: [
         { href: "/projects", label: t.projects || "Projects", icon: FolderSimple },
