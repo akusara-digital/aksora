@@ -330,7 +330,39 @@ export async function getDbHealthInfo() {
   } catch {
     tableCounts = {};
   }
-  return { conn, tables: tableCounts };
+  // Free Tier Storage diagnostics (512 MB limit)
+  let storage = {
+    usedBytes: 0,
+    formatted: "0 MB",
+    limitBytes: 512 * 1024 * 1024,
+    percentUsed: 0,
+    remainingMb: 512,
+    status: "ok" as "ok" | "warning" | "critical",
+  };
+
+  try {
+    const sizeRow = await db.get<{ bytes: string; formatted: string }>(
+      `SELECT pg_database_size(current_database()) as bytes, pg_size_pretty(pg_database_size(current_database())) as formatted`
+    );
+    if (sizeRow?.bytes) {
+      const bytes = Number(sizeRow.bytes);
+      const limit = 512 * 1024 * 1024;
+      const pct = Math.round((bytes / limit) * 10000) / 100;
+      const remMb = Math.round((512 - bytes / 1024 / 1024) * 10) / 10;
+      storage = {
+        usedBytes: bytes,
+        formatted: sizeRow.formatted || `${Math.round(bytes / 1024 / 1024)} MB`,
+        limitBytes: limit,
+        percentUsed: pct,
+        remainingMb: Math.max(0, remMb),
+        status: pct > 90 ? "critical" : pct > 75 ? "warning" : "ok",
+      };
+    }
+  } catch {
+    // Graceful fallback if database metadata query fails
+  }
+
+  return { conn, storage, tables: tableCounts };
 }
 
 export async function resetTables() {

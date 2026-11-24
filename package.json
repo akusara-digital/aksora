@@ -26,6 +26,7 @@
     "check:api-guards": "node scripts/check-api-guards.mjs",
     "check:dead-code": "node scripts/check-dead-code.mjs",
     "db:health": "node scripts/db-schema-health.mjs",
+    "db:storage": "node scripts/db-storage-stats.mjs",
     "db:smoke-crud": "node scripts/db-smoke-crud.mjs",
     "db:health:ci": "pnpm db:health",
     "analyze": "set ANALYZE=true& next build",
