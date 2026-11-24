@@ -141,7 +141,7 @@ export function Sidebar({
 
               {/* Utility Links (Settings) — part of the scrollable nav, not pinned */}
               {footerItems.length > 0 && (
-                <div className="space-y-0.5">
+                <div className={cn("space-y-0.5 border-t border-slate-200 pt-3", collapsed ? "mx-1" : "mx-3")}>
                   {footerItems.map((item) => (
                     <SidebarNavItem
                       key={item.href}
