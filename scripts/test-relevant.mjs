@@ -56,6 +56,7 @@ function findDirectTestCandidates(sourceFile) {
   const parsed = path.parse(sourceFile);
   const baseName = parsed.name;
   const dir = parsed.dir;
+  const normDir = dir.replace(/\\/g, "/");
 
   const candidates = [
     path.join(dir, `${baseName}.test.ts`),
@@ -64,32 +65,40 @@ function findDirectTestCandidates(sourceFile) {
     path.join(dir, `${baseName}.spec.tsx`),
     path.join(dir, "__tests__", `${baseName}.test.ts`),
     path.join(dir, "__tests__", `${baseName}.test.tsx`),
-    path.join(dir, "__tests__", `${baseName}.spec.ts`),
-    path.join(dir, "__tests__", `${baseName}.spec.tsx`),
   ];
 
-  if (dir.startsWith("components/") || dir.startsWith("components\\")) {
+  if (normDir.startsWith("app/api/")) {
+    const sub = normDir.replace(/^app\/api\//, "");
     candidates.push(
-      path.join("components", "__tests__", `${baseName}.test.ts`),
-      path.join("components", "__tests__", `${baseName}.test.tsx`)
+      path.join("tests", "api", sub, `${baseName}.test.ts`),
+      path.join("tests", "api", sub, `${baseName}.test.tsx`),
+      path.join("tests", "api", sub, "route.test.ts")
     );
-  }
-
-  if (dir.startsWith("lib/") || dir.startsWith("lib\\")) {
+  } else if (normDir.startsWith("app/")) {
+    const sub = normDir.replace(/^app\//, "");
     candidates.push(
-      path.join("lib", "__tests__", `${baseName}.test.ts`),
-      path.join("lib", "__tests__", `${baseName}.test.tsx`),
-      path.join(dir, "__tests__", `${baseName}.test.ts`),
-      path.join(dir, "__tests__", `${baseName}.test.tsx`)
+      path.join("tests", "app", sub, `${baseName}.test.ts`),
+      path.join("tests", "app", sub, `${baseName}.test.tsx`),
+      path.join("tests", "app", `${baseName}.test.ts`),
+      path.join("tests", "app", `${baseName}.test.tsx`),
+      path.join("tests", "app", sub, "page.test.tsx"),
+      path.join("tests", "app", sub, "route.test.ts")
     );
-  }
-
-  if (dir.startsWith("app/") || dir.startsWith("app\\")) {
+  } else if (normDir.startsWith("components/")) {
+    const sub = normDir.replace(/^components\//, "");
     candidates.push(
-      path.join(dir, "__tests__", `${baseName}.test.ts`),
-      path.join(dir, "__tests__", `${baseName}.test.tsx`),
-      path.join(dir, "__tests__", "route.test.ts"),
-      path.join(dir, "__tests__", "page.test.tsx")
+      path.join("tests", "components", sub, `${baseName}.test.tsx`),
+      path.join("tests", "components", sub, `${baseName}.test.ts`),
+      path.join("tests", "components", `${baseName}.test.tsx`),
+      path.join("tests", "components", `${baseName}.test.ts`)
+    );
+  } else if (normDir.startsWith("lib/")) {
+    const sub = normDir.replace(/^lib\//, "");
+    candidates.push(
+      path.join("tests", "lib", sub, `${baseName}.test.ts`),
+      path.join("tests", "lib", sub, `${baseName}.test.tsx`),
+      path.join("tests", "lib", `${baseName}.test.ts`),
+      path.join("tests", "lib", `${baseName}.test.tsx`)
     );
   }
 

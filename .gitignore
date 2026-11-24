@@ -22,11 +22,14 @@
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 *.key
 *.pfx
 *.p12
 *.crt
+credentials.json
+service-account*.json
 .sicmundus-cache.json
 .sicmundus-cron.log
 
@@ -59,6 +62,8 @@ next-env.d.ts
 *.sqlite3
 *.db-journal
 *.sqlite-journal
+*.sql
+*.dump
 
 # playwright / e2e local testing artifacts
 /.playwright-cli/
