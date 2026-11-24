@@ -6,7 +6,9 @@ import {
   Checks,
   Table,
   Plus,
+  FolderPlus,
 } from "@phosphor-icons/react";
+import { TestCaseKanbanBoard } from "@/components/test-management/test-case-kanban-board";
 import { toast } from "@/components/ui/toast";
 import {
   QuickCreateCaseModal,
@@ -57,6 +59,8 @@ export function TestCaseLibrary({
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [showNewSuiteModal, setShowNewSuiteModal] = useState(false);
   const [showNewCaseModal, setShowNewCaseModal] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
+  const [editingCase, setEditingCase] = useState<TestCase | null>(null);
   const [planCases, setPlanCases] = useState<TestCase[] | null>(null);
   const [startingRun, setStartingRun] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
@@ -94,6 +98,18 @@ export function TestCaseLibrary({
     });
     return Array.from(set).sort();
   }, [cases, suites]);
+
+  const suiteOptions = useMemo(() => {
+    return suites.map((s) => ({
+      label: s.title || `Suite #${s.id}`,
+      value: String(s.id),
+      project: s.planProject || undefined,
+    }));
+  }, [suites]);
+
+  const projectOptionsList = useMemo(() => {
+    return projectOptions.map((p) => ({ label: p, value: p }));
+  }, [projectOptions]);
 
   const groups = useMemo<SuiteGroup[]>(() => {
     const map = new Map<string, SuiteGroup>();
@@ -261,6 +277,24 @@ export function TestCaseLibrary({
     }
   };
 
+  const handleKanbanStatusChange = async (caseId: number, nextStatus: string) => {
+    try {
+      const res = await fetch("/api/items/test-cases", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: caseId, status: nextStatus }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to update status");
+      }
+      toast(`Test case status updated to ${nextStatus}`, "success");
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to update status", "error");
+    }
+  };
+
   return (
     <div className="space-y-3 pb-6">
       <TestCaseFilters
@@ -271,91 +305,143 @@ export function TestCaseLibrary({
         setFilterStatus={setFilterStatus}
         suitesCount={filteredGroups.length}
         onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
+        onOpenNewCaseModal={() => {
+          setEditingCase(null);
+          setShowNewCaseModal(true);
+        }}
+        viewMode={viewMode}
+        onSetViewMode={setViewMode}
         allConstant={ALL}
       />
 
-      <div>
-        <div className="flex flex-col gap-4 lg:h-[calc(100vh-310px)] lg:min-h-[500px] lg:flex-row">
-          {/* Left Pane: Test Suites */}
-          <SuiteSidebarList
-            filteredGroups={filteredGroups}
-            allGroupsCount={groups.length}
-            selectedKey={selectedKey}
-            onSelectKey={(key) => setSelectedKey(key)}
-            onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
-            onRunSuite={handleRunSuite}
-            collapsed={!showSidebar}
-            onToggleCollapsed={toggleSidebar}
-            filterStatus={filterStatus}
-            filterAssignee={filterAssignee}
-            search={search}
-            allConstant={ALL}
+      {viewMode === "kanban" ? (
+        <div className="flex-1 overflow-auto rounded-lg border border-gray-200/80 bg-gray-50/50 p-4 min-h-[550px]">
+          <TestCaseKanbanBoard
+            cases={allVisibleCases}
+            onSelectCase={(tc: TestCase) => {
+              setEditingCase(tc);
+              setShowNewCaseModal(true);
+            }}
+            onAddCase={() => {
+              setEditingCase(null);
+              setShowNewCaseModal(true);
+            }}
+            onStatusChange={handleKanbanStatusChange}
           />
+        </div>
+      ) : (
+        <div>
+          <div className="flex flex-col gap-4 lg:h-[calc(100vh-310px)] lg:min-h-[500px] lg:flex-row">
+            {/* Left Pane: Test Suites */}
+            <SuiteSidebarList
+              filteredGroups={filteredGroups}
+              allGroupsCount={groups.length}
+              selectedKey={selectedKey}
+              onSelectKey={(key) => setSelectedKey(key)}
+              onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
+              onRunSuite={handleRunSuite}
+              collapsed={!showSidebar}
+              onToggleCollapsed={toggleSidebar}
+              filterStatus={filterStatus}
+              filterAssignee={filterAssignee}
+              search={search}
+              allConstant={ALL}
+            />
 
-          {/* Right Pane: Test Cases */}
-          <div className="flex min-h-[520px] flex-1 flex-col overflow-hidden">
-            {!selected ? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-gray-400">
-                <Table size={40} weight="bold" />
-                <p className="text-sm font-semibold text-gray-700">
-                  {groups.length === 0
-                    ? "Start by creating a Test Suite"
-                    : "Select a suite to view test cases"}
-                </p>
-                <p className="max-w-sm text-xs text-gray-500">
-                  {groups.length === 0
-                    ? "Test cases live inside suites. Create your first suite on the left or via the New Suite button above to get started."
-                    : "Choose any suite from the left panel to inspect, edit, or add test cases."}
-                </p>
-              </div>
-            ) : (
-              <>
-                <TestCaseSuiteHeader
-                  selected={selected}
-                  onAddCase={() => setShowNewCaseModal(true)}
-                  onRunSuite={() => handleRunSuite(selected)}
-                  startingRun={startingRun}
-                />
-
-                {displayCases.length === 0 ? (
-                  <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center text-gray-400">
-                    <Checks size={32} weight="bold" />
-                    <p className="text-sm font-semibold text-gray-700">
-                      {selected.cases.length === 0
-                        ? "No test cases in this suite yet"
-                        : "No cases match this filter"}
-                    </p>
-                    {selected.cases.length === 0 && (
+            {/* Right Pane: Test Cases */}
+            <div className="flex min-h-[520px] flex-1 flex-col overflow-hidden">
+              {!selected ? (
+                <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-gray-400">
+                  <Table size={40} weight="bold" />
+                  <p className="text-sm font-semibold text-gray-700">
+                    {groups.length === 0
+                      ? "Start by creating a Test Suite or Test Case"
+                      : "Select a suite to view test cases"}
+                  </p>
+                  <p className="max-w-sm text-xs text-gray-500">
+                    {groups.length === 0
+                      ? "Test cases live inside suites. Create your first suite or test case directly to get started."
+                      : "Choose any suite from the left panel to inspect, edit, or add test cases."}
+                  </p>
+                  {groups.length === 0 && (
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
                       <button
                         type="button"
-                        onClick={() => setShowNewCaseModal(true)}
-                        className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 shadow-sm"
+                        onClick={() => setShowNewSuiteModal(true)}
+                        className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition shadow-2xs"
                       >
-                        <Plus size={14} weight="bold" />
-                        Add First Test Case
+                        <FolderPlus size={15} weight="bold" className="text-gray-500" />
+                        Create First Suite
                       </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-1 flex-col overflow-hidden">
-                    <TestCaseMobileCards
-                      displayCases={displayCases}
-                      suiteAssignee={selected.suiteAssignee}
-                    />
-                    <div className="hidden flex-1 overflow-auto md:block">
-                      <TestCaseTable
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingCase(null);
+                          setShowNewCaseModal(true);
+                        }}
+                        className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-bold text-white transition hover:bg-blue-700 shadow-2xs"
+                      >
+                        <Plus size={15} weight="bold" />
+                        Create First Test Case
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <TestCaseSuiteHeader
+                    selected={selected}
+                    onAddCase={() => {
+                      setEditingCase(null);
+                      setShowNewCaseModal(true);
+                    }}
+                    onRunSuite={() => handleRunSuite(selected)}
+                    startingRun={startingRun}
+                  />
+
+                  {displayCases.length === 0 ? (
+                    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center text-gray-400">
+                      <Checks size={32} weight="bold" />
+                      <p className="text-sm font-semibold text-gray-700">
+                        {selected.cases.length === 0
+                          ? "No test cases in this suite yet"
+                          : "No cases match this filter"}
+                      </p>
+                      {selected.cases.length === 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingCase(null);
+                            setShowNewCaseModal(true);
+                          }}
+                          className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 shadow-sm"
+                        >
+                          <Plus size={14} weight="bold" />
+                          Add First Test Case
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-1 flex-col overflow-hidden">
+                      <TestCaseMobileCards
                         displayCases={displayCases}
                         suiteAssignee={selected.suiteAssignee}
-                        onCreateTestPlan={(selectedCases) => setPlanCases(selectedCases)}
                       />
+                      <div className="hidden flex-1 overflow-auto md:block">
+                        <TestCaseTable
+                          displayCases={displayCases}
+                          suiteAssignee={selected.suiteAssignee}
+                          onCreateTestPlan={(selectedCases) => setPlanCases(selectedCases)}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
-              </>
-            )}
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <QuickCreateSuiteModal
         isOpen={showNewSuiteModal}
@@ -368,10 +454,25 @@ export function TestCaseLibrary({
 
       <QuickCreateCaseModal
         isOpen={showNewCaseModal}
-        suiteId={String(selected?.cases[0]?.testSuiteId || selected?.key || suites[0]?.id || "")}
-        suiteTitle={selected?.suiteTitle || suites[0]?.title || ""}
+        suiteId={
+          editingCase
+            ? String(editingCase.testSuiteId)
+            : String(selected?.cases[0]?.testSuiteId || selected?.key || suites[0]?.id || "")
+        }
+        suiteTitle={
+          editingCase
+            ? (editingCase.suiteTitle || "")
+            : (selected?.suiteTitle || suites[0]?.title || "")
+        }
+        project={editingCase?.planProject || (filterProject !== ALL ? filterProject : undefined)}
+        projectOptions={projectOptionsList}
+        suiteOptions={suiteOptions}
         suggestedTcId={suggestedTcId}
-        onClose={() => setShowNewCaseModal(false)}
+        initialData={editingCase ? (editingCase as unknown as Record<string, unknown>) : null}
+        onClose={() => {
+          setShowNewCaseModal(false);
+          setEditingCase(null);
+        }}
       />
 
       {planCases && (
