@@ -45,7 +45,7 @@ const nextConfig: NextConfig = {
             "style-src 'self' 'unsafe-inline' https://accounts.google.com https://www.gstatic.com",
             "img-src 'self' data: blob: https://www.gstatic.com https://lh3.googleusercontent.com https://*.akusaraproject.my.id",
             "font-src 'self' data: https://fonts.gstatic.com",
-            "connect-src 'self' https://accounts.google.com https://www.gstatic.com https://*.akusaraproject.my.id",
+            "connect-src 'self' https://accounts.google.com https://www.gstatic.com https://play.google.com https://*.akusaraproject.my.id",
             "frame-src 'self' https://accounts.google.com https://www.gstatic.com",
             "frame-ancestors 'none'",
           ].join("; "),
