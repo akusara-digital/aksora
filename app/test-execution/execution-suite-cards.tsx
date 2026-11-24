@@ -243,7 +243,7 @@ export function ExecutionSuiteCards({
             type="button"
             onClick={() => setStatusTab("all")}
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition",
+              "inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-bold transition",
               statusTab === "all"
                 ? "bg-slate-900 text-white shadow-sm"
                 : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
@@ -255,7 +255,7 @@ export function ExecutionSuiteCards({
             type="button"
             onClick={() => setStatusTab("in-progress")}
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition",
+              "inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-bold transition",
               statusTab === "in-progress"
                 ? "bg-blue-600 text-white shadow-sm"
                 : "border border-slate-200 bg-white text-blue-700 hover:bg-blue-50/50",
@@ -268,7 +268,7 @@ export function ExecutionSuiteCards({
             type="button"
             onClick={() => setStatusTab("ready")}
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition",
+              "inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-bold transition",
               statusTab === "ready"
                 ? "bg-slate-900 text-white shadow-sm"
                 : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
@@ -280,7 +280,7 @@ export function ExecutionSuiteCards({
             type="button"
             onClick={() => setStatusTab("completed")}
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition",
+              "inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-bold transition",
               statusTab === "completed"
                 ? "bg-slate-900 text-white shadow-sm"
                 : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
@@ -298,7 +298,7 @@ export function ExecutionSuiteCards({
                 aria-label="Filter by project"
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
-                className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 pr-7 text-xs font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+                className={cn("h-8 rounded-md border px-2.5 text-xs font-semibold outline-none transition touch-manipulation", selectedProject !== "all" ? "border-blue-300 bg-blue-50 text-blue-700 font-bold" : "border-gray-200 bg-white text-gray-700 hover:border-gray-300")}
               >
                 <option value="all">All Projects</option>
                 {projects.map((p) => (

@@ -50,10 +50,10 @@ function FilterDropdown({
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          "inline-flex h-8 items-center gap-1.5 rounded-sm border px-2.5 sm:px-3 text-xs font-semibold transition touch-manipulation cursor-pointer shadow-2xs",
+          "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition touch-manipulation cursor-pointer",
           activeValue
-            ? "border-blue-300 bg-blue-50 text-blue-700"
-            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300",
+            ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
+            : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
         )}
       >
         <span className="truncate max-w-[110px] sm:max-w-none">
@@ -62,13 +62,13 @@ function FilterDropdown({
         <CaretDown size={11} weight="bold" className="shrink-0" />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 max-h-56 w-48 max-w-[calc(100vw-2.5rem)] overflow-y-auto border border-gray-200 bg-white shadow-md animate-in fade-in duration-150">
+        <div className="absolute left-0 top-full z-50 mt-1 max-h-56 w-48 max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in duration-150">
           <button
             type="button"
             onClick={() => { onSelect(""); setOpen(false); }}
             className={cn(
-              "block w-full px-3 py-2 text-left text-xs font-medium transition",
-              !activeValue ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50",
+              "block w-full rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition",
+              !activeValue ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-700 hover:bg-gray-50",
             )}
           >
             All {filter.label}
@@ -79,8 +79,8 @@ function FilterDropdown({
               type="button"
               onClick={() => { onSelect(option.value); setOpen(false); }}
               className={cn(
-                "block w-full truncate px-3 py-2 text-left text-xs font-medium transition",
-                activeValue === option.value ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50",
+                "block w-full truncate rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition",
+                activeValue === option.value ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-700 hover:bg-gray-50",
               )}
             >
               {option.label}
@@ -127,7 +127,7 @@ export function ModuleFilterBar({ filters, activeFilters, onFilterChange }: Modu
         <button
           type="button"
           onClick={clearAll}
-          className="inline-flex h-8 items-center gap-1 rounded-sm bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer shadow-2xs"
+          className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
         >
           <X size={11} weight="bold" />
           Clear

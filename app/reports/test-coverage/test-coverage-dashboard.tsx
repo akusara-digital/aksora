@@ -117,7 +117,7 @@ export function TestCoverageDashboard({ initialData }: { initialData: CoverageDa
             <select
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
-              className="border border-gray-200 bg-white px-2 py-1 text-xs outline-none focus:border-blue-300"
+              className="h-8 rounded-md border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:border-gray-300 outline-none transition touch-manipulation"
             >
               <option value="all">All Projects</option>
               {projects.map((p) => (

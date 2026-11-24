@@ -165,10 +165,10 @@ export function OverviewTab() {
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search company..."
                 className="h-7 w-44 border border-gray-200 bg-white pl-7 pr-2 text-[11px] outline-none focus:border-blue-400 transition" />
             </div>
-            <select value={filterPlan} onChange={(e) => setFilterPlan(e.target.value)} className="h-7 border border-gray-200 bg-white px-2 text-[11px] outline-none">
+            <select value={filterPlan} onChange={(e) => setFilterPlan(e.target.value)} className="h-8 rounded-md border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:border-gray-300 outline-none transition touch-manipulation">
               <option value="all">All Plans</option><option value="free">Free</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option>
             </select>
-            <select value={filterHealth} onChange={(e) => setFilterHealth(e.target.value)} className="h-7 border border-gray-200 bg-white px-2 text-[11px] outline-none">
+            <select value={filterHealth} onChange={(e) => setFilterHealth(e.target.value)} className="h-8 rounded-md border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:border-gray-300 outline-none transition touch-manipulation">
               <option value="all">All Health</option><option value="green">Healthy</option><option value="yellow">Warning</option><option value="red">Critical</option>
             </select>
           </div>

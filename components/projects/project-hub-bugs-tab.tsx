@@ -98,7 +98,7 @@ export function ProjectHubBugsTab({
                 { value: "low", label: "Low", dot: "bg-slate-400" },
               ]}
               icon={<Funnel size={13} weight="bold" />}
-              className="h-9 rounded-md py-1"
+              className="h-8 rounded-md py-1"
             />
           </div>
 
@@ -114,7 +114,7 @@ export function ProjectHubBugsTab({
                 { value: "ready_to_retest", label: "Ready to Retest", dot: "bg-purple-500" },
                 { value: "closed", label: "Closed", dot: "bg-emerald-500" },
               ]}
-              className="h-9 rounded-md py-1"
+              className="h-8 rounded-md py-1"
             />
           </div>
         </div>

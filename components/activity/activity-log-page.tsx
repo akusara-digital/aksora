@@ -154,7 +154,7 @@ export function ActivityLogPage() {
         {/* Toolbar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1 bg-gray-100 p-0.5">
+            <div className="flex items-center gap-1 rounded-md bg-gray-100 p-0.5">
               <button onClick={() => handleToggle("team")} className={cn("flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer", scope === "team" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700")}>
                 <Users size={14} weight="bold" /> Team Activity
               </button>
@@ -167,7 +167,7 @@ export function ActivityLogPage() {
 
             <div className="relative">
               <FunnelSimple size={13} weight="bold" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-8 appearance-none border border-gray-200 bg-white pl-8 pr-7 text-xs font-semibold text-gray-700 focus:border-blue-300 focus:outline-none transition cursor-pointer shadow-2xs">
+              <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className={cn("h-8 appearance-none rounded-md border pl-8 pr-7 text-xs font-semibold outline-none transition cursor-pointer touch-manipulation", filterType !== "All" ? "border-blue-300 bg-blue-50 text-blue-700 font-bold" : "border-gray-200 bg-white text-gray-700 hover:border-gray-300")}>
                 {ENTITY_TYPES.map((t) => (
                   <option key={t} value={t}>{t === "All" ? "All Types" : formatDisplayText(t)}</option>
                 ))}
@@ -177,7 +177,7 @@ export function ActivityLogPage() {
 
           <div className="relative">
             <MagnifyingGlass size={14} weight="bold" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            <input type="text" placeholder="Search activity..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 w-48 border border-gray-200 bg-white pl-8 pr-3 text-xs font-medium text-gray-700 placeholder:text-gray-400 focus:border-blue-300 focus:outline-none transition" />
+            <input type="text" placeholder="Search activity..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 w-48 rounded-md border border-gray-200 bg-white pl-8 pr-3 text-xs font-medium text-gray-700 placeholder:text-gray-400 focus:border-blue-300 focus:outline-none transition" />
           </div>
         </div>
 

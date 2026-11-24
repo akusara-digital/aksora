@@ -132,7 +132,7 @@ export function TicketsTab() {
         </div>
         <div className="flex items-center gap-2">
           <Funnel size={12} weight="bold" className="text-gray-400" />
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-7 border border-gray-200 bg-white px-2 text-[11px] outline-none">
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-8 rounded-md border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:border-gray-300 outline-none transition touch-manipulation">
             <option value="all">All Status</option><option value="open">Open</option><option value="in-progress">In Progress</option><option value="replied">Replied</option><option value="closed">Closed</option>
           </select>
         </div>

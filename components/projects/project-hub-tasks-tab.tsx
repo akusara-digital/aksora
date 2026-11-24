@@ -117,7 +117,7 @@ export function ProjectHubTasksTab({
                 { value: "backlog", label: "Backlog", dot: "bg-slate-300" },
               ]}
               icon={<Funnel size={13} weight="bold" />}
-              className="h-9 rounded-md py-1"
+              className="h-8 rounded-md py-1"
             />
           </div>
 
@@ -133,7 +133,7 @@ export function ProjectHubTasksTab({
                 { value: "P2", label: "P2 (Medium)", dot: "bg-blue-500" },
                 { value: "P3", label: "P3 (Low)", dot: "bg-slate-400" },
               ]}
-              className="h-9 rounded-md py-1"
+              className="h-8 rounded-md py-1"
             />
           </div>
         </div>

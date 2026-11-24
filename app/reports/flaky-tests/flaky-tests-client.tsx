@@ -109,18 +109,18 @@ export function FlakyTestsClient({ initialData }: { initialData: FlakyData }) {
           <div className="flex items-center gap-1.5">
             <Funnel size={14} weight="bold" className="text-gray-400" />
             <label className="text-[11px] text-gray-500">Threshold:</label>
-            <input type="number" value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} className="w-14 border border-gray-200 bg-white px-1.5 py-0.5 text-xs outline-none focus:border-blue-300" min={1} max={100} />
+            <input type="number" value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} className="h-8 w-14 rounded-md border border-gray-200 bg-white px-2 text-xs outline-none focus:border-blue-300" min={1} max={100} />
             <span className="text-[11px] text-gray-400">%</span>
           </div>
           <div className="flex items-center gap-1.5">
             <label className="text-[11px] text-gray-500">Min Runs:</label>
-            <input type="number" value={minRuns} onChange={(e) => setMinRuns(Number(e.target.value))} className="w-14 border border-gray-200 bg-white px-1.5 py-0.5 text-xs outline-none focus:border-blue-300" min={2} max={50} />
+            <input type="number" value={minRuns} onChange={(e) => setMinRuns(Number(e.target.value))} className="h-8 w-14 rounded-md border border-gray-200 bg-white px-2 text-xs outline-none focus:border-blue-300" min={2} max={50} />
           </div>
-          <button onClick={fetchData} className="inline-flex items-center gap-1 border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-blue-200 hover:text-blue-700 transition">
+          <button onClick={fetchData} className="inline-flex h-8 items-center gap-1 rounded-md border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-blue-200 hover:text-blue-700 transition">
             Apply
           </button>
           {projects.length > 1 && (
-            <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="border border-gray-200 bg-white px-2 py-1 text-xs outline-none focus:border-blue-300">
+            <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="h-8 rounded-md border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:border-gray-300 outline-none transition touch-manipulation">
               <option value="all">All Projects</option>
               {projects.map((p) => (<option key={p} value={p}>{p}</option>))}
             </select>
