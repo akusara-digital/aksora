@@ -200,6 +200,12 @@ export async function getProjectOptions() {
 
 export async function getBacklogOptions() {
   const { andWhere, params } = getAccessScope(await getCurrentUser());
+  const cacheKey = `backlog-opts:${andWhere}:${JSON.stringify(params)}`;
+  const cached = optionsCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data as Array<{ value: string; label: string }>;
+  }
+
   const rows = await selectAll(
     `SELECT id, title, "project"
      FROM "TestPlan"
@@ -207,10 +213,12 @@ export async function getBacklogOptions() {
      ORDER BY "updatedAt" DESC`,
     params,
   );
-  return rows.map((row) => ({
+  const result = rows.map((row) => ({
     value: String(row.title ?? ""),
     label: row.project ? `${String(row.title ?? "")} (${String(row.project ?? "")})` : String(row.title ?? ""),
   }));
+  optionsCache.set(cacheKey, { data: result, expiresAt: Date.now() + 30000 });
+  return result;
 }
 
 export async function getAssigneeOptions() {

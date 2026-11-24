@@ -16,7 +16,14 @@ export async function GET() {
     `SELECT * FROM "TestEnvironment" WHERE "deletedAt" IS NULL${scope.andWhere} ORDER BY "project" ASC, "name" ASC`,
     scope.params,
   );
-  return NextResponse.json({ data: JSON.parse(JSON.stringify(rows.map(serializeEnvironment))) });
+  return NextResponse.json(
+    { data: JSON.parse(JSON.stringify(rows.map(serializeEnvironment))) },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+      },
+    }
+  );
 }
 
 export async function POST(request: NextRequest) {

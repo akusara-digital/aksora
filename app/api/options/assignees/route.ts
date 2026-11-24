@@ -19,7 +19,14 @@ export async function GET() {
       value: option.value,
       label: option.label,
     }));
-    return NextResponse.json({ options: trimmed });
+    return NextResponse.json(
+      { options: trimmed },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        },
+      }
+    );
   } catch (error) {
     console.error("Assignee options error:", error);
     return NextResponse.json({ options: [] }, { status: 200 });

@@ -76,13 +76,20 @@ export async function GET() {
 
   const weekTotal = Object.values(minutesByDay).reduce((a, b) => a + b, 0);
 
-  return NextResponse.json({
-    data: {
-      todayMinutes,
-      targetMinutes: TARGET_MINUTES,
-      weekTotalMinutes: weekTotal,
-      days,
-      date: todayIso,
+  return NextResponse.json(
+    {
+      data: {
+        todayMinutes,
+        targetMinutes: TARGET_MINUTES,
+        weekTotalMinutes: weekTotal,
+        days,
+        date: todayIso,
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+      },
+    }
+  );
 }

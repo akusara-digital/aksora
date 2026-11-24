@@ -16,7 +16,14 @@ export async function GET() {
      WHERE "workspaceId" = ? AND "deletedAt" IS NULL ORDER BY "sortOrder" ASC, "id" ASC`,
     [guard.workspaceId],
   );
-  return NextResponse.json({ data: rows.map(toFieldDef) });
+  return NextResponse.json(
+    { data: rows.map(toFieldDef) },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+      },
+    }
+  );
 }
 
 export async function POST(request: Request) {

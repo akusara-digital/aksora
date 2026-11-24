@@ -25,12 +25,19 @@ export async function GET() {
 
   try {
     const { own, shared } = await getFilters(company, user.id);
-    return NextResponse.json({
-      filters: {
-        own,
-        shared,
+    return NextResponse.json(
+      {
+        filters: {
+          own,
+          shared,
+        },
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        },
+      }
+    );
   } catch (error) {
     console.error("Filters GET error:", error);
     return errorResponse("Failed to load filters", "INTERNAL_ERROR", 500);

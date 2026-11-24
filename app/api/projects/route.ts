@@ -36,7 +36,14 @@ export async function GET() {
       params,
     );
 
-    return NextResponse.json({ data: projects });
+    return NextResponse.json(
+      { data: projects },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        },
+      }
+    );
   } catch (err) {
     console.error("Failed to fetch projects:", err);
     return NextResponse.json({ error: "Failed to fetch projects" }, { status: 500 });

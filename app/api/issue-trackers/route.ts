@@ -26,7 +26,14 @@ export async function GET() {
      FROM "IssueTracker" WHERE "workspaceId" = ? AND "deletedAt" IS NULL ORDER BY "createdAt" DESC`,
     [scope.workspaceId],
   );
-  return NextResponse.json({ data: rows.map(toPublicTracker) });
+  return NextResponse.json(
+    { data: rows.map(toPublicTracker) },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+      },
+    }
+  );
 }
 
 export async function POST(request: Request) {

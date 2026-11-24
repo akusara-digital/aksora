@@ -6,11 +6,18 @@ import { getWorkspaceMembershipsForUser } from "@/lib/workspace-memberships";
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) {
-    return NextResponse.json({
-      authEnabled: authEnabled(),
-      authenticated: false,
-      user: null,
-    });
+    return NextResponse.json(
+      {
+        authEnabled: authEnabled(),
+        authenticated: false,
+        user: null,
+      },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=15, stale-while-revalidate=30",
+        },
+      }
+    );
   }
 
   // Fetch avatar from DB (not stored in session token to keep it small)
@@ -25,11 +32,18 @@ export async function GET() {
 
   const memberships = user.id ? await getWorkspaceMembershipsForUser(user.id) : [];
 
-  const response = NextResponse.json({
-    authEnabled: authEnabled(),
-    authenticated: true,
-    user: { ...user, avatar, memberships },
-  });
+  const response = NextResponse.json(
+    {
+      authEnabled: authEnabled(),
+      authenticated: true,
+      user: { ...user, avatar, memberships },
+    },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=15, stale-while-revalidate=30",
+      },
+    }
+  );
 
   // Self-healing: automatically refresh cookie with hydrated active workspace & company
   try {
