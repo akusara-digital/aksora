@@ -140,16 +140,16 @@ export function ModuleWorkspaceHeader({
       </div>
       {!showForm && (
         <div className="sticky top-0 z-[var(--z-sticky)] border-b border-gray-200 bg-white px-4 sm:px-5 py-2.5 text-sm text-gray-600">
-          <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
               {hasKanban ? (
-                <div className="flex h-8 items-center border border-gray-200 overflow-hidden">
+                <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
                   <button
                     type="button"
                     onClick={() => onSetViewMode("table")}
-                    className={`h-full px-3 text-[12px] font-medium transition-colors ${
+                    className={`h-full px-3 text-[12px] font-medium transition-colors cursor-pointer ${
                       viewMode === "table"
-                        ? "bg-gray-100 text-gray-900"
+                        ? "bg-gray-100 text-gray-900 font-semibold"
                         : "text-gray-500 hover:bg-gray-50"
                     }`}
                   >
@@ -161,9 +161,9 @@ export function ModuleWorkspaceHeader({
                   <button
                     type="button"
                     onClick={() => onSetViewMode("kanban")}
-                    className={`h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors ${
+                    className={`h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer ${
                       viewMode === "kanban"
-                        ? "bg-gray-100 text-gray-900"
+                        ? "bg-gray-100 text-gray-900 font-semibold"
                         : "text-gray-500 hover:bg-gray-50"
                     }`}
                   >
@@ -175,21 +175,23 @@ export function ModuleWorkspaceHeader({
                 </div>
               ) : null}
 
-              {(pending || refreshing) && (
-                <span role="status" className="flex items-center gap-1.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
-                  <span className="h-3 w-3 rounded-full border-2 border-blue-600 border-t-transparent animate-spin shrink-0" />
-                  Refreshing...
-                </span>
+              {hasKanban && filterOptions && filterOptions.length > 0 && (
+                <div className="h-4 w-px bg-gray-200 hidden sm:block" />
               )}
-            </div>
 
-            <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto lg:ml-auto">
               {filterOptions && filterOptions.length > 0 && activeFilters && onFilterChange && (
                 <ModuleFilterBar
                   filters={filterOptions}
                   activeFilters={activeFilters}
                   onFilterChange={onFilterChange}
                 />
+              )}
+
+              {(pending || refreshing) && (
+                <span role="status" className="flex items-center gap-1.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
+                  <span className="h-3 w-3 rounded-full border-2 border-blue-600 border-t-transparent animate-spin shrink-0" />
+                  Refreshing...
+                </span>
               )}
             </div>
           </div>

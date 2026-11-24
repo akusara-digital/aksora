@@ -169,10 +169,42 @@ export function ModuleWorkspace({
   }, [resolvedConfig.fields]);
 
   const assigneeOptions = useMemo(() => {
-    return relatedOptions.assignee || relatedOptions.suggestedDev || [];
+    const raw =
+      relatedOptions.assignee ||
+      relatedOptions.suggestedDev ||
+      relatedOptions.developer ||
+      relatedOptions.tester ||
+      [];
+    const seen = new Set<string>();
+    return raw.filter((opt) => {
+      if (seen.has(opt.value)) return false;
+      seen.add(opt.value);
+      return true;
+    });
   }, [relatedOptions]);
 
-  // Build appropriate, non-bloated filter options tailored per module (max 2-3 essential filters)
+  const sprintOptions = useMemo(() => {
+    if (!["tasks", "test-plans", "bugs"].includes(module)) return [];
+    const set = new Set<string>();
+    localRows.forEach((r) => {
+      const s = String(r.sprint ?? "").trim();
+      if (s) set.add(s);
+    });
+    return Array.from(set).sort().map((s) => ({ value: s, label: s }));
+  }, [localRows, module]);
+
+  const environmentOptions = useMemo(() => {
+    const f = resolvedConfig.fields.find((f) => f.name === "environment");
+    return f && "options" in f && Array.isArray(f.options) ? f.options : [];
+  }, [resolvedConfig.fields]);
+
+  const roleOptions = useMemo(() => {
+    if (module !== "users") return [];
+    const f = resolvedConfig.fields.find((f) => f.name === "role");
+    return f && "options" in f && Array.isArray(f.options) ? f.options : [];
+  }, [module, resolvedConfig.fields]);
+
+  // Build appropriate filter options tailored per module
   const filterOptions = useMemo(() => {
     const opts: Array<{ key: string; label: string; options: Array<{ value: string; label: string }> }> = [];
 
@@ -201,14 +233,28 @@ export function ModuleWorkspace({
       });
     }
 
-    // 4. Severity (for bugs) or Priority (for tasks/test cases)
+    // 4. Severity (for bugs)
     if (module === "bugs" && severityOptions.length > 0) {
       opts.push({ key: "severity", label: "Severity", options: severityOptions });
-    } else if (priorityOptions.length > 0) {
+    }
+
+    // 5. Priority (for tasks, bugs, test cases)
+    if (priorityOptions.length > 0) {
       opts.push({ key: "priority", label: "Priority", options: priorityOptions });
     }
 
-    // 5. Category (for work-logs)
+    // 6. Environment (for deployments, test-sessions)
+    if (environmentOptions.length > 0) {
+      opts.push({ key: "environment", label: "Environment", options: environmentOptions });
+    }
+
+    // 7. Assignee / Developer / Tester
+    if (assigneeOptions.length > 0 && ["tasks", "bugs", "work-logs", "deployments", "test-sessions", "test-plans", "test-suites"].includes(module)) {
+      const label = module === "deployments" ? "Developer" : module === "test-sessions" ? "Tester" : "Assignee";
+      opts.push({ key: "assignee", label, options: assigneeOptions });
+    }
+
+    // 8. Category (for work-logs)
     if (module === "work-logs") {
       const catField = resolvedConfig.fields.find((f) => f.name === "category");
       if (catField && "options" in catField && catField.options && catField.options.length > 0) {
@@ -216,8 +262,18 @@ export function ModuleWorkspace({
       }
     }
 
-    // 6. Date filter for date-bearing modules (tasks, work-logs, deployments, meeting-notes, test-sessions)
-    if (["tasks", "work-logs", "deployments", "meeting-notes", "test-sessions"].includes(module)) {
+    // 9. Sprint (for tasks, test-plans, bugs)
+    if (sprintOptions.length > 0) {
+      opts.push({ key: "sprint", label: "Sprint", options: sprintOptions });
+    }
+
+    // 10. Role (for users)
+    if (roleOptions.length > 0) {
+      opts.push({ key: "role", label: "Role", options: roleOptions });
+    }
+
+    // 11. Date filter for date-bearing modules (tasks, work-logs, deployments, meeting-notes, test-sessions, test-plans, sprints)
+    if (["tasks", "work-logs", "deployments", "meeting-notes", "test-sessions", "test-plans", "sprints"].includes(module)) {
       opts.push({
         key: "datePreset",
         label: "Date",
@@ -232,7 +288,18 @@ export function ModuleWorkspace({
     }
 
     return opts;
-  }, [relatedOptions.project, relatedOptions.testPlanId, module, resolvedConfig.fields, severityOptions, priorityOptions]);
+  }, [
+    relatedOptions.project,
+    relatedOptions.testPlanId,
+    module,
+    resolvedConfig.fields,
+    severityOptions,
+    priorityOptions,
+    environmentOptions,
+    assigneeOptions,
+    sprintOptions,
+    roleOptions,
+  ]);
 
   // Active filters state
   const [activeFilters, setActiveFilters] = useState<Array<{ key: string; value: string; label: string }>>([]);
@@ -268,44 +335,63 @@ export function ModuleWorkspace({
   // All modules support manual reordering except work-logs which is strictly chronological
   const reorderable = module !== "work-logs";
 
+  const filterRow = useCallback(
+    (row: TableRow, f: { key: string; value: string; label: string }) => {
+      if (f.key === "datePreset") {
+        const rawDate = String(row.startDate || row.date || row.createdAt || "");
+        if (!rawDate) return false;
+        const rowDateStr = rawDate.slice(0, 10);
+        const now = new Date();
+        const todayStr = now.toISOString().slice(0, 10);
+        if (f.value === "today") return rowDateStr === todayStr;
+        if (f.value === "yesterday") {
+          const y = new Date(now);
+          y.setDate(y.getDate() - 1);
+          return rowDateStr === y.toISOString().slice(0, 10);
+        }
+        if (f.value === "this-week") {
+          const day = (now.getDay() + 6) % 7;
+          const monday = new Date(now);
+          monday.setDate(monday.getDate() - day);
+          const mondayStr = monday.toISOString().slice(0, 10);
+          const sunday = new Date(monday);
+          sunday.setDate(sunday.getDate() + 6);
+          const sundayStr = sunday.toISOString().slice(0, 10);
+          return rowDateStr >= mondayStr && rowDateStr <= sundayStr;
+        }
+        if (f.value === "this-month") return rowDateStr.slice(0, 7) === todayStr.slice(0, 7);
+        if (f.value === "last-30") {
+          const past30 = new Date(now);
+          past30.setDate(past30.getDate() - 30);
+          return rowDateStr >= past30.toISOString().slice(0, 10) && rowDateStr <= todayStr;
+        }
+        return true;
+      }
+      if (f.key === "assignee") {
+        const val = String(
+          row.assignee ??
+          row.assigneeDev ??
+          row.suggestedDev ??
+          row.developer ??
+          row.tester ??
+          ""
+        ).toLowerCase();
+        return val === f.value.toLowerCase();
+      }
+      return String(row[f.key] ?? "").toLowerCase() === f.value.toLowerCase();
+    },
+    [],
+  );
+
+  const filteredKanbanRows = useMemo(() => {
+    if (activeFilters.length === 0) return localKanbanRows;
+    return localKanbanRows.filter((row) => activeFilters.every((f) => filterRow(row, f)));
+  }, [localKanbanRows, activeFilters, filterRow]);
+
   const visibleRows = useMemo(() => {
     let result = localRows;
     if (activeFilters.length > 0) {
-      result = localRows.filter((row) =>
-        activeFilters.every((f) => {
-          if (f.key === "datePreset") {
-            const rawDate = String(row.startDate || row.date || row.createdAt || "");
-            if (!rawDate) return false;
-            const rowDateStr = rawDate.slice(0, 10);
-            const now = new Date();
-            const todayStr = now.toISOString().slice(0, 10);
-            if (f.value === "today") return rowDateStr === todayStr;
-            if (f.value === "yesterday") {
-              const y = new Date(now);
-              y.setDate(y.getDate() - 1);
-              return rowDateStr === y.toISOString().slice(0, 10);
-            }
-            if (f.value === "this-week") {
-              const day = (now.getDay() + 6) % 7;
-              const monday = new Date(now);
-              monday.setDate(monday.getDate() - day);
-              const mondayStr = monday.toISOString().slice(0, 10);
-              const sunday = new Date(monday);
-              sunday.setDate(sunday.getDate() + 6);
-              const sundayStr = sunday.toISOString().slice(0, 10);
-              return rowDateStr >= mondayStr && rowDateStr <= sundayStr;
-            }
-            if (f.value === "this-month") return rowDateStr.slice(0, 7) === todayStr.slice(0, 7);
-            if (f.value === "last-30") {
-              const past30 = new Date(now);
-              past30.setDate(past30.getDate() - 30);
-              return rowDateStr >= past30.toISOString().slice(0, 10) && rowDateStr <= todayStr;
-            }
-            return true;
-          }
-          return String(row[f.key] ?? "").toLowerCase() === f.value.toLowerCase();
-        }),
-      );
+      result = localRows.filter((row) => activeFilters.every((f) => filterRow(row, f)));
     }
 
     if (module === "tasks") {
@@ -524,7 +610,7 @@ export function ModuleWorkspace({
         dateWarnings={dateWarnings}
         editingRow={editingRow}
         visibleRows={visibleRows}
-        kanbanRows={localKanbanRows}
+        kanbanRows={filteredKanbanRows}
         visibleColumns={visibleColumns}
         safePage={safePage}
         totalPages={totalPages}

@@ -153,28 +153,31 @@ export function ActivityLogPage() {
       <div className="space-y-4">
         {/* Toolbar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-1  bg-gray-100 p-0.5">
-            <button onClick={() => handleToggle("team")} className={cn("flex items-center gap-1.5  px-3 py-1.5 text-xs font-bold transition-all", scope === "team" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700")}>
-              <Users size={14} weight="bold" /> Team Activity
-            </button>
-            <button onClick={() => handleToggle("my")} className={cn("flex items-center gap-1.5  px-3 py-1.5 text-xs font-bold transition-all", scope === "my" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700")}>
-              <User size={14} weight="bold" /> My Activity
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <MagnifyingGlass size={14} weight="bold" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input type="text" placeholder="Search activity..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 w-48  border border-gray-200 bg-white pl-8 pr-3 text-xs font-medium text-gray-700 placeholder:text-gray-400 focus:border-blue-300 focus:outline-none transition" />
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-1 bg-gray-100 p-0.5">
+              <button onClick={() => handleToggle("team")} className={cn("flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer", scope === "team" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700")}>
+                <Users size={14} weight="bold" /> Team Activity
+              </button>
+              <button onClick={() => handleToggle("my")} className={cn("flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer", scope === "my" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700")}>
+                <User size={14} weight="bold" /> My Activity
+              </button>
             </div>
+
+            <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+
             <div className="relative">
-              <FunnelSimple size={14} weight="bold" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-8 appearance-none  border border-gray-200 bg-white pl-8 pr-8 text-xs font-medium text-gray-700 focus:border-blue-300 focus:outline-none transition">
+              <FunnelSimple size={13} weight="bold" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-8 appearance-none border border-gray-200 bg-white pl-8 pr-7 text-xs font-semibold text-gray-700 focus:border-blue-300 focus:outline-none transition cursor-pointer shadow-2xs">
                 {ENTITY_TYPES.map((t) => (
                   <option key={t} value={t}>{t === "All" ? "All Types" : formatDisplayText(t)}</option>
                 ))}
               </select>
             </div>
+          </div>
+
+          <div className="relative">
+            <MagnifyingGlass size={14} weight="bold" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input type="text" placeholder="Search activity..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 w-48 border border-gray-200 bg-white pl-8 pr-3 text-xs font-medium text-gray-700 placeholder:text-gray-400 focus:border-blue-300 focus:outline-none transition" />
           </div>
         </div>
 
