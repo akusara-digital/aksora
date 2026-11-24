@@ -284,7 +284,7 @@ export function NotificationPreferences() {
                   setBot((prev) => ({ ...prev, telegramBotToken: e.target.value }));
                   setDirty(true);
                 }}
-                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 pr-10 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:bg-white transition"
+                className="h-10 w-full rounded-md border border-slate-200 bg-slate-50/50 px-3.5 pr-10 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:bg-white transition"
               />
               <button
                 type="button"
@@ -308,7 +308,7 @@ export function NotificationPreferences() {
                 setBot((prev) => ({ ...prev, telegramChatId: e.target.value }));
                 setDirty(true);
               }}
-              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:bg-white transition"
+              className="h-10 w-full rounded-md border border-slate-200 bg-slate-50/50 px-3.5 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:bg-white transition"
             />
           </div>
 
@@ -320,7 +320,7 @@ export function NotificationPreferences() {
               type="button"
               onClick={testTelegram}
               disabled={testingTg || (!bot.telegramBotToken && !bot.hasTelegramToken)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs disabled:opacity-50"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs disabled:opacity-50"
             >
               <PaperPlaneTilt size={13} weight="bold" />
               {testingTg ? "Sending Test..." : "Send Test Alert"}
@@ -358,13 +358,13 @@ export function NotificationPreferences() {
                 setBot((prev) => ({ ...prev, discordWebhook: e.target.value }));
                 setDirty(true);
               }}
-              className="h-9 flex-1 rounded-xl border border-slate-200 bg-slate-50/50 px-3 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:bg-white transition"
+              className="h-9 flex-1 rounded-md border border-slate-200 bg-slate-50/50 px-3 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:bg-white transition"
             />
             <button
               type="button"
               onClick={testDiscord}
               disabled={testingDiscord || (!bot.discordWebhook && !bot.hasDiscordWebhook)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs disabled:opacity-50"
             >
               Test
             </button>

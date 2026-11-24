@@ -206,7 +206,7 @@ export function AiVisionInspector({
             type="button"
             onClick={runAnalysis}
             disabled={analyzing || !imageBase64 || disabled}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition hover:bg-blue-700 active:scale-98 disabled:opacity-40"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 active:scale-98 disabled:opacity-40"
           >
             {analyzing ? (
               <>

@@ -477,19 +477,19 @@ export function RunExecutionView({
                 onClick={handleMarkAllAsPassed}
                 disabled={total === 0}
                 title="Execution by exception: Mark all pending cases as Passed"
-                className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 hover:border-emerald-400 active:scale-95 disabled:opacity-30"
+                className="inline-flex h-10 items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 hover:border-emerald-400 active:scale-95 disabled:opacity-30"
               >
                 <CheckCircle size={16} weight="bold" className="text-emerald-600" />
                 Mark All Passed
               </button>
             )}
             {!isCompleted && (
-              <button onClick={() => setIsPlayMode(true)} disabled={total === 0} className="inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700 active:scale-95 disabled:opacity-30">
+              <button onClick={() => setIsPlayMode(true)} disabled={total === 0} className="inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-bold text-white shadow-xs transition hover:bg-blue-700 active:scale-95 disabled:opacity-30">
                 <Play size={16} weight="fill" /> Focus Mode
               </button>
             )}
             {!isCompleted && (
-              <button onClick={() => setShowFinish(true)} disabled={total === 0} className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600 active:scale-95 disabled:opacity-30">
+              <button onClick={() => setShowFinish(true)} disabled={total === 0} className="inline-flex h-10 items-center gap-2 rounded-md bg-slate-900 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600 active:scale-95 disabled:opacity-30">
                 <CheckCircle size={16} weight="fill" className="text-emerald-400" /> Finish Run
               </button>
             )}

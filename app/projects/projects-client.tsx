@@ -188,7 +188,7 @@ export function ProjectsClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search projects..."
-              className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-8 text-xs text-slate-900 placeholder:text-slate-400 shadow-xs focus:border-blue-500 focus:outline-none"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white pl-9 pr-8 text-xs text-slate-900 placeholder:text-slate-400 shadow-xs focus:border-blue-500 focus:outline-none"
             />
             {search && (
               <button
@@ -207,7 +207,7 @@ export function ProjectsClient() {
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700"
           >
             <Plus size={14} weight="bold" />
             New Project
@@ -236,7 +236,7 @@ export function ProjectsClient() {
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="mt-6 inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700"
+              className="mt-6 inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700"
             >
               <Plus size={14} weight="bold" />
               Create First Project

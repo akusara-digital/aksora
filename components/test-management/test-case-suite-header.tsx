@@ -318,7 +318,7 @@ export function TestCaseSuiteHeader({
                 if (editError) setEditError(null);
               }}
               placeholder="e.g. Authentication & Authorization"
-              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+              className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
               autoFocus
             />
           </div>
@@ -334,7 +334,7 @@ export function TestCaseSuiteHeader({
                 { value: "Completed", label: "Completed", dot: "bg-blue-500" },
                 { value: "Archived", label: "Archived", dot: "bg-amber-500" },
               ]}
-              className="h-10 rounded-xl"
+              className="h-10 rounded-md"
             />
           </div>
 
@@ -343,14 +343,14 @@ export function TestCaseSuiteHeader({
               type="button"
               onClick={() => setShowEditModal(false)}
               disabled={submittingEdit}
-              className="h-9 rounded-xl border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+              className="h-9 rounded-md border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submittingEdit || !editTitle.trim()}
-              className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
               <Check size={14} weight="bold" />
               {submittingEdit ? "Saving..." : "Save Changes"}

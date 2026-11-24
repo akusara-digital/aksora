@@ -96,7 +96,7 @@ export function ModuleEmptyState({ shortTitle, canAdd, colSpan = 2, onAdd, hasAc
             <button
               type="button"
               onClick={onAdd}
-              className="mt-1 inline-flex h-11 items-center gap-2 bg-blue-600 px-6 text-sm font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="mt-1 inline-flex h-11 items-center gap-2 rounded-md bg-blue-600 px-6 text-sm font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
               <Plus size={16} weight="bold" />
               Create your first {shortTitle.toLowerCase().replace(/s$/, "")}

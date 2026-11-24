@@ -737,7 +737,7 @@ export function TestPlanDetail({
            if (editError) setEditError(null);
          }}
          placeholder="e.g. Sprint 24 Regression Test Plan"
-         className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+         className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
          autoFocus
        />
      </div>
@@ -750,7 +750,7 @@ export function TestPlanDetail({
            value={editSprint}
            onChange={(e) => setEditSprint(e.target.value)}
            placeholder="e.g. Sprint 24"
-           className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+           className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
          />
        </div>
 
@@ -766,7 +766,7 @@ export function TestPlanDetail({
              { value: "Completed", label: "Completed", dot: "bg-emerald-500" },
              { value: "Archived", label: "Archived", dot: "bg-slate-500" },
            ]}
-           className="h-10 rounded-xl"
+           className="h-10 rounded-md"
          />
        </div>
      </div>
@@ -778,7 +778,7 @@ export function TestPlanDetail({
            type="date"
            value={editStartDate}
            onChange={(e) => setEditStartDate(e.target.value)}
-           className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+           className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
          />
        </div>
 
@@ -788,7 +788,7 @@ export function TestPlanDetail({
            type="date"
            value={editEndDate}
            onChange={(e) => setEditEndDate(e.target.value)}
-           className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+           className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
          />
        </div>
      </div>
@@ -801,7 +801,7 @@ export function TestPlanDetail({
          rows={2}
          maxHeight={150}
          placeholder="Testing scope description or modules included..."
-         className="p-3 text-xs rounded-xl"
+         className="p-3 text-xs rounded-md"
        />
      </div>
 
@@ -813,7 +813,7 @@ export function TestPlanDetail({
          rows={3}
          maxHeight={200}
          placeholder="Additional test plan notes, objectives, or instructions..."
-         className="p-3 text-xs rounded-xl"
+         className="p-3 text-xs rounded-md"
        />
      </div>
 
@@ -822,14 +822,14 @@ export function TestPlanDetail({
          type="button"
          onClick={() => setShowEditModal(false)}
          disabled={submittingEdit}
-         className="h-9 rounded-xl border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+         className="h-9 rounded-md border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
        >
          Cancel
        </button>
        <button
          type="submit"
          disabled={submittingEdit || !editTitle.trim()}
-         className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+         className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
        >
          <Check size={14} weight="bold" />
          {submittingEdit ? "Saving..." : "Save Changes"}

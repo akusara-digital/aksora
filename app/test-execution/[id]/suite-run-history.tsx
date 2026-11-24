@@ -76,24 +76,24 @@ export function SuiteRunHistory({ suite, runs }: { suite: Suite; runs: Run[] }) 
         <a
           href={`/api/test-suites/${suite.id}/export/pdf`}
           download
-          className="order-last ml-auto inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+          className="order-last ml-auto inline-flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
         >
           Export PDF
         </a>
         {inProgressRun ? (
           <Link
             href={`/test-execution/${suite.publicToken}/run/${inProgressRun.id}`}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700 active:scale-95"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-5 text-sm font-bold text-white shadow-xs transition hover:bg-blue-700 active:scale-95"
           >
             <Lightning size={16} weight="fill" /> Continue Run #{inProgressRun.runNumber}
           </Link>
         ) : (
           <>
-          <EnvironmentSelect value={environmentId} onChange={setEnvironmentId} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-blue-500" />
+          <EnvironmentSelect value={environmentId} onChange={setEnvironmentId} className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-blue-500" />
           <button
             onClick={startNewRun}
             disabled={creating || suite.caseCount === 0}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700 active:scale-95 disabled:opacity-40"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-5 text-sm font-bold text-white shadow-xs transition hover:bg-blue-700 active:scale-95 disabled:opacity-40"
           >
             <Play size={16} weight="fill" /> {creating ? "Starting..." : "Start New Run"}
           </button>

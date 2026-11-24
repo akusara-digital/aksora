@@ -117,7 +117,7 @@ export function QuickEditProjectModal({
               if (error) setError(null);
             }}
             placeholder="e.g. Mobile App, E-Commerce Platform"
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
             autoFocus
           />
         </div>
@@ -132,7 +132,7 @@ export function QuickEditProjectModal({
             value={key}
             onChange={(e) => setKey(e.target.value.toUpperCase())}
             placeholder="Code prefix for items"
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 font-mono text-sm uppercase text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 font-mono text-sm uppercase text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
           />
         </div>
 
@@ -145,7 +145,7 @@ export function QuickEditProjectModal({
               { value: "active", label: "Active", dot: "bg-emerald-500" },
               { value: "archived", label: "Archived", dot: "bg-slate-400" },
             ]}
-            className="h-10 rounded-xl"
+            className="h-10 rounded-md"
           />
         </div>
 
@@ -159,7 +159,7 @@ export function QuickEditProjectModal({
             rows={3}
             maxHeight={220}
             placeholder="Brief scope or purpose of this project..."
-            className="p-3 text-xs placeholder:text-slate-400 rounded-xl"
+            className="p-3 text-xs placeholder:text-slate-400 rounded-md"
           />
         </div>
 
@@ -168,14 +168,14 @@ export function QuickEditProjectModal({
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="h-9 rounded-xl border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+            className="h-9 rounded-md border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={submitting || !name.trim()}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
           >
             <Check size={14} weight="bold" />
             {submitting ? "Saving..." : "Save Changes"}

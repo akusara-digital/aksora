@@ -72,7 +72,7 @@ export function ProjectHubBugsTab({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search defects..."
-              className="h-9 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-8 text-xs text-slate-900 placeholder:text-slate-400 focus:border-rose-500 focus:outline-none"
+              className="h-9 w-full rounded-md border border-slate-200 bg-white pl-9 pr-8 text-xs text-slate-900 placeholder:text-slate-400 focus:border-rose-500 focus:outline-none"
             />
             {search && (
               <button
@@ -98,7 +98,7 @@ export function ProjectHubBugsTab({
                 { value: "low", label: "Low", dot: "bg-slate-400" },
               ]}
               icon={<Funnel size={13} weight="bold" />}
-              className="h-9 rounded-xl py-1"
+              className="h-9 rounded-md py-1"
             />
           </div>
 
@@ -114,7 +114,7 @@ export function ProjectHubBugsTab({
                 { value: "ready_to_retest", label: "Ready to Retest", dot: "bg-purple-500" },
                 { value: "closed", label: "Closed", dot: "bg-emerald-500" },
               ]}
-              className="h-9 rounded-xl py-1"
+              className="h-9 rounded-md py-1"
             />
           </div>
         </div>
@@ -123,14 +123,14 @@ export function ProjectHubBugsTab({
           <button
             type="button"
             onClick={onOpenBugModal}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-rose-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-rose-700 cursor-pointer"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-rose-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-rose-700 cursor-pointer"
           >
             <Plus size={14} weight="bold" />
             Log Bug
           </button>
           <Link
             href={`/bugs?project=${encodeURIComponent(projectName)}`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
             title="Open full Bugs workspace"
           >
             <ArrowSquareOut size={14} weight="bold" />

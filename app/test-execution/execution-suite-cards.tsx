@@ -151,7 +151,7 @@ export function ExecutionSuiteCards({
         </p>
         <Link
           href="/test-cases"
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 shadow-md shadow-blue-500/15"
+          className="mt-6 inline-flex items-center gap-2 rounded-md bg-blue-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 shadow-sm"
         >
           Manage Test Cases
         </Link>

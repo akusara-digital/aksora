@@ -27,7 +27,7 @@ export function AiSmokeSuiteButton({
         title="Assemble high-risk smoke suite from changelog"
         className={
           className ||
-          "inline-flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition active:scale-95"
+          "inline-flex h-10 items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition active:scale-95"
         }
       >
         <Target size={15} weight="bold" className="text-emerald-600" />

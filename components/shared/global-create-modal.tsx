@@ -310,7 +310,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                   value={customProject}
                   onChange={(e) => setCustomProject(e.target.value)}
                   placeholder="e.g. Aksora Core"
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  className="w-full bg-white border border-slate-200 rounded-md px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 />
               </div>
             )}
@@ -328,7 +328,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={type === "tasks" ? "e.g. Implement user export button" : "e.g. Checkout button unresponsive on mobile Safari"}
-              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="w-full bg-white border border-slate-200 rounded-md px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               required
             />
           </div>
@@ -344,7 +344,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={type === "tasks" ? "Add context, acceptance criteria, or technical details..." : "1. Navigate to page\n2. Click button\n3. Observe error..."}
-              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-y"
+              className="w-full bg-white border border-slate-200 rounded-md px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-y"
             />
           </div>
 
@@ -360,7 +360,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                 value={priority}
                 onChange={(val) => setPriority(val as "P0" | "P1" | "P2" | "P3")}
                 options={priorityOptions}
-                className="rounded-xl py-1.5"
+                className="rounded-md py-1.5"
               />
             </div>
 
@@ -375,7 +375,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                   value={category}
                   onChange={(val) => setCategory(val as (typeof TASK_CATEGORIES)[number])}
                   options={TASK_CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
-                  className="rounded-xl py-1.5"
+                  className="rounded-md py-1.5"
                 />
               </div>
             ) : (
@@ -389,7 +389,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                   value={severity}
                   onChange={(val) => setSeverity(val as (typeof SEVERITIES)[number]["value"])}
                   options={severityOptions}
-                  className="rounded-xl py-1.5"
+                  className="rounded-md py-1.5"
                 />
               </div>
             )}
@@ -405,7 +405,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                 onChange={(val) => setAssignee(val)}
                 options={assigneeOptions}
                 placeholder="Unassigned"
-                className="rounded-xl py-1.5"
+                className="rounded-md py-1.5"
               />
             </div>
           </div>
@@ -417,7 +417,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition disabled:opacity-50"
+                className="px-3.5 py-2 rounded-md border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -425,7 +425,7 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
                 type="submit"
                 disabled={submitting || !title.trim()}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-semibold text-white shadow-xs transition flex items-center gap-1.5 disabled:opacity-50",
+                  "px-4 py-2 rounded-md text-xs font-semibold text-white shadow-xs transition flex items-center gap-1.5 disabled:opacity-50",
                   type === "tasks" ? "bg-blue-600 hover:bg-blue-700" : "bg-rose-600 hover:bg-rose-700"
                 )}
               >

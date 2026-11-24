@@ -40,7 +40,7 @@ export function TestCaseFilters({
               value={filterProject}
               onChange={(e) => setFilterProject(e.target.value)}
               className={cn(
-                "h-8 rounded-lg border px-2.5 text-xs font-semibold outline-none transition max-w-[140px] sm:max-w-none truncate touch-manipulation",
+                "h-8 rounded-md border px-2.5 text-xs font-semibold outline-none transition max-w-[140px] sm:max-w-none truncate touch-manipulation",
                 filterProject !== allConstant
                   ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
                   : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
@@ -62,7 +62,7 @@ export function TestCaseFilters({
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className={cn(
-              "h-8 rounded-lg border px-2.5 text-xs font-semibold outline-none transition touch-manipulation",
+              "h-8 rounded-md border px-2.5 text-xs font-semibold outline-none transition touch-manipulation",
               filterStatus !== allConstant
                 ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
                 : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
@@ -83,7 +83,7 @@ export function TestCaseFilters({
               setFilterProject(allConstant);
               setFilterStatus(allConstant);
             }}
-            className="inline-flex h-8 items-center gap-1 rounded-xl bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+            className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
           >
             <X size={11} weight="bold" />
             Clear
@@ -98,7 +98,7 @@ export function TestCaseFilters({
         <button
           type="button"
           onClick={onOpenNewSuiteModal}
-          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700 shadow-xs"
+          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700 shadow-xs"
         >
           <Plus size={13} weight="bold" />
           New Suite

@@ -130,7 +130,7 @@ export function QuickTaskModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Implement user profile avatar upload"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
           />
         </div>
 
@@ -141,7 +141,7 @@ export function QuickTaskModal({
               value={category}
               onChange={setCategory}
               options={CATEGORY_OPTIONS.map((c) => ({ value: c, label: c }))}
-              className="py-1.5 rounded-xl"
+              className="py-1.5 rounded-md"
             />
           </div>
 
@@ -151,7 +151,7 @@ export function QuickTaskModal({
               value={status}
               onChange={setStatus}
               options={STATUS_OPTIONS}
-              className="py-1.5 rounded-xl"
+              className="py-1.5 rounded-md"
             />
           </div>
 
@@ -166,7 +166,7 @@ export function QuickTaskModal({
                 { value: "P2", label: "P2", dot: "bg-blue-500" },
                 { value: "P3", label: "P3", dot: "bg-slate-400" },
               ]}
-              className="py-1.5 rounded-xl"
+              className="py-1.5 rounded-md"
             />
           </div>
         </div>
@@ -179,7 +179,7 @@ export function QuickTaskModal({
               value={relatedFeature}
               onChange={(e) => setRelatedFeature(e.target.value)}
               placeholder="e.g. Authentication"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
@@ -197,7 +197,7 @@ export function QuickTaskModal({
                   })),
                 ]}
                 placeholder="Unassigned"
-                className="py-1.5 rounded-xl"
+                className="py-1.5 rounded-md"
               />
             ) : (
               <input
@@ -205,7 +205,7 @@ export function QuickTaskModal({
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value)}
                 placeholder="Assignee name"
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
               />
             )}
           </div>
@@ -218,7 +218,7 @@ export function QuickTaskModal({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Detailed description, requirements, or steps..."
             rows={3}
-            className="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-md border border-slate-200 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
           />
         </div>
 
@@ -226,14 +226,14 @@ export function QuickTaskModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+            className="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 transition cursor-pointer"
           >
             <Plus size={14} weight="bold" />
             {submitting ? "Creating..." : "Create Task"}

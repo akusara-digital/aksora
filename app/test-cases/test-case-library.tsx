@@ -285,19 +285,9 @@ export function TestCaseLibrary({
                 </p>
                 <p className="max-w-sm text-xs text-gray-500">
                   {groups.length === 0
-                    ? "Test cases live inside suites. Create your first suite on the left, then add cases manually or generate them with AI."
+                    ? "Test cases live inside suites. Create your first suite on the left or via the New Suite button above to get started."
                     : "Choose any suite from the left panel to inspect, edit, or add test cases."}
                 </p>
-                {groups.length === 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowNewSuiteModal(true)}
-                    className="mt-1 inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 shadow-sm"
-                  >
-                    <Plus size={14} weight="bold" />
-                    New Suite
-                  </button>
-                )}
               </div>
             ) : (
               <>

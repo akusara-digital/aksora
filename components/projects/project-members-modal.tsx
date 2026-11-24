@@ -241,7 +241,7 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
                       value: opt.value,
                       label: `Role: ${opt.label}`,
                     }))}
-                    className="h-9 rounded-xl py-1 text-xs"
+                    className="h-9 rounded-md py-1 text-xs"
                   />
                 </div>
 
@@ -255,7 +255,7 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
                       { value: "14", label: "Expires in 14 days" },
                       { value: "30", label: "Expires in 30 days" },
                     ]}
-                    className="h-9 rounded-xl py-1 text-xs"
+                    className="h-9 rounded-md py-1 text-xs"
                   />
                 </div>
 
@@ -263,7 +263,7 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
                   type="button"
                   onClick={handleGenerateInvite}
                   disabled={generatingInvite}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
                 >
                   <LinkIcon size={14} weight="bold" />
                   {generatingInvite ? "Generating..." : "Create Invite Link"}
@@ -310,7 +310,7 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
                         })),
                     ]}
                     placeholder="Select team member..."
-                    className="h-9 rounded-xl py-1 text-xs"
+                    className="h-9 rounded-md py-1 text-xs"
                   />
                 </div>
 
@@ -322,7 +322,7 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
                       value: opt.value,
                       label: `Role: ${opt.label}`,
                     }))}
-                    className="h-9 rounded-xl py-1 text-xs"
+                    className="h-9 rounded-md py-1 text-xs"
                   />
                 </div>
 
@@ -330,7 +330,7 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
                   type="button"
                   onClick={handleAddExistingUser}
                   disabled={addingUser || !selectedUserId}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-slate-900 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-md bg-slate-900 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
                 >
                   <Plus size={14} weight="bold" />
                   {addingUser ? "Adding..." : "Add to Project"}

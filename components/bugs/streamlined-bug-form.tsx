@@ -244,7 +244,7 @@ export function StreamlinedBugForm({
               onChange={setProject}
               options={projectOptions}
               placeholder="Select Project..."
-              className="h-9 w-full rounded-xl py-1.5"
+              className="h-9 w-full rounded-md py-1.5"
             />
           </div>
         )}
@@ -260,7 +260,7 @@ export function StreamlinedBugForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Checkout button unresponsive on mobile Safari"
-            className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
           />
         </div>
 
@@ -280,7 +280,7 @@ export function StreamlinedBugForm({
                     type="button"
                     onClick={() => setSeverity(opt.value)}
                     className={cn(
-                      "flex items-center justify-center gap-1.5 rounded-xl border py-1.5 text-[11px] font-semibold transition cursor-pointer",
+                      "flex items-center justify-center gap-1.5 rounded-md border py-1.5 text-[11px] font-semibold transition cursor-pointer",
                       isSelected
                         ? opt.active
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
@@ -308,7 +308,7 @@ export function StreamlinedBugForm({
                     type="button"
                     onClick={() => setPriority(p)}
                     className={cn(
-                      "rounded-xl border py-1.5 text-center text-[11px] font-bold transition cursor-pointer",
+                      "rounded-md border py-1.5 text-center text-[11px] font-bold transition cursor-pointer",
                       isSelected
                         ? "border-blue-400 bg-blue-50 text-blue-700 shadow-2xs"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
@@ -330,7 +330,7 @@ export function StreamlinedBugForm({
               value={bugType}
               onChange={setBugType}
               options={BUG_TYPE_OPTIONS.map((type) => ({ value: type, label: type }))}
-              className="h-8.5 rounded-xl py-1 text-xs"
+              className="h-8.5 rounded-md py-1 text-xs"
             />
           </div>
         </div>
@@ -347,7 +347,7 @@ export function StreamlinedBugForm({
             placeholder={
               "Description:\nBrief yang diisi pengguna hilang setelah generate...\n\nAcceptance Criteria:\n☐ Setelah pengguna mengisi brief lalu generate, isi brief tetap tersimpan..."
             }
-            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed font-sans"
+            className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed font-sans"
           />
         </div>
 
@@ -362,7 +362,7 @@ export function StreamlinedBugForm({
               onChange={(e) => setExpectedResult(e.target.value)}
               rows={2}
               placeholder="Order placed with confirmation screen"
-              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
+              className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
             />
           </div>
 
@@ -375,7 +375,7 @@ export function StreamlinedBugForm({
               onChange={(e) => setActualResult(e.target.value)}
               rows={2}
               placeholder="Page crashes with 500 error toast"
-              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
+              className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
             />
           </div>
         </div>
@@ -420,14 +420,14 @@ export function StreamlinedBugForm({
           type="button"
           onClick={onCancel}
           disabled={pending}
-          className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer disabled:opacity-50"
+          className="rounded-md border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
         >
           {pending ? (
             <CircleNotch size={13} className="animate-spin text-white" />
