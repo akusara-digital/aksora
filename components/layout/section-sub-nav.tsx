@@ -86,54 +86,39 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       { href: "/gantt", label: "Gantt Timeline", icon: Rows },
     ],
   },
-  // 4. Reports
+  // 4. Reports (Consolidated to 3 focused hubs: Weekly Report, Quality & Coverage, Delivery & Team)
   {
     match: (p) =>
       p.startsWith("/reports") ||
-      p.startsWith("/weekly-report") ||
-      p.startsWith("/deployments"),
+      p.startsWith("/weekly-report"),
     tabs: [
-      {
-        href: "/reports/test-coverage",
-        label: "Test Coverage",
-        icon: ChartPieSlice,
-        matchPaths: ["/reports", "/reports/test-coverage", "/reports/quality"],
-      },
-      {
-        href: "/reports/test-gap",
-        label: "Test Gap Analysis",
-        icon: MagnifyingGlass,
-        matchPaths: ["/reports/test-gap"],
-      },
-      {
-        href: "/reports/flaky-tests",
-        label: "Flaky Tests",
-        icon: ShuffleAngular,
-        matchPaths: ["/reports/flaky-tests"],
-      },
-      {
-        href: "/reports/sprint-burndown",
-        label: "Sprint Burndown",
-        icon: ChartLineUp,
-        matchPaths: ["/reports/sprint-burndown", "/reports/delivery"],
-      },
-      {
-        href: "/reports/workload",
-        label: "Workload Heatmap",
-        icon: Users,
-        matchPaths: ["/reports/workload"],
-      },
-      {
-        href: "/deployments",
-        label: "Deployments",
-        icon: RocketLaunch,
-        matchPaths: ["/deployments"],
-      },
       {
         href: "/weekly-report",
         label: "Weekly Report",
         icon: FileText,
         matchPaths: ["/weekly-report"],
+      },
+      {
+        href: "/reports/test-coverage",
+        label: "Quality & Coverage",
+        icon: ChartPieSlice,
+        matchPaths: [
+          "/reports",
+          "/reports/test-coverage",
+          "/reports/quality",
+          "/reports/test-gap",
+          "/reports/flaky-tests",
+        ],
+      },
+      {
+        href: "/reports/sprint-burndown",
+        label: "Delivery & Team",
+        icon: ChartLineUp,
+        matchPaths: [
+          "/reports/sprint-burndown",
+          "/reports/delivery",
+          "/reports/workload",
+        ],
       },
     ],
   },

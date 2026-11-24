@@ -33,7 +33,7 @@ function ReportSkeleton() {
       icon={<TrendUp size={22} weight="bold" />}
       title="Report"
       description="Track bugs, tasks, sessions, and sprint activity for the selected period."
-      crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Weekly Report" }]}
+      crumbs={[{ label: "Reports", href: "/weekly-report" }, { label: "Weekly Report" }]}
     >
       <div className="space-y-4 animate-pulse">
         <div className="h-10 w-64 bg-gray-100" />

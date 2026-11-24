@@ -74,7 +74,7 @@ export function getModuleWorkspaceCrumbs(module: ModuleKey, title: string) {
   } else if (module === "assignees" || module === "users") {
     rootCrumb = { label: "Settings", href: "/settings" };
   } else if (module === "deployments") {
-    rootCrumb = { label: "Reports", href: "/reports/test-coverage" };
+    rootCrumb = { label: "Workspace", href: "/tasks" };
     leafLabel = "Deployments";
   }
 

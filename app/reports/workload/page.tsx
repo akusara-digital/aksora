@@ -19,6 +19,7 @@ import { getRoleLabel } from"@/lib/roles";
 import Link from"next/link";
 import { CaretRight } from"@phosphor-icons/react";
 import { useTranslation } from "@/hooks/use-translation";
+import { DeliveryViewSwitcher } from "@/components/reports/report-view-switcher";
 
 type WorkloadItem = {
  id: string;
@@ -106,7 +107,11 @@ export default function WorkloadPage() {
  icon={<TrendUp size={22} weight="bold" />}
  title={t.title}
  description={t.description}
- crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Workload Heatmap" }]}
+  crumbs={[
+    { label: "Reports", href: "/weekly-report" },
+    { label: "Delivery & Team", href: "/reports/sprint-burndown" },
+    { label: "Workload Heatmap" },
+  ]}
   actions={
   <div className="flex items-center gap-2">
   <Link
@@ -129,6 +134,7 @@ export default function WorkloadPage() {
   </div>
   }
  >
+ <DeliveryViewSwitcher />
  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
  {/* Info Cards */}
  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

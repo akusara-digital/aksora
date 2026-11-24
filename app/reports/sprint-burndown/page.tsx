@@ -20,6 +20,7 @@ import {
 } from "recharts";
 import { ResponsiveContainer } from "@/components/shared/responsive-container";
 import { Badge } from "@/components/shared/badge";
+import { DeliveryViewSwitcher } from "@/components/reports/report-view-switcher";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -96,10 +97,11 @@ export default function SprintBurndownPage() {
       title="Sprint Analytics & Burndown"
       description="Track sprint progress, ideal vs. actual burndown, and task completion velocity."
       crumbs={[
-        { label: "Reports", href: "/reports/test-coverage" },
-        { label: "Sprint Burndown" },
+        { label: "Reports", href: "/weekly-report" },
+        { label: "Delivery & Team" },
       ]}
     >
+      <DeliveryViewSwitcher />
       <div className="space-y-6">
         {/* Sprint selector & actions */}
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">

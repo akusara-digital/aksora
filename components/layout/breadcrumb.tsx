@@ -78,25 +78,25 @@ export function getDefaultCrumbsForPath(pathname: string): Crumb[] {
     return [{ label: "Bugs", href: "/bugs" }, { label: "Bug Tracker" }];
   }
   if (p === "/reports/test-coverage" || p === "/reports" || p === "/reports/quality") {
-    return [{ label: "Reports", href: "/reports/test-coverage" }, { label: "Test Coverage" }];
+    return [{ label: "Reports", href: "/weekly-report" }, { label: "Quality & Coverage" }];
   }
   if (p === "/reports/test-gap") {
-    return [{ label: "Reports", href: "/reports/test-coverage" }, { label: "Test Gap Analysis" }];
+    return [{ label: "Reports", href: "/weekly-report" }, { label: "Quality & Coverage", href: "/reports/test-coverage" }, { label: "Test Gap Analysis" }];
   }
   if (p === "/reports/flaky-tests") {
-    return [{ label: "Reports", href: "/reports/test-coverage" }, { label: "Flaky Tests" }];
+    return [{ label: "Reports", href: "/weekly-report" }, { label: "Quality & Coverage", href: "/reports/test-coverage" }, { label: "Flaky Tests" }];
   }
   if (p === "/reports/sprint-burndown" || p === "/reports/delivery") {
-    return [{ label: "Reports", href: "/reports/test-coverage" }, { label: "Sprint Burndown" }];
+    return [{ label: "Reports", href: "/weekly-report" }, { label: "Delivery & Team" }];
   }
   if (p === "/reports/workload") {
-    return [{ label: "Reports", href: "/reports/test-coverage" }, { label: "Workload Heatmap" }];
+    return [{ label: "Reports", href: "/weekly-report" }, { label: "Delivery & Team", href: "/reports/sprint-burndown" }, { label: "Workload Heatmap" }];
   }
   if (p === "/deployments") {
-    return [{ label: "Reports", href: "/reports/test-coverage" }, { label: "Deployments" }];
+    return [{ label: "Workspace", href: "/tasks" }, { label: "Deployments" }];
   }
   if (p === "/weekly-report") {
-    return [{ label: "Reports", href: "/reports/test-coverage" }, { label: "Weekly Report" }];
+    return [{ label: "Reports", href: "/weekly-report" }, { label: "Weekly Report" }];
   }
   if (p === "/work-logs") {
     return [{ label: "Notes & Vault", href: "/work-logs" }, { label: "Work Logs" }];

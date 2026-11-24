@@ -29,6 +29,7 @@ import {
   Cell,
 } from "recharts";
 import { ResponsiveContainer } from "@/components/shared/responsive-container";
+import { QualityViewSwitcher } from "@/components/reports/report-view-switcher";
 import { cn } from "@/lib/utils";
 import type { CoverageData } from "./data";
 
@@ -108,7 +109,7 @@ export function TestCoverageDashboard({ initialData }: { initialData: CoverageDa
           Export
         </Link>
       }
-      crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Test Coverage" }]}
+      crumbs={[{ label: "Reports", href: "/weekly-report" }, { label: "Quality & Coverage" }]}
       controls={
         projects.length > 1 ? (
           <div className="flex items-center gap-2">
@@ -127,6 +128,7 @@ export function TestCoverageDashboard({ initialData }: { initialData: CoverageDa
         ) : undefined
       }
     >
+      <QualityViewSwitcher />
       <div className="space-y-6">
         {/* Executive Quality Summary Banner */}
         <div className="border border-gray-200 bg-white p-5 shadow-xs">

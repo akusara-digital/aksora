@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { EMPTY_FLAKY_DATA, type FlakyData, type FlakyTest } from "./flaky-types";
 import { VerdictTimeline, FlakinessGauge } from "./flaky-components";
 import { AppLoader } from "@/components/shared/app-loader";
+import { QualityViewSwitcher } from "@/components/reports/report-view-switcher";
 
 export function FlakyTestsClient({ initialData }: { initialData: FlakyData }) {
   const [data, setData] = useState<FlakyData>(initialData);
@@ -89,7 +90,11 @@ export function FlakyTestsClient({ initialData }: { initialData: FlakyData }) {
       icon={<ShuffleAngular size={22} weight="bold" />}
       title="Flaky Test Tracker"
       description="Identify and monitor test cases with inconsistent results across execution runs."
-      crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Flaky Tests" }]}
+      crumbs={[
+        { label: "Reports", href: "/weekly-report" },
+        { label: "Quality & Coverage", href: "/reports/test-coverage" },
+        { label: "Flaky Tests" },
+      ]}
       actions={
         <Link
           href="/api/reports/flaky-tests/export"
@@ -123,6 +128,7 @@ export function FlakyTestsClient({ initialData }: { initialData: FlakyData }) {
         </div>
       }
     >
+      <QualityViewSwitcher />
       {loading && !data ? (
         <AppLoader message="Loading flaky tests..." />
       ) : (

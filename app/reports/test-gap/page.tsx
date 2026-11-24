@@ -25,6 +25,7 @@ import {
 } from "recharts";
 import { AppLoader } from "@/components/shared/app-loader";
 import { ResponsiveContainer } from "@/components/shared/responsive-container";
+import { QualityViewSwitcher } from "@/components/reports/report-view-switcher";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -120,7 +121,11 @@ export default function TestGapPage() {
       icon={<MagnifyingGlass size={22} weight="bold" />}
       title="Test Gap Analysis"
       description="Identify features and resolved bugs that lack test case coverage."
-      crumbs={[{ label: "Reports", href: "/reports/test-coverage" }, { label: "Test Gap Analysis" }]}
+      crumbs={[
+        { label: "Reports", href: "/weekly-report" },
+        { label: "Quality & Coverage", href: "/reports/test-coverage" },
+        { label: "Test Gap Analysis" },
+      ]}
       actions={
         <Link
           href="/api/reports/test-gap/export"
@@ -169,6 +174,7 @@ export default function TestGapPage() {
         </div>
       }
     >
+      <QualityViewSwitcher />
       {loading ? (
         <AppLoader message="Loading test gap analysis..." />
       ) : !data ? (

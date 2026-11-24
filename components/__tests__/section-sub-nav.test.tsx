@@ -82,29 +82,28 @@ describe("SectionSubNav", () => {
     expect(html).toContain("Work Logs");
   });
 
-  it("renders all individual Reports navigation tabs", () => {
+  it("renders consolidated 3-hub Reports navigation tabs", () => {
     currentPathname = "/reports/test-coverage";
     let html = renderToStaticMarkup(<SectionSubNav />);
-    expect(html).toContain("Test Coverage");
-    expect(html).toContain("Test Gap");
-    expect(html).toContain("Flaky Tests");
-    expect(html).toContain("Sprint Burndown");
-    expect(html).toContain("Workload Heatmap");
-    expect(html).toContain("Deployments");
     expect(html).toContain("Weekly Report");
-    expect(html).toContain('href="/reports/test-coverage"');
-    expect(html).toContain('href="/reports/test-gap"');
-    expect(html).toContain('href="/reports/flaky-tests"');
-    expect(html).toContain('href="/reports/sprint-burndown"');
-    expect(html).toContain('href="/reports/workload"');
-    expect(html).toContain('href="/deployments"');
+    expect(html).toContain("Quality &amp; Coverage");
+    expect(html).toContain("Delivery &amp; Team");
     expect(html).toContain('href="/weekly-report"');
+    expect(html).toContain('href="/reports/test-coverage"');
+    expect(html).toContain('href="/reports/sprint-burndown"');
 
-    // Test on another reports page
+    // Consolidated tabs: sub-views and non-report items must not clutter top nav
+    expect(html).not.toContain('href="/deployments"');
+    expect(html).not.toContain('href="/reports/test-gap"');
+    expect(html).not.toContain('href="/reports/flaky-tests"');
+    expect(html).not.toContain('href="/reports/workload"');
+
+    // Test on another reports page (e.g. /reports/flaky-tests still renders the 3 hubs with Quality active)
     currentPathname = "/reports/flaky-tests";
     html = renderToStaticMarkup(<SectionSubNav />);
-    expect(html).toContain("Test Coverage");
-    expect(html).toContain("Flaky Tests");
+    expect(html).toContain("Quality &amp; Coverage");
+    expect(html).toContain("Weekly Report");
+    expect(html).toContain("Delivery &amp; Team");
   });
 
   it("returns null on standalone pages like /dashboard or /projects", () => {
