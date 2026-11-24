@@ -68,7 +68,7 @@ vi.mock("@/hooks/use-translation", () => ({
 }));
 
 import { Sidebar } from "@/components/layout/sidebar";
-import { filterFooterItems, getFooterItems, getGroups } from "@/components/layout/sidebar-nav";
+import { filterFooterItems, filterGroups, getFooterItems, getGroups } from "@/components/layout/sidebar-nav";
 
 describe("Sidebar", () => {
   it("marks test runs active for execution detail routes", () => {
@@ -109,7 +109,7 @@ describe("Sidebar", () => {
     expect(html).not.toMatch(/href="\/my-work"[^>]*bg-sky-50/);
   });
 
-  it("organizes main nav into a Dashboard shortcut + 4 balanced groups (9 items) + compact footer utilities", () => {
+  it("organizes main nav into a Dashboard shortcut + 5 structured groups (10 items)", () => {
     const mockDict = {
       dashboard: "Dashboard",
       mySpace: "MY SPACE",
@@ -160,8 +160,14 @@ describe("Sidebar", () => {
       "/weekly-report",
     ]);
 
-    expect(groups).toHaveLength(5);
-    expect(footerItems.map((i) => i.href)).toEqual(["/settings"]);
+    // Group 5: Settings
+    expect(groups[5].title).toBe("Settings");
+    expect(groups[5].items.map((i) => i.href)).toEqual([
+      "/settings",
+    ]);
+
+    expect(groups).toHaveLength(6);
+    expect(footerItems.map((i) => i.href)).toEqual([]);
 
     // Ensure no duplicate routes across main nav + footer
     const allHrefs = [
@@ -172,17 +178,13 @@ describe("Sidebar", () => {
     expect(allHrefs.length).toBe(10);
   });
 
-  it("exposes Settings footer utility to all roles (including non-admin QA/FE)", () => {
+  it("exposes Settings group to all roles (including non-admin QA/FE)", () => {
     const mockDict = {
       settings: "Settings",
-    } as unknown as Parameters<typeof getFooterItems>[0];
+    } as unknown as Parameters<typeof filterGroups>[1];
 
-    expect(filterFooterItems("qa", mockDict).map((i) => i.href)).toEqual([
-      "/settings",
-    ]);
-    expect(filterFooterItems("fe", mockDict).map((i) => i.href)).toEqual([
-      "/settings",
-    ]);
+    expect(filterGroups("qa", mockDict).flatMap((g) => g.items.map((i) => i.href))).toContain("/settings");
+    expect(filterGroups("fe", mockDict).flatMap((g) => g.items.map((i) => i.href))).toContain("/settings");
   });
 });
 

@@ -130,7 +130,7 @@ export function Sidebar({
             <nav className="space-y-3">
               {visibleGroups.map((group) => (
                 <SidebarSection
-                  key={group.title || "my-space"}
+                  key={group.title || "dashboard"}
                   group={group}
                   pathname={pathname}
                   collapsed={collapsed}

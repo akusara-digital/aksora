@@ -63,13 +63,17 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
         { href: "/weekly-report", label: t.weeklyReport || t.report || "Weekly Report", icon: ChartLineUp },
       ],
     },
+    {
+      title: t.settings || "Settings",
+      items: [
+        { href: "/settings", label: t.settings || "Settings", icon: Gear },
+      ],
+    },
   ];
 }
 
-export function getFooterItems(t: Dictionary["sidebar"]): SidebarItem[] {
-  return [
-    { href: "/settings", label: t.settings || "Settings", icon: Gear },
-  ];
+export function getFooterItems(_t: Dictionary["sidebar"]): SidebarItem[] {
+  return [];
 }
 
 // ─── Role-based filtering ────────────────────────────────────────────────────
