@@ -136,7 +136,9 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
 
 function isTabActive(pathname: string, tab: SubNavTab): boolean {
   if (tab.matchPaths?.length) {
-    return tab.matchPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+    return tab.matchPaths.some((p) =>
+      p === "/reports" ? pathname === "/reports" : pathname === p || pathname.startsWith(`${p}/`)
+    );
   }
   return pathname === tab.href || pathname.startsWith(`${tab.href}/`);
 }

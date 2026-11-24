@@ -104,6 +104,14 @@ describe("SectionSubNav", () => {
     expect(html).toContain("Quality &amp; Coverage");
     expect(html).toContain("Weekly Report");
     expect(html).toContain("Delivery &amp; Team");
+
+    // Specifically test that Delivery & Team is solely active on /reports/sprint-burndown without dual-active bug
+    currentPathname = "/reports/sprint-burndown";
+    html = renderToStaticMarkup(<SectionSubNav />);
+    // Quality & Coverage should be inactive
+    expect(html).toContain('href="/reports/test-coverage" class="group flex cursor-pointer items-center gap-2 whitespace-nowrap rounded px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 text-slate-600 hover:bg-slate-100 hover:text-slate-900"');
+    // Delivery & Team MUST be active
+    expect(html).toContain('href="/reports/sprint-burndown" class="group flex cursor-pointer items-center gap-2 whitespace-nowrap rounded px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 bg-sky-50 font-semibold text-sky-700 shadow-xs"');
   });
 
   it("returns null on standalone pages like /dashboard or /projects", () => {
