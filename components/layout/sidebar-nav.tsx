@@ -32,8 +32,8 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
     {
       title: t.mySpace || "MY SPACE",
       items: [
-        { href: "/my-work", label: t.myWork || "My Work", icon: Briefcase },
         { href: "/projects", label: t.projects || "Projects", icon: FolderSimple },
+        { href: "/my-work", label: t.myWork || "My Work", icon: Briefcase },
       ],
     },
     {

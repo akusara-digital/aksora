@@ -108,7 +108,7 @@ describe("Sidebar", () => {
 
     // Group 0: MY SPACE
     expect(groups[0].title).toBe("MY SPACE");
-    expect(groups[0].items.map((i) => i.href)).toEqual(["/my-work", "/projects"]);
+    expect(groups[0].items.map((i) => i.href)).toEqual(["/projects", "/my-work"]);
 
     // Group 1: Test Management
     expect(groups[1].title).toBe("Test Management");
