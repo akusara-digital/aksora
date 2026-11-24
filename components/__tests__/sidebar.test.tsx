@@ -82,7 +82,6 @@ describe("Sidebar", () => {
     expect(html).toMatch(/href="\/test-execution"[^>]*bg-sky-50[\s\S]*?Test Sessions/);
     expect(html).not.toMatch(/href="\/test-suites"[^>]*bg-sky-50/);
     // Footer utility items render in the sidebar
-    expect(html).toContain('href="/notes"');
     expect(html).toContain('href="/settings"');
   });
 
@@ -133,7 +132,7 @@ describe("Sidebar", () => {
     ]);
 
     expect(groups).toHaveLength(4);
-    expect(footerItems.map((i) => i.href)).toEqual(["/notes", "/settings"]);
+    expect(footerItems.map((i) => i.href)).toEqual(["/settings"]);
 
     // Ensure no duplicate routes across main nav + footer
     const allHrefs = [
@@ -141,21 +140,18 @@ describe("Sidebar", () => {
       ...footerItems.map((i) => i.href),
     ];
     expect(allHrefs.length).toBe(new Set(allHrefs).size);
-    expect(allHrefs.length).toBe(10);
+    expect(allHrefs.length).toBe(9);
   });
 
   it("exposes Settings footer utility to all roles (including non-admin QA/FE)", () => {
     const mockDict = {
-      notesAndVault: "Notes & Vault",
       settings: "Settings",
     } as unknown as Parameters<typeof getFooterItems>[0];
 
     expect(filterFooterItems("qa", mockDict).map((i) => i.href)).toEqual([
-      "/notes",
       "/settings",
     ]);
     expect(filterFooterItems("fe", mockDict).map((i) => i.href)).toEqual([
-      "/notes",
       "/settings",
     ]);
   });

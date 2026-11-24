@@ -9,7 +9,6 @@ import {
   Checks,
   FolderSimple,
   Kanban,
-  NotePencil,
   SquaresFour,
   PlayCircle,
   Gear,
@@ -63,7 +62,6 @@ export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
 
 export function getFooterItems(t: Dictionary["sidebar"]): SidebarItem[] {
   return [
-    { href: "/notes", label: t.notesAndVault || t.notes || "Notes & Vault", icon: NotePencil },
     { href: "/settings", label: t.settings || "Settings", icon: Gear },
   ];
 }
