@@ -101,7 +101,7 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       },
       {
         href: "/reports/test-gap",
-        label: "Test Gap",
+        label: "Test Gap Analysis",
         icon: MagnifyingGlass,
         matchPaths: ["/reports/test-gap"],
       },

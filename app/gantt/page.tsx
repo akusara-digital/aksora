@@ -324,7 +324,7 @@ export default function GanttPage() {
       icon={<Lightning size={22} weight="bold" />}
       title="Gantt / Timeline"
       description="View timelines, dependencies, and delivery windows across your workspace."
-      crumbs={[{ label: "Tasks", href: "/tasks" }, { label: "Gantt / Timeline" }]}
+      crumbs={[{ label: "Tasks", href: "/tasks" }, { label: "Gantt Timeline" }]}
       actions={
         <GanttToolbar
           filter={filter} setFilter={setFilter}

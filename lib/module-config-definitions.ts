@@ -439,8 +439,8 @@ export const moduleConfigs: Record<ModuleKey, ModuleConfig> = {
     ],
   },
   deployments: {
-    title: "Deployment Log",
-    shortTitle: "Deployment Log",
+    title: "Deployments",
+    shortTitle: "Deployments",
     description: "Track deployments, changelog, and release history.",
     prefix: "DEP",
     sheetName: "Deployments",
@@ -521,8 +521,8 @@ export const moduleConfigs: Record<ModuleKey, ModuleConfig> = {
     ],
   },
   "work-logs": {
-    title: "Work Log",
-    shortTitle: "Work Log",
+    title: "Work Logs",
+    shortTitle: "Work Logs",
     description: "Log daily work activities with time tracking for reporting to management.",
     prefix: "WL",
     sheetName: "Work Logs",

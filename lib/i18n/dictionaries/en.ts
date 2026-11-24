@@ -39,7 +39,7 @@ const dict = {
     bugs: "Bugs",
     bugsAndIssues: "Bugs",
     sprints: "Sprints",
-    workLog: "Work Log",
+    workLog: "Work Logs",
     teamAndLogs: "Team Pulse",
     teamPulse: "Team Pulse",
     groupTeamAndReports: "Team & Reports",

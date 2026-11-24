@@ -49,26 +49,38 @@ export function getModuleWorkspacePermissions(userRole: string) {
 
 export function getModuleWorkspaceCrumbs(module: ModuleKey, title: string) {
   let rootCrumb: { label: string; href: string } = { label: "Dashboard", href: "/dashboard" };
+  let leafLabel = title;
 
-  if (module === "tasks" || module === "sprints") {
+  if (module === "tasks") {
     rootCrumb = { label: "Tasks", href: "/tasks" };
+    leafLabel = "Tasks Board";
+  } else if (module === "sprints") {
+    rootCrumb = { label: "Tasks", href: "/tasks" };
+    leafLabel = "Sprints";
   } else if (module === "bugs") {
     rootCrumb = { label: "Bugs", href: "/bugs" };
-  } else if (module === "test-cases" || module === "test-plans" || module === "test-suites") {
+    leafLabel = "Bug Tracker";
+  } else if (module === "test-cases") {
+    rootCrumb = { label: "Test Management", href: "/test-cases" };
+    leafLabel = "Cases & Suites";
+  } else if (module === "test-plans" || module === "test-suites") {
     rootCrumb = { label: "Test Management", href: "/test-cases" };
   } else if (module === "test-sessions") {
     rootCrumb = { label: "Test Management", href: "/test-execution" };
+    leafLabel = "Test Runs";
   } else if (module === "meeting-notes" || module === "work-logs") {
     rootCrumb = { label: "Notes & Vault", href: "/work-logs" };
+    leafLabel = module === "work-logs" ? "Work Logs" : "Meeting Notes";
   } else if (module === "assignees" || module === "users") {
     rootCrumb = { label: "Settings", href: "/settings" };
   } else if (module === "deployments") {
     rootCrumb = { label: "Reports", href: "/reports/test-coverage" };
+    leafLabel = "Deployments";
   }
 
   return [
     rootCrumb,
-    { label: title },
+    { label: leafLabel },
   ];
 }
 

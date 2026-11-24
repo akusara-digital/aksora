@@ -99,16 +99,16 @@ export function getDefaultCrumbsForPath(pathname: string): Crumb[] {
     return [{ label: "Reports", href: "/reports/test-coverage" }, { label: "Weekly Report" }];
   }
   if (p === "/work-logs") {
-    return [{ label: "Notes & Vault", href: "/notes" }, { label: "Work Logs" }];
+    return [{ label: "Notes & Vault", href: "/work-logs" }, { label: "Work Logs" }];
   }
   if (p === "/notes") {
-    return [{ label: "Notes & Vault", href: "/notes" }, { label: "Personal Notes" }];
+    return [{ label: "Notes & Vault", href: "/work-logs" }, { label: "Personal Notes" }];
   }
   if (p === "/meeting-notes") {
-    return [{ label: "Notes & Vault", href: "/notes" }, { label: "Meeting Notes" }];
+    return [{ label: "Notes & Vault", href: "/work-logs" }, { label: "Meeting Notes" }];
   }
   if (p === "/vault") {
-    return [{ label: "Notes & Vault", href: "/notes" }, { label: "Password Vault" }];
+    return [{ label: "Notes & Vault", href: "/work-logs" }, { label: "Password Vault" }];
   }
   if (p === "/settings") {
     return [{ label: "Dashboard", href: "/dashboard" }, { label: "Settings" }];
