@@ -305,7 +305,7 @@ export function TestPlanDetail({
  else if (st ==="blocked") blocked++;
  else pending++;
  });
- return { ...s, passed, failed, blocked, pending, total: targetCases.length, scopedCount: targetCases.length };
+ return { ...s, cases: targetCases, passed, failed, blocked, pending, total: targetCases.length, scopedCount: targetCases.length };
  }),
  [suites, scopedCaseIds]
  );

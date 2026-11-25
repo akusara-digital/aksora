@@ -49,8 +49,8 @@ export async function POST(
 
     // 1. Unlink any suites currently linked to this plan in the user's scope
     await db.run(
-      `UPDATE "TestSuite" SET "testPlanId" = '', "updatedAt" = CURRENT_TIMESTAMP WHERE "testPlanId" = ? AND "deletedAt" IS NULL${scope.andWhere}`,
-      [planIdStr, ...scope.params],
+      `UPDATE "TestSuite" SET "testPlanId" = '', "updatedAt" = CURRENT_TIMESTAMP WHERE ("testPlanId" = ? OR "testPlanId" = ?) AND "deletedAt" IS NULL${scope.andWhere}`,
+      [planIdStr, plan.publicToken, ...scope.params],
     );
 
     // 2. Link selected suites to this plan

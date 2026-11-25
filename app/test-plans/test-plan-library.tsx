@@ -326,6 +326,9 @@ export function TestPlanLibrary({
         defaultProject={filterProject !== ALL ? filterProject : undefined}
         projectOptions={allProjects}
         initialData={editingPlan ? (editingPlan as unknown as Record<string, unknown>) : null}
+        onCreated={(planId) => {
+          router.push(`/test-plans/${planId}`);
+        }}
       />
     </div>
   );

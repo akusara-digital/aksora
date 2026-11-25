@@ -330,16 +330,34 @@ export async function getPublicReportData(token: string) {
   const planId = String(plan.id);
 
   const suitesRaw = await selectAll(
-    `SELECT id, company, "publicToken", "testPlanId", title, assignee, status, notes, "updatedAt" FROM "TestSuite" WHERE "testPlanId" = ? AND "deletedAt" IS NULL ${scope.andWhere} ORDER BY "updatedAt" DESC`,
-    [planId, ...scope.params],
+    `SELECT id, company, "publicToken", "testPlanId", title, assignee, status, notes, "updatedAt" FROM "TestSuite" WHERE ("testPlanId" = ? OR (COALESCE(?, '') != '' AND "testPlanId" = ?)) AND "deletedAt" IS NULL ${scope.andWhere} ORDER BY "updatedAt" DESC`,
+    [planId, String(plan.publicToken || ""), String(plan.publicToken || ""), ...scope.params],
   );
   const suites = suitesRaw.map(normalizeTestSuiteRow);
 
+  let scopedCaseIdSet: Set<string> | null = null;
+  if (typeof plan.scope === "string" && plan.scope.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(plan.scope);
+      if (Array.isArray(parsed.caseIds) && parsed.caseIds.length > 0) {
+        scopedCaseIdSet = new Set(parsed.caseIds.map(String));
+      }
+    } catch {
+      // not JSON
+    }
+  }
+
   const casesBySuiteId = await getTestCasesByScenarioIds(suites.map((suite) => suite.id));
-  const suitesWithCases = suites.map((suite) => ({
-    ...suite,
-    cases: casesBySuiteId[String(suite.id)] ?? [],
-  }));
+  const suitesWithCases = suites.map((suite) => {
+    const rawCases = casesBySuiteId[String(suite.id)] ?? [];
+    const targetCases = scopedCaseIdSet
+      ? rawCases.filter((c: Record<string, unknown>) => scopedCaseIdSet.has(String(c.id)))
+      : rawCases;
+    return {
+      ...suite,
+      cases: targetCases,
+    };
+  });
 
   const allCases = suitesWithCases.flatMap((s) => s.cases);
   const passed = allCases.filter((c) => String(c.status).toLowerCase() === "passed").length;
