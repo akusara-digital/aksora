@@ -22,6 +22,14 @@ vi.mock("@/lib/auth", () => ({
   createSessionToken: mocks.createSessionToken,
   createTempMfaToken: mocks.createTempMfaToken,
   sessionCookieName: () => "aksora_token",
+  sessionCookieOptions: () => ({
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 604800,
+  }),
+  SESSION_DURATION: 604800,
 }));
 
 vi.mock("@/lib/db", () => ({

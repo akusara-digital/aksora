@@ -12,6 +12,14 @@ vi.mock("@/lib/auth", () => ({
   getCurrentUser: mocks.getCurrentUser,
   createSessionToken: mocks.createSessionToken,
   sessionCookieName: mocks.sessionCookieName,
+  sessionCookieOptions: vi.fn(() => ({
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 604800,
+  })),
+  SESSION_DURATION: 604800,
 }));
 
 vi.mock("@/lib/workspace-memberships", () => ({

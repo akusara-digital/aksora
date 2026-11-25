@@ -15,6 +15,8 @@ vi.mock("@/lib/auth", () => ({
   getCurrentUser: mocks.getCurrentUser,
   createSessionToken: mocks.createSessionToken,
   sessionCookieName: () => "aksora_token",
+  sessionCookieOptions: () => ({ httpOnly: true, secure: false, sameSite: "lax", path: "/", maxAge: 604800 }),
+  SESSION_DURATION: 604800,
 }));
 
 vi.mock("@/lib/auth-core", () => ({
@@ -106,13 +108,17 @@ describe("auth profile route", () => {
       'UPDATE "User" SET "name" = ?, "role" = ?, "locale" = ?, "password" = ?, "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = CAST(? AS INTEGER)',
       ["Updated User", "qa", "id", "hashed:secret1", 1],
     );
-    expect(mocks.createSessionToken).toHaveBeenCalledWith("user@example.com", {
-      id: 1,
-      name: "Updated User",
-      role: "qa",
-      company: "acme",
-      locale: "id",
-    });
+    expect(mocks.createSessionToken).toHaveBeenCalledWith(
+      "user@example.com",
+      {
+        id: 1,
+        name: "Updated User",
+        role: "qa",
+        company: "acme",
+        locale: "id",
+      },
+      604800,
+    );
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       success: true,

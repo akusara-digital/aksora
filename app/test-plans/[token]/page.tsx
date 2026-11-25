@@ -16,7 +16,9 @@ export default async function TestPlanDetailPage({ params }: { params: Promise<{
   const plan = JSON.parse(JSON.stringify(planRaw));
 
   const planId = String(plan.id);
-  const suitesRaw = await getTestSuitesByPlanId(planId, plan.publicToken);
+  const suitesRaw = plan.publicToken
+    ? await getTestSuitesByPlanId(planId, plan.publicToken)
+    : await getTestSuitesByPlanId(planId);
   const suites = JSON.parse(JSON.stringify(suitesRaw));
   const casesBySuiteIdRaw = await getTestCasesByScenarioIds(suites.map((suite: Record<string, unknown>) => suite.id as string));
   const casesBySuiteId = JSON.parse(JSON.stringify(casesBySuiteIdRaw));
