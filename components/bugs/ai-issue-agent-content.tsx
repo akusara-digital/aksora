@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import {
   Image as ImageIcon,
   X,
@@ -262,13 +263,27 @@ export function AiIssueAgentContent({
                 />
                 <span>
                   AI Engine:{" "}
-                  <span className="font-semibold text-slate-700">
-                    {activeEngine.provider
-                      ? `${AI_PROVIDER_LABELS[activeEngine.provider as SupportedProvider]?.label || activeEngine.provider}${
-                          activeEngine.model ? ` (${activeEngine.model})` : ""
-                        }`
-                      : "Not configured (Settings)"}
-                  </span>
+                  {activeEngine.provider ? (
+                    <Link
+                      href="/settings/ai"
+                      onClick={() => onCancel?.()}
+                      className="font-semibold text-slate-700 hover:text-blue-600 hover:underline inline-flex items-center gap-1 transition"
+                      title="Configure AI model in Settings"
+                    >
+                      {`${AI_PROVIDER_LABELS[activeEngine.provider as SupportedProvider]?.label || activeEngine.provider}${
+                        activeEngine.model ? ` (${activeEngine.model})` : ""
+                      }`}
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/settings/ai"
+                      onClick={() => onCancel?.()}
+                      className="font-semibold text-amber-600 hover:text-amber-700 hover:underline inline-flex items-center gap-1 transition"
+                      title="Configure AI model in Settings"
+                    >
+                      Not configured (Settings)
+                    </Link>
+                  )}
                 </span>
               </span>
             </div>

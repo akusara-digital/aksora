@@ -93,4 +93,21 @@ describe("AiIssueAgentContent", () => {
     expect(receivedDraft.module).toBe("Brainstorming");
     expect(receivedDraft.evidence).toBe("https://bugsnap.akusaraproject.my.id/v/4028ab27-4282-4c36-8229-082cfffca9b9");
   });
+
+  it("links to /settings/ai when AI is not configured and closes modal on click", () => {
+    vi.spyOn(aiKeys, "getActiveAiConfig").mockReturnValue({
+      provider: "",
+      model: "",
+    });
+
+    const handleCancel = vi.fn();
+    render(<AiIssueAgentContent {...defaultProps} onCancel={handleCancel} />);
+
+    const link = screen.getByRole("link", { name: /not configured \(settings\)/i });
+    expect(link).toBeDefined();
+    expect(link.getAttribute("href")).toBe("/settings/ai");
+
+    fireEvent.click(link);
+    expect(handleCancel).toHaveBeenCalledTimes(1);
+  });
 });
