@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { CaretDown, Plus } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react";
 import { FormFieldError } from "@/components/shared/form-field-error";
 import { cn } from "@/lib/utils";
 import type { FieldOption, FormField } from "@/components/module/module-workspace-form-field";
-import { QuickProjectModal } from "@/components/projects/quick-project-modal";
+import { ProjectDropdownContent } from "@/components/projects/project-dropdown-content";
 
 type Row = Record<string, unknown> & { id?: string | number };
 
@@ -30,13 +30,10 @@ export function ModuleWorkspaceFormSelect({
   setOpenSelectField,
   setSelectValues,
 }: Props) {
-  const [showNewProjectModal, setShowNewProjectModal] = useState(false);
-  const [createdOptions, setCreatedOptions] = useState<FieldOption[]>([]);
   const selectedValue = selectValues[field.name] !== undefined ? selectValues[field.name] : String(editingRow?.[field.name] ?? "");
   const isLocked = Boolean(field.readonly);
   const placeholderText = field.placeholder || `Select ${field.label}`;
-  const baseOptions = relatedOptions[field.name] ?? field.options ?? [];
-  const options = [...baseOptions, ...createdOptions];
+  const options = relatedOptions[field.name] ?? field.options ?? [];
 
   if (isLocked) {
     return (
@@ -72,8 +69,26 @@ export function ModuleWorkspaceFormSelect({
         </button>
 
         {openSelectField === field.name && (
-          <div className="absolute left-0 top-full z-50 mt-1 max-h-56 w-full overflow-y-auto overscroll-contain rounded-lg border border-gray-200 bg-white shadow-lg">
-            {options.length > 0 ? (
+          <div
+            className={cn(
+              "absolute left-0 top-full z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg",
+              field.name === "project" ? "overflow-hidden" : "max-h-56 overflow-y-auto overscroll-contain"
+            )}
+          >
+            {field.name === "project" ? (
+              <ProjectDropdownContent
+                options={options.map((o) => ({ label: o.label, value: o.value }))}
+                selectedValue={selectedValue}
+                onSelect={(val) => {
+                  setSelectValues((p) => ({ ...p, [field.name]: val }));
+                  setOpenSelectField(null);
+                }}
+                onClose={() => setOpenSelectField(null)}
+                title=""
+                emptyTitle="No projects found"
+                emptySubtitle="Please create a project first on the Projects page."
+              />
+            ) : options.length > 0 ? (
               options.map((option) => (
                 <button
                   key={option.value}
@@ -95,43 +110,10 @@ export function ModuleWorkspaceFormSelect({
                 <p>No options available.</p>
               </div>
             )}
-
-            {field.name === "project" && (
-              <div className="sticky bottom-0 border-t border-slate-100 bg-slate-50 p-1.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpenSelectField(null);
-                    setShowNewProjectModal(true);
-                  }}
-                  className="flex w-full items-center gap-1.5 rounded-md px-3 py-2 text-xs font-bold text-blue-600 hover:bg-blue-100/60 transition"
-                >
-                  <Plus size={13} weight="bold" />
-                  + Create New Project
-                </button>
-              </div>
-            )}
           </div>
         )}
       </div>
       <FormFieldError message={fieldError} />
-
-      {showNewProjectModal && (
-        <QuickProjectModal
-          isOpen={showNewProjectModal}
-          onClose={() => setShowNewProjectModal(false)}
-          onSuccess={(newProj) => {
-            setSelectValues((p) => ({ ...p, [field.name]: newProj.name }));
-            setCreatedOptions((prev) => [
-              ...prev,
-              {
-                value: newProj.name,
-                label: newProj.key ? `[${newProj.key}] ${newProj.name}` : newProj.name,
-              },
-            ]);
-          }}
-        />
-      )}
     </div>
   );
 }

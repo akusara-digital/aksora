@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Lightning, ListBullets, X, CaretDown, SquaresFour } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { ProjectDropdownContent } from "@/components/projects/project-dropdown-content";
 
 interface SuiteModalHeaderProps {
   title?: string;
@@ -46,7 +47,7 @@ export function SuiteModalHeader({
       <div className="flex items-center gap-2">
         <h3 className="text-base font-bold text-slate-900 tracking-tight">{title}</h3>
 
-        {hasProjects && (
+        {Boolean(onProjectChange) && (
           <>
             <span className="text-slate-300 font-medium select-none">/</span>
             <div ref={dropdownRef} className="relative inline-block text-left">
@@ -61,32 +62,16 @@ export function SuiteModalHeader({
               </button>
 
               {projectOpen && (
-                <div className="absolute left-0 top-full z-50 mt-1 max-h-56 w-60 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg animate-in fade-in zoom-in-95 duration-100">
-                  <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Select Project
-                  </div>
-                  {projectOptions.map((opt) => {
-                    const isSelected = opt.value === project || opt.label === project;
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => {
-                          onProjectChange?.(opt.value);
-                          setProjectOpen(false);
-                        }}
-                        className={cn(
-                          "w-full text-left px-3 py-1.5 text-xs font-medium transition cursor-pointer flex items-center justify-between",
-                          isSelected
-                            ? "bg-blue-50 font-semibold text-blue-700"
-                            : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
-                        )}
-                      >
-                        <span className="truncate">{opt.label}</span>
-                        {isSelected && <span className="text-blue-600 text-xs font-bold">✓</span>}
-                      </button>
-                    );
-                  })}
+                <div className="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100">
+                  <ProjectDropdownContent
+                    options={projectOptions}
+                    selectedValue={project}
+                    onSelect={(val) => onProjectChange?.(val)}
+                    onClose={() => setProjectOpen(false)}
+                    title="Select Project"
+                    emptyTitle="No projects found"
+                    emptySubtitle="Please create a project first on the Projects page."
+                  />
                 </div>
               )}
             </div>
