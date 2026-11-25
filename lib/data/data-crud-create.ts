@@ -150,10 +150,65 @@ export async function createModuleRecord(module: ModuleKey, data: ModuleData) {
     }
     case "test-cases": {
       const publicToken = textOrEmpty(data.publicToken) || makePublicToken();
+
+      let targetSuiteId = textOrEmpty(data.testSuiteId);
+      let existingSuite: { id: number; title: string } | null | undefined = null;
+      if (targetSuiteId) {
+        if (!isNaN(Number(targetSuiteId))) {
+          existingSuite = await db.get<{ id: number; title: string }>(
+            workspaceId
+              ? `SELECT "id", "title" FROM "TestSuite" WHERE "id" = CAST(? AS INTEGER) AND "deletedAt" IS NULL AND "workspaceId" = ? LIMIT 1`
+              : `SELECT "id", "title" FROM "TestSuite" WHERE "id" = CAST(? AS INTEGER) AND "deletedAt" IS NULL${company ? ' AND "company" = ?' : ''} LIMIT 1`,
+            workspaceId ? [targetSuiteId, workspaceId] : (company ? [targetSuiteId, company] : [targetSuiteId])
+          );
+        } else {
+          existingSuite = await db.get<{ id: number; title: string }>(
+            workspaceId
+              ? `SELECT "id", "title" FROM "TestSuite" WHERE "publicToken" = ? AND "deletedAt" IS NULL AND "workspaceId" = ? LIMIT 1`
+              : `SELECT "id", "title" FROM "TestSuite" WHERE "publicToken" = ? AND "deletedAt" IS NULL${company ? ' AND "company" = ?' : ''} LIMIT 1`,
+            workspaceId ? [targetSuiteId, workspaceId] : (company ? [targetSuiteId, company] : [targetSuiteId])
+          );
+        }
+      }
+
+      // If no valid suite found, automatically create the TestSuite so the flow starts from TestSuite!
+      if (!existingSuite) {
+        const autoSuiteTitle =
+          textOrEmpty(data.suiteTitle) ||
+          textOrEmpty(data.suiteName) ||
+          (data.project ? `${data.project} Test Suite` : "General Test Suite");
+        const suiteToken = makePublicToken();
+        const projectId = await resolveProjectId(data, workspaceId, company);
+        await runInsert(
+          `INSERT INTO "TestSuite" ("company", "workspaceId", "projectId", "publicToken", "testPlanId", "title", "assignee", "status", "notes", "uuid")
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
+          [
+            company,
+            workspaceId,
+            projectId,
+            suiteToken,
+            textOrEmpty(data.testPlanId),
+            autoSuiteTitle,
+            data.assignee ?? "",
+            "Auto-created test suite",
+            randomUUID(),
+          ]
+        );
+        const createdSuite = await db.get<{ id: number; title: string }>(
+          `SELECT "id", "title" FROM "TestSuite" WHERE "company" = ? AND "publicToken" = ? ORDER BY "id" DESC LIMIT 1`,
+          [company, suiteToken]
+        );
+        if (createdSuite?.id) {
+          targetSuiteId = String(createdSuite.id);
+          await logActivity(company, "TestSuite", autoSuiteTitle, "Created", `Suite auto-created: ${autoSuiteTitle}`, actor, suiteToken, workspaceId);
+          await syncSearchIndex("test-suites", company, Number(createdSuite.id), { title: autoSuiteTitle, project: data.project }, workspaceId);
+        }
+      }
+
       const res = await runInsert(
         `INSERT INTO "TestCase" ("company", "workspaceId", "publicToken", "testSuiteId", "tcId", "typeCase", "preCondition", "caseName", "assignee", "testStep", "expectedResult", "actualResult", "status", "evidence", "priority", "category", "rationale", "uuid")
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [company, workspaceId, publicToken, data.testSuiteId, data.tcId, data.typeCase, data.preCondition ?? "", data.caseName, data.assignee ?? "", data.testStep, data.expectedResult, data.actualResult ?? "", data.status, data.evidence ?? "", data.priority ?? "Medium", data.category ?? "", data.rationale ?? "", randomUUID()]
+        [company, workspaceId, publicToken, targetSuiteId, data.tcId, data.typeCase, data.preCondition ?? "", data.caseName, data.assignee ?? "", data.testStep, data.expectedResult, data.actualResult ?? "", data.status || "Pending", data.evidence ?? "", data.priority ?? "Medium", data.category ?? "", data.rationale ?? "", randomUUID()]
       );
       await logActivity(company, "TestCase", String(data.tcId), "Created", `Added test case: ${data.tcId} - ${data.caseName}`, actor, publicToken, workspaceId);
       invalidateDashboardCache(company);

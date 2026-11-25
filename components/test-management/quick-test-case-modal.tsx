@@ -85,18 +85,23 @@ export function QuickTestCaseModal({
       const url = "/api/items/test-cases";
       const method = isEditing ? "PATCH" : "POST";
 
+      const fallbackSuiteTitle =
+        suiteTitle ||
+        (selectedProject ? `${selectedProject} Test Suite` : "General Test Suite");
+
       const finalSuiteId =
         entry.testSuiteId ||
         selectedSuite ||
         suiteId ||
         suiteOptions[0]?.value ||
-        "1";
+        "";
 
       const finalId = isEditing ? (initialData?.id || entry.id) : undefined;
       const caseTitle = String(entry.caseName || entry.title || "Test Case");
       const payload: Record<string, unknown> = {
         ...entry,
-        testSuiteId: String(finalSuiteId),
+        testSuiteId: finalSuiteId ? String(finalSuiteId) : undefined,
+        suiteTitle: String(entry.suiteTitle || fallbackSuiteTitle),
         project: selectedProject || entry.project || undefined,
       };
       if (finalId) {
@@ -155,7 +160,14 @@ export function QuickTestCaseModal({
           project={selectedProject}
           onProjectChange={setSelectedProject}
           projectOptions={projectOptions}
-          suiteTitle={suiteTitle}
+          suiteTitle={
+            suiteTitle ||
+            (suiteOptions.length === 0
+              ? selectedProject
+                ? `${selectedProject} Test Suite`
+                : "General Test Suite"
+              : "")
+          }
           suiteId={selectedSuite}
           onSuiteChange={setSelectedSuite}
           suiteOptions={suiteOptions}

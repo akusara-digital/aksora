@@ -55,11 +55,14 @@ export function TestCaseModalHeader({
     ? projectDisplay
       ? `${projectDisplay} / ${suiteDisplay}`
       : suiteDisplay
-    : projectDisplay || "Select Scope";
+    : projectDisplay
+    ? `${projectDisplay} / New Suite`
+    : "New Suite (Auto-Created)";
 
   const hasContextOptions =
     (projectOptions.length > 0 && Boolean(onProjectChange)) ||
-    (suiteOptions.length > 0 && Boolean(onSuiteChange));
+    (suiteOptions.length > 0 && Boolean(onSuiteChange)) ||
+    suiteOptions.length === 0;
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
@@ -82,6 +85,18 @@ export function TestCaseModalHeader({
 
             {dropdownOpen && (
               <div className="absolute left-0 top-full z-50 mt-1 max-h-64 w-64 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg animate-in fade-in zoom-in-95 duration-100">
+                {/* Auto-create suite banner when no suites exist */}
+                {suiteOptions.length === 0 && (
+                  <div className="border-b border-slate-100 p-2.5 bg-blue-50/50 mb-1 rounded-t-md">
+                    <div className="text-[11px] font-bold text-blue-900 flex items-center gap-1.5">
+                      <span>📁 Auto-Creating Suite</span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-blue-700 leading-relaxed">
+                      First test case requires a Test Suite. <strong className="font-semibold text-blue-950">&quot;{suiteDisplay || "General Test Suite"}&quot;</strong> will be created automatically.
+                    </p>
+                  </div>
+                )}
+
                 {/* Suite Options */}
                 {suiteOptions.length > 0 && onSuiteChange && (
                   <div className="border-b border-slate-100 pb-1 mb-1">

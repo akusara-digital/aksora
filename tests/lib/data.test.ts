@@ -373,8 +373,15 @@ describe("module data access", () => {
   });
 
   it("creates test cases with default priority and logging", async () => {
+    mocks.db.get.mockImplementation(async (sql: string) => {
+      if (typeof sql === "string" && sql.includes('"TestSuite"')) {
+        return { id: 1, title: "Auth Suite" };
+      }
+      return undefined;
+    });
+
     await createModuleRecord("test-cases", {
-      testSuiteId: "s1",
+      testSuiteId: "1",
       tcId: "TC-1",
       typeCase: "Positive",
       preCondition: "Ready",

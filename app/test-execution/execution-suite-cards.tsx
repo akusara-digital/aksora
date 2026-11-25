@@ -9,12 +9,17 @@ import {
   MagnifyingGlass,
   X,
   Funnel,
+  Table as TableIcon,
+  Kanban as KanbanIcon,
+  SquaresFour,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 import { InProgressCard, ReadyCard } from "./execution-run-card-items";
+import { ExecutionSuiteTable } from "./execution-suite-table";
+import { ExecutionSuiteKanban } from "./execution-suite-kanban";
 
 export type SuiteWithRun = {
   id: number;
@@ -72,6 +77,7 @@ export function ExecutionSuiteCards({
   const [selectedProject, setSelectedProject] = useState<string>("all");
   const [selectedPlan, setSelectedPlan] = useState<string>("all");
   const [statusTab, setStatusTab] = useState<"all" | "in-progress" | "ready" | "completed">("all");
+  const [viewMode, setViewMode] = useState<"table" | "kanban" | "cards">("table");
 
   const allSuites = useMemo(() => {
     if (rawSuites && rawSuites.length > 0) return rawSuites;
@@ -312,6 +318,51 @@ export function ExecutionSuiteCards({
           >
             Completed <span className="opacity-75">({counts.completed})</span>
           </button>
+          {/* View Mode Toggle: Table | Kanban | Cards (Matching Test Cases) */}
+          <div className="flex h-8 items-center rounded-md border border-gray-200 bg-gray-50/80 p-0.5 ml-1">
+            <button
+              type="button"
+              onClick={() => setViewMode("table")}
+              className={cn(
+                "flex h-7 items-center gap-1 rounded px-2.5 text-xs font-semibold transition cursor-pointer",
+                viewMode === "table"
+                  ? "bg-white text-gray-900 shadow-2xs font-bold"
+                  : "text-gray-500 hover:text-gray-900",
+              )}
+              title="Table View"
+            >
+              <TableIcon size={13} weight="bold" />
+              <span className="hidden sm:inline">Table</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("kanban")}
+              className={cn(
+                "flex h-7 items-center gap-1 rounded px-2.5 text-xs font-semibold transition cursor-pointer",
+                viewMode === "kanban"
+                  ? "bg-white text-gray-900 shadow-2xs font-bold"
+                  : "text-gray-500 hover:text-gray-900",
+              )}
+              title="Kanban Board"
+            >
+              <KanbanIcon size={13} weight="bold" />
+              <span className="hidden sm:inline">Kanban</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("cards")}
+              className={cn(
+                "flex h-7 items-center gap-1 rounded px-2.5 text-xs font-semibold transition cursor-pointer",
+                viewMode === "cards"
+                  ? "bg-white text-gray-900 shadow-2xs font-bold"
+                  : "text-gray-500 hover:text-gray-900",
+              )}
+              title="Cards Grid"
+            >
+              <SquaresFour size={13} weight="bold" />
+              <span className="hidden sm:inline">Cards</span>
+            </button>
+          </div>
         </div>
 
         {/* Project Selector & Search */}
@@ -379,7 +430,7 @@ export function ExecutionSuiteCards({
       </div>
 
       {/* 3. Filter Result Empty State */}
-      {filteredSuites.length === 0 && (
+      {filteredSuites.length === 0 ? (
         <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
           <Funnel size={28} weight="bold" className="mx-auto text-slate-300" />
           <p className="mt-2 text-sm font-bold text-slate-700">No test suites match your filters</p>
@@ -396,44 +447,58 @@ export function ExecutionSuiteCards({
             Reset Filters
           </button>
         </div>
-      )}
+      ) : viewMode === "table" ? (
+        <ExecutionSuiteTable
+          suites={filteredSuites}
+          creating={creating}
+          onStartRun={startNewRun}
+        />
+      ) : viewMode === "kanban" ? (
+        <ExecutionSuiteKanban
+          suites={filteredSuites}
+          creating={creating}
+          onStartRun={startNewRun}
+        />
+      ) : (
+        <>
+          {/* 4. In Progress Section */}
+          {inProgressList.length > 0 && statusTab !== "ready" && statusTab !== "completed" && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-blue-700">
+                  In Progress ({inProgressList.length})
+                </h2>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {inProgressList.map((suite) => (
+                  <InProgressCard key={suite.id} suite={suite} />
+                ))}
+              </div>
+            </section>
+          )}
 
-      {/* 4. In Progress Section */}
-      {inProgressList.length > 0 && statusTab !== "ready" && statusTab !== "completed" && (
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-blue-700">
-              In Progress ({inProgressList.length})
-            </h2>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {inProgressList.map((suite) => (
-              <InProgressCard key={suite.id} suite={suite} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 5. Ready to Execute Section */}
-      {readyList.length > 0 && statusTab !== "in-progress" && (
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              {statusTab === "completed" ? `Completed Runs (${readyList.length})` : `Ready to Run (${readyList.length})`}
-            </h2>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {readyList.map((suite) => (
-              <ReadyCard
-                key={suite.id}
-                suite={suite}
-                onStartRun={startNewRun}
-                creating={creating === suite.id}
-              />
-            ))}
-          </div>
-        </section>
+          {/* 5. Ready to Execute Section */}
+          {readyList.length > 0 && statusTab !== "in-progress" && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  {statusTab === "completed" ? `Completed Runs (${readyList.length})` : `Ready to Run (${readyList.length})`}
+                </h2>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {readyList.map((suite) => (
+                  <ReadyCard
+                    key={suite.id}
+                    suite={suite}
+                    onStartRun={startNewRun}
+                    creating={creating === suite.id}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
     </div>
   );
