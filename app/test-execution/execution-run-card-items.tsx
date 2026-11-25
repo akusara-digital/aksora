@@ -10,6 +10,7 @@ import {
   Clock,
   User,
   Lightning,
+  ClipboardText,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import type { SuiteWithRun } from "./execution-suite-cards";
@@ -32,7 +33,18 @@ export function InProgressCard({ suite }: { suite: SuiteWithRun }) {
       </div>
 
       <div className="mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{suite.project}</p>
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{suite.project}</p>
+          {suite.planName && suite.planName !== "Standalone" && (
+            <span
+              className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 truncate max-w-[130px]"
+              title={suite.planName}
+            >
+              <ClipboardText size={10} weight="bold" className="text-blue-500 shrink-0" />
+              <span className="truncate">{suite.planName}</span>
+            </span>
+          )}
+        </div>
         <h3 className="text-base font-bold text-slate-900 pr-20 line-clamp-1 group-hover:text-blue-600 transition-colors">
           {suite.title}
         </h3>
@@ -88,9 +100,19 @@ export function ReadyCard({
   return (
     <div className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-slate-300 hover:shadow-md">
       <div className="mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{suite.project}</p>
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{suite.project}</p>
+          {suite.planName && suite.planName !== "Standalone" && (
+            <span
+              className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 truncate max-w-[140px]"
+              title={suite.planName}
+            >
+              <ClipboardText size={10} weight="bold" className="text-blue-500 shrink-0" />
+              <span className="truncate">{suite.planName}</span>
+            </span>
+          )}
+        </div>
         <h3 className="text-base font-bold text-slate-900 line-clamp-1">{suite.title}</h3>
-        <p className="text-xs text-slate-500 mt-0.5">{suite.planName}</p>
       </div>
 
       <div className="flex items-center gap-2.5 mb-3 text-xs text-slate-500">

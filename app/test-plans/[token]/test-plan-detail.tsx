@@ -260,6 +260,38 @@ export function TestPlanDetail({
  };
  const collapseAll = () => setOpenSuites({});
 
+  const [startingRun, setStartingRun] = useState(false);
+
+  const handleStartRun = async () => {
+    if (suites.length === 0) {
+      toast("No test suites linked to this plan yet. Add suites to start execution.", "info");
+      return;
+    }
+    const targetSuite = suites[0];
+    setStartingRun(true);
+    try {
+      const res = await fetch("/api/execution-runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          testSuiteId: targetSuite.id,
+          testPlanId: String(currentPlan.id),
+        }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(d.error || "Failed to start execution run");
+      }
+      toast(`Execution run #${d.data?.runNumber || ""} started. Redirecting...`, "success");
+      const token = targetSuite.publicToken || targetSuite.token || targetSuite.id;
+      router.push(`/test-execution/${token}/run/${d.data.id}`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to start run", "error");
+    } finally {
+      setStartingRun(false);
+    }
+  };
+
  const suitesWithStats = useMemo(() =>
  suites.map((s) => {
  let passed = 0, failed = 0, blocked = 0, pending = 0;
@@ -358,6 +390,22 @@ export function TestPlanDetail({
   <ListChecks size={14} weight="bold" />
   Checklist Scope ({parsedScope ? `${parsedScope.caseIds.length} Cases` : `${suites.length} Suites`})
  </button>
+ {suites.length > 0 && (
+   <button
+     type="button"
+     disabled={startingRun}
+     onClick={handleStartRun}
+     className="flex items-center gap-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white px-3.5 h-8 text-xs font-bold transition shadow-2xs cursor-pointer disabled:opacity-50"
+     title="Start execution run for this test plan"
+   >
+     {startingRun ? (
+       <CircleNotch size={13} weight="bold" className="animate-spin" />
+     ) : (
+       <Play size={13} weight="fill" />
+     )}
+     {startingRun ? "Starting..." : "Start Test Run"}
+   </button>
+ )}
  {currentPlan.publicToken && (
  <button
  onClick={copyReportLink}

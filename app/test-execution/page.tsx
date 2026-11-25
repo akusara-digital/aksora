@@ -118,6 +118,11 @@ export default async function TestExecutionPage({
       <ExecutionSuiteCards
         suites={enrichedSuites}
         projects={projects}
+        plans={plans.map((p) => ({
+          id: Number(p.id),
+          title: String(p.title),
+          project: String(p.project || ""),
+        }))}
         metrics={{
           activeRuns: activeRunsCount,
           readySuites: readyCount,

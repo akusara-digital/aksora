@@ -44,6 +44,7 @@ export type SuiteWithRun = {
 export interface ExecutionSuiteCardsProps {
   suites?: SuiteWithRun[];
   projects?: string[];
+  plans?: Array<{ id: number; title: string; project?: string }>;
   metrics?: {
     activeRuns: number;
     readySuites: number;
@@ -59,6 +60,7 @@ export interface ExecutionSuiteCardsProps {
 export function ExecutionSuiteCards({
   suites: rawSuites,
   projects = [],
+  plans = [],
   metrics,
   initialSearch = "",
   inProgress: legacyInProgress,
@@ -68,6 +70,7 @@ export function ExecutionSuiteCards({
   const [creating, setCreating] = useState<number | null>(null);
   const [search, setSearch] = useState(initialSearch);
   const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [selectedPlan, setSelectedPlan] = useState<string>("all");
   const [statusTab, setStatusTab] = useState<"all" | "in-progress" | "ready" | "completed">("all");
 
   const allSuites = useMemo(() => {
@@ -100,9 +103,30 @@ export function ExecutionSuiteCards({
     }
   };
 
+  const planOptions = useMemo(() => {
+    if (plans && plans.length > 0) {
+      if (selectedProject !== "all") {
+        return plans.filter((p) => !p.project || p.project === selectedProject);
+      }
+      return plans;
+    }
+    const map = new Map<string, { id: number; title: string }>();
+    allSuites.forEach((s) => {
+      if (s.testPlanId && s.planName && s.planName !== "Standalone") {
+        map.set(s.testPlanId, { id: Number(s.testPlanId) || 0, title: s.planName });
+      }
+    });
+    return Array.from(map.values());
+  }, [plans, allSuites, selectedProject]);
+
   const filteredSuites = useMemo(() => {
     return allSuites.filter((suite) => {
       if (selectedProject !== "all" && suite.project !== selectedProject) return false;
+      if (selectedPlan !== "all") {
+        if (suite.testPlanId !== selectedPlan && suite.planName !== selectedPlan) {
+          return false;
+        }
+      }
       if (search.trim()) {
         const term = search.toLowerCase();
         const matches = [
@@ -119,7 +143,7 @@ export function ExecutionSuiteCards({
       if (statusTab === "completed") return suite.lastRun?.status === "completed";
       return true;
     });
-  }, [allSuites, selectedProject, search, statusTab]);
+  }, [allSuites, selectedProject, selectedPlan, search, statusTab]);
 
   const inProgressList = useMemo(
     () => filteredSuites.filter((s) => s.lastRun?.status === "in-progress"),
@@ -304,6 +328,29 @@ export function ExecutionSuiteCards({
                 {projects.map((p) => (
                   <option key={p} value={p}>
                     {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {planOptions.length > 0 && (
+            <div className="relative">
+              <select
+                aria-label="Filter by test plan"
+                value={selectedPlan}
+                onChange={(e) => setSelectedPlan(e.target.value)}
+                className={cn(
+                  "h-8 rounded-md border px-2.5 text-xs font-semibold outline-none transition touch-manipulation cursor-pointer max-w-[150px] truncate",
+                  selectedPlan !== "all"
+                    ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
+                )}
+              >
+                <option value="all">All Plans</option>
+                {planOptions.map((p) => (
+                  <option key={p.id || p.title} value={String(p.id || p.title)}>
+                    {p.title}
                   </option>
                 ))}
               </select>
