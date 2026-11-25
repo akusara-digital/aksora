@@ -80,6 +80,7 @@ export {
   getAllTestCasesWithSuite,
   getAllTestSuitesWithPlan,
   getTestPlansSummary,
+  getAllTestPlansWithStats,
   getPublicReportData,
   clearTestManagementCache,
 } from "@/lib/test-management-data";

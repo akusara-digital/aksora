@@ -478,3 +478,95 @@ export async function getTestPlansSummary() {
     })),
   );
 }
+
+export async function getAllTestPlansWithStats() {
+  const scope = await getReadScope();
+  const tpWhere = scope.andWhere.replace(/"company"/g, 'tp."company"').replace(/"workspaceId"/g, 'tp."workspaceId"');
+
+  const plans = await selectAll(
+    `SELECT tp.id, tp.company, tp."publicToken", tp.title, tp.project, tp.sprint, tp.scope, tp.status, tp."startDate", tp."endDate", tp.assignee, tp.notes, tp."createdAt", tp."updatedAt"
+     FROM "TestPlan" tp
+     WHERE tp."deletedAt" IS NULL${tpWhere}
+     ORDER BY tp."updatedAt" DESC`,
+    scope.params,
+  );
+
+  if (plans.length === 0) return [];
+
+  const planIds = plans.map((p) => String(p.id));
+  const placeholders = planIds.map(() => "?").join(",");
+  const tsWhere = scope.andWhere.replace(/"company"/g, 'ts."company"').replace(/"workspaceId"/g, 'ts."workspaceId"');
+
+  const suites = await selectAll(
+    `SELECT ts.id, ts."publicToken", ts."testPlanId", ts.title, ts.status, ts.assignee
+     FROM "TestSuite" ts
+     WHERE ts."testPlanId" IN (${placeholders}) AND ts."deletedAt" IS NULL${tsWhere}`,
+    [...planIds, ...scope.params],
+  );
+
+  const suiteIds = suites.map((s) => String(s.id));
+  let cases: Array<Record<string, unknown>> = [];
+  if (suiteIds.length > 0) {
+    const suitePlaceholders = suiteIds.map(() => "?").join(",");
+    const tcWhere = scope.andWhere.replace(/"company"/g, 'tc."company"').replace(/"workspaceId"/g, 'tc."workspaceId"');
+    cases = await selectAll(
+      `SELECT tc.id, tc."testSuiteId", tc.status, tc.priority
+       FROM "TestCase" tc
+       WHERE tc."testSuiteId" IN (${suitePlaceholders}) AND tc."deletedAt" IS NULL${tcWhere}`,
+      [...suiteIds, ...scope.params],
+    );
+  }
+
+  const casesBySuite = new Map<string, Array<Record<string, unknown>>>();
+  for (const c of cases) {
+    const sId = String(c.testSuiteId);
+    if (!casesBySuite.has(sId)) casesBySuite.set(sId, []);
+    casesBySuite.get(sId)!.push(c);
+  }
+
+  const suitesByPlan = new Map<string, Array<Record<string, unknown>>>();
+  for (const s of suites) {
+    const pId = String(s.testPlanId);
+    if (!suitesByPlan.has(pId)) suitesByPlan.set(pId, []);
+    suitesByPlan.get(pId)!.push(s);
+  }
+
+  return plans.map((p) => {
+    const pId = String(p.id);
+    const planSuites = suitesByPlan.get(pId) || [];
+    let totalCases = 0;
+    let passed = 0;
+    let failed = 0;
+    let blocked = 0;
+    let pending = 0;
+
+    for (const s of planSuites) {
+      const suiteCases = casesBySuite.get(String(s.id)) || [];
+      totalCases += suiteCases.length;
+      for (const c of suiteCases) {
+        const st = String(c.status || "").toLowerCase();
+        if (st === "passed") passed++;
+        else if (st === "failed") failed++;
+        else if (st === "blocked") blocked++;
+        else pending++;
+      }
+    }
+
+    return {
+      ...normalizeTestPlanRow(p),
+      suiteCount: planSuites.length,
+      caseCount: totalCases,
+      passedCount: passed,
+      failedCount: failed,
+      blockedCount: blocked,
+      pendingCount: pending,
+      completionRate: totalCases > 0 ? Math.round(((passed + failed + blocked) / totalCases) * 100) : 0,
+      suites: planSuites.map((s) => ({
+        id: Number(s.id),
+        publicToken: String(s.publicToken || ""),
+        title: String(s.title || ""),
+        status: String(s.status || "active"),
+      })),
+    };
+  });
+}
