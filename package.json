@@ -38,6 +38,7 @@
     "runner:start": "node scripts/ai-runner.mjs",
     "mcp": "node scripts/aksora-mcp.mjs",
     "prepare": "node scripts/git-hooks/install.mjs",
+    "deploy:prod": "node scripts/deploy-prod.mjs",
     "hooks:install": "node scripts/git-hooks/install.mjs",
     "worktree:add": "node scripts/worktree.mjs add",
     "worktree:list": "node scripts/worktree.mjs list",

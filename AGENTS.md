@@ -20,6 +20,10 @@
 ## Versioning & Pre-Push (REQUIRED)
 - **Every push to aksora project MUST bump `version` in `package.json`** (semver `MAJOR.MINOR.PATCH`). Include the version change in the same commit, then push.
 - **Mandatory Pre-Push Graphify Update**: Sebelum push, WAJIB jalankan `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`). Hapus snapshot/history lama di `graphify-out/` agar graph selalu bersih dan sinkron dengan codebase terbaru.
+- **Vercel Production Sync**:
+  - Remote repo `akusara-digital/aksora` terhubung ke Vercel project `aksora` (`akusara-digital1/aksora`) dengan branch `main` aktif auto-deploy.
+  - Untuk deploy atau sinkronisasi manual ke production, gunakan `pnpm deploy:prod` (otomatis memicu build Vercel dan memverifikasi health check `/api/health`).
+  - Setelah push/rilis, selalu pastikan status live di `https://aksora-orpin.vercel.app/api/health` sudah terverifikasi.
 - Run `pnpm precheck` before any release push.
 
 ## Stack
