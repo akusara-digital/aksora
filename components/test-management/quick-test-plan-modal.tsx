@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   X,
@@ -11,15 +12,18 @@ import {
   CaretUp,
   FolderSimple,
   CircleNotch,
+  SquaresFour,
 } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { ProjectDropdownContent } from "@/components/projects/project-dropdown-content";
+import { getActiveAiConfig } from "@/lib/ai-keys";
 
 export interface QuickTestPlanModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultProject?: string;
-  projectOptions?: string[];
+  projectOptions?: Array<{ label: string; value: string }> | string[];
   initialData?: Record<string, unknown> | null;
   onCreated?: (planId: string | number) => void;
 }
@@ -30,6 +34,21 @@ const STATUS_OPTIONS = [
   { value: "in_progress", label: "In Progress" },
   { value: "completed", label: "Completed" },
   { value: "archived", label: "Archived" },
+];
+
+const AI_PLAN_EXAMPLES = [
+  {
+    label: "Sprint Regression",
+    prompt: "Sprint 14 regression and stabilization plan covering checkout, cart persistence, and payment gateway",
+  },
+  {
+    label: "Release v2.0 Hardening",
+    prompt: "End-to-end acceptance test plan for mobile release v2.0, auth token refresh, and offline cache sync",
+  },
+  {
+    label: "API & Performance",
+    prompt: "Integration and load test plan for user authentication endpoints, webhook delivery, and rate limiting",
+  },
 ];
 
 export function QuickTestPlanModal({
@@ -59,6 +78,78 @@ export function QuickTestPlanModal({
   const [analyzing, setAnalyzing] = useState(false);
   const [pending, setPending] = useState(false);
   const [showCollapsible, setShowCollapsible] = useState(false);
+  const [activeEngine, setActiveEngine] = useState<{ provider: string; model: string }>({
+    provider: "",
+    model: "",
+  });
+
+  // Project selector dropdown states
+  const [loadedProjects, setLoadedProjects] = useState<Array<{ label: string; value: string }>>([]);
+  const [headerProjectDropdownOpen, setHeaderProjectDropdownOpen] = useState(false);
+  const [formProjectDropdownOpen, setFormProjectDropdownOpen] = useState(false);
+  const headerProjectDropdownRef = useRef<HTMLDivElement>(null);
+  const formProjectDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch full project list from /api/projects so options are always up-to-date with /projects
+  useEffect(() => {
+    if (!isOpen) return;
+    setActiveEngine(getActiveAiConfig());
+
+    fetch("/api/projects")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.data && Array.isArray(json.data)) {
+          const opts = json.data.map((p: { name: string; key?: string }) => ({
+            value: p.name,
+            label: p.key ? `[${p.key}] ${p.name}` : p.name,
+          }));
+          setLoadedProjects(opts);
+        }
+      })
+      .catch(() => {});
+  }, [isOpen]);
+
+  // Click outside listener for project dropdowns
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        headerProjectDropdownRef.current &&
+        !headerProjectDropdownRef.current.contains(e.target as Node)
+      ) {
+        setHeaderProjectDropdownOpen(false);
+      }
+      if (
+        formProjectDropdownRef.current &&
+        !formProjectDropdownRef.current.contains(e.target as Node)
+      ) {
+        setFormProjectDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const normalizedProjects = useMemo(() => {
+    const map = new Map<string, string>();
+    projectOptions.forEach((p) => {
+      if (typeof p === "string") {
+        if (p.trim()) map.set(p.trim(), p.trim());
+      } else if (p && p.value) {
+        map.set(p.value, p.label || p.value);
+      }
+    });
+    loadedProjects.forEach((p) => {
+      map.set(p.value, p.label);
+    });
+    return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
+  }, [projectOptions, loadedProjects]);
+
+  const currentProjectOption = normalizedProjects.find(
+    (o) => o.value === project || o.label === project
+  );
+  const displayProjectLabel = currentProjectOption
+    ? currentProjectOption.label
+    : project || "Select Project";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -77,7 +168,7 @@ export function QuickTestPlanModal({
     } else {
       setMode("ai");
       setTitle("");
-      setProject(defaultProject || projectOptions[0] || "");
+      setProject(defaultProject || (projectOptions[0] ? (typeof projectOptions[0] === "string" ? projectOptions[0] : projectOptions[0].value) : ""));
       setSprint("");
       setStatus("active");
       const today = new Date().toISOString().split("T")[0];
@@ -135,7 +226,14 @@ export function QuickTestPlanModal({
     if (e) e.preventDefault();
 
     const planTitle = title.trim() || aiPrompt.trim().slice(0, 50) || "Untitled Test Plan";
-    const planProject = project.trim() || defaultProject || projectOptions[0] || "General";
+    const planProject =
+      project.trim() ||
+      defaultProject ||
+      (projectOptions[0]
+        ? typeof projectOptions[0] === "string"
+          ? projectOptions[0]
+          : projectOptions[0].value
+        : "General");
 
     setPending(true);
     try {
@@ -159,7 +257,7 @@ export function QuickTestPlanModal({
       const res = await fetch("/api/items/test-plans", {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(isEditing ? { id: payload.id, entry: payload } : payload),
+        body: JSON.stringify(payload),
       });
 
       const json = await res.json().catch(() => ({}));
@@ -167,13 +265,7 @@ export function QuickTestPlanModal({
         throw new Error(json.error || "Failed to save test plan.");
       }
 
-      toast(
-        isEditing
-          ? `Test plan "${planTitle}" updated successfully.`
-          : `Test plan "${planTitle}" created successfully.`,
-        "success",
-      );
-
+      toast(isEditing ? "Test plan updated successfully." : "Test plan created successfully.", "success");
       if (onCreated && json.data?.id) {
         onCreated(json.data.id);
       }
@@ -189,13 +281,45 @@ export function QuickTestPlanModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/40 backdrop-blur-xs">
-      <div className="relative flex max-h-[92vh] w-full max-w-2xl sm:max-w-3xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-100">
+      <div className="relative flex min-h-[580px] max-h-[92vh] w-full max-w-2xl sm:max-w-3xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-100">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gray-50/60">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-gray-900">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm font-bold text-gray-900 shrink-0">
               {isEditing ? "Edit Test Plan" : "New Test Plan"}
             </span>
+            <span className="text-slate-300 font-medium select-none">/</span>
+
+            {/* Header Project Selector Popover */}
+            <div ref={headerProjectDropdownRef} className="relative inline-block text-left min-w-0">
+              <button
+                type="button"
+                onClick={() => setHeaderProjectDropdownOpen((v) => !v)}
+                className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-800 hover:border-slate-300 hover:bg-slate-50/80 transition cursor-pointer shadow-2xs max-w-full"
+                title="Select project from /projects"
+              >
+                <SquaresFour size={14} weight="bold" className="text-slate-500 shrink-0" />
+                <span className="max-w-[150px] sm:max-w-[220px] truncate">{displayProjectLabel}</span>
+                <CaretDown size={12} weight="bold" className="text-slate-400 shrink-0" />
+              </button>
+
+              {headerProjectDropdownOpen && (
+                <div className="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100">
+                  <ProjectDropdownContent
+                    options={normalizedProjects}
+                    selectedValue={project}
+                    onSelect={(val) => {
+                      setProject(val);
+                      setHeaderProjectDropdownOpen(false);
+                    }}
+                    onClose={() => setHeaderProjectDropdownOpen(false)}
+                    title="Select Project"
+                    emptyTitle="No projects found"
+                    emptySubtitle="Please create a project first on the Projects page."
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -242,25 +366,90 @@ export function QuickTestPlanModal({
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {mode === "ai" && !isEditing ? (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Describe what you want to plan and test
-                </label>
-                <textarea
-                  rows={5}
-                  value={aiPrompt}
-                  onChange={(e) => setAiPrompt(e.target.value)}
-                  placeholder="Paste your PRD, feature specifications, sprint goals, or target release acceptance criteria..."
-                  className="w-full rounded-lg border border-gray-200 p-3 text-xs text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
-                />
-              </div>
+            <div className="flex flex-col h-full justify-between space-y-4 min-h-[420px]">
+              <div className="space-y-3.5">
+                {/* Central AI Prompt Card Container */}
+                <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs transition-all hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Describe what you want to plan and test
+                  </label>
+                  <textarea
+                    rows={8}
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="Paste your PRD, feature specifications, sprint goals, or target release acceptance criteria..."
+                    className="w-full min-h-[190px] sm:min-h-[210px] text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
+                  />
 
-              <div className="rounded-lg bg-blue-50/60 border border-blue-100 p-3 text-xs text-blue-800 flex items-start gap-2">
-                <Sparkle size={16} weight="bold" className="text-blue-600 mt-0.5 shrink-0" />
-                <p className="leading-relaxed">
-                  AI will analyze your description, draft the plan objectives, estimate testing boundaries, and structure execution milestones.
-                </p>
+                  {/* Inner Action Bar */}
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2.5">
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                      <span>Target Project:</span>
+                      <strong className="text-slate-800 font-semibold truncate max-w-[160px]">
+                        {displayProjectLabel}
+                      </strong>
+                    </div>
+
+                    {/* AI Engine Status Link */}
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                      <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
+                        Memory Active
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span
+                          className={cn(
+                            "inline-block h-1.5 w-1.5 rounded-full",
+                            activeEngine.provider ? "bg-emerald-500" : "bg-amber-400"
+                          )}
+                        />
+                        <span>
+                          AI Engine:{" "}
+                          {activeEngine.provider ? (
+                            <Link
+                              href="/settings/ai"
+                              onClick={onClose}
+                              className="font-semibold text-slate-700 hover:text-blue-600 hover:underline inline-flex items-center gap-1 transition"
+                              title="Configure AI model in Settings"
+                            >
+                              {activeEngine.model || activeEngine.provider}
+                            </Link>
+                          ) : (
+                            <Link
+                              href="/settings/ai"
+                              onClick={onClose}
+                              className="font-semibold text-amber-600 hover:text-amber-700 hover:underline inline-flex items-center gap-1 transition"
+                              title="Configure AI model in Settings"
+                            >
+                              Not configured (Settings)
+                            </Link>
+                          )}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Example Templates */}
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
+                  <span className="font-semibold text-slate-400">Try example:</span>
+                  {AI_PLAN_EXAMPLES.map((ex) => (
+                    <button
+                      key={ex.label}
+                      type="button"
+                      onClick={() => setAiPrompt(ex.prompt)}
+                      className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-medium text-slate-600 hover:border-blue-300 hover:bg-blue-50/60 hover:text-blue-700 transition cursor-pointer shadow-2xs"
+                    >
+                      {ex.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="rounded-lg bg-blue-50/60 border border-blue-100 p-3 text-xs text-blue-800 flex items-start gap-2">
+                  <Sparkle size={16} weight="bold" className="text-blue-600 mt-0.5 shrink-0" />
+                  <p className="leading-relaxed">
+                    AI will analyze your description, draft the plan objectives, estimate testing boundaries, and structure execution milestones.
+                  </p>
+                </div>
               </div>
             </div>
           ) : (
@@ -271,21 +460,41 @@ export function QuickTestPlanModal({
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
                     Project <span className="text-rose-500">*</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      list="project-list"
-                      value={project}
-                      onChange={(e) => setProject(e.target.value)}
-                      placeholder="e.g. ECOSHOP WEB"
-                      className="w-full h-9 rounded-md border border-gray-200 px-3 text-xs text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                      required
-                    />
-                    <datalist id="project-list">
-                      {projectOptions.map((p) => (
-                        <option key={p} value={p} />
-                      ))}
-                    </datalist>
+                  <div ref={formProjectDropdownRef} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setFormProjectDropdownOpen((v) => !v)}
+                      className={cn(
+                        "flex h-9 w-full items-center justify-between rounded-md border bg-white px-3 text-left text-xs transition cursor-pointer outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
+                        project ? "text-gray-900 font-semibold" : "text-gray-400 font-normal",
+                        "border-gray-200"
+                      )}
+                    >
+                      <span className="flex items-center gap-1.5 truncate">
+                        <FolderSimple size={14} weight="bold" className="text-gray-400 shrink-0" />
+                        <span className="truncate">{displayProjectLabel}</span>
+                      </span>
+                      <CaretDown size={12} weight="bold" className="text-gray-400 shrink-0" />
+                    </button>
+
+                    <input type="hidden" name="project" value={project} required />
+
+                    {formProjectDropdownOpen && (
+                      <div className="absolute left-0 top-full z-50 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100">
+                        <ProjectDropdownContent
+                          options={normalizedProjects}
+                          selectedValue={project}
+                          onSelect={(val) => {
+                            setProject(val);
+                            setFormProjectDropdownOpen(false);
+                          }}
+                          onClose={() => setFormProjectDropdownOpen(false)}
+                          title="Select Project"
+                          emptyTitle="No projects found"
+                          emptySubtitle="Please create a project first on the Projects page."
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 

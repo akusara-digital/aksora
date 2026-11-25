@@ -50,6 +50,10 @@ vi.mock("@phosphor-icons/react", () => ({
   CaretUp: (props: Record<string, unknown>) => <svg data-testid="caret-up" {...props} />,
   FolderSimple: (props: Record<string, unknown>) => <svg data-testid="folder" {...props} />,
   CircleNotch: (props: Record<string, unknown>) => <svg data-testid="circle-notch" {...props} />,
+  SquaresFour: (props: Record<string, unknown>) => <svg data-testid="squares-four" {...props} />,
+  Check: (props: Record<string, unknown>) => <svg data-testid="check" {...props} />,
+  Lightning: (props: Record<string, unknown>) => <svg data-testid="lightning" {...props} />,
+  ListBullets: (props: Record<string, unknown>) => <svg data-testid="list-bullets" {...props} />,
 }));
 
 import { TestPlanLibrary } from "@/app/test-plans/test-plan-library";
