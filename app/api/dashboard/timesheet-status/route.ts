@@ -40,7 +40,7 @@ export async function GET() {
      WHERE "company" = ?
        AND "date" >= ?
        AND "date" <= ?
-       AND ("deletedAt" IS NULL OR "deletedAt" = '')
+       AND "deletedAt" IS NULL
        ${workspaceFilter}`,
     [company, monIso, sunIso, ...workspaceParams]
   );

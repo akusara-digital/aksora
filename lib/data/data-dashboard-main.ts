@@ -293,8 +293,8 @@ export async function getDashboardData(filterProject?: string): Promise<Dashboar
   const sprintWhereParams = scope.params;
   const sprintPassRateRows = (await selectAll(
     `SELECT sp.id, sp.name, sp."startDate", sp."endDate",
-            COALESCE(SUM(COALESCE(ts.passed, 0)), 0) AS passed,
-            COALESCE(SUM(COALESCE(ts."totalCases", 0)), 0) AS totalCases,
+            COALESCE(SUM(CAST(NULLIF(COALESCE(ts.passed, '0'), '') AS INTEGER)), 0) AS passed,
+            COALESCE(SUM(CAST(NULLIF(COALESCE(ts."totalCases", '0'), '') AS INTEGER)), 0) AS totalCases,
             COUNT(ts.id) AS sessions
      FROM "Sprint" sp
      LEFT JOIN "TestSession" ts
