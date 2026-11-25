@@ -162,6 +162,8 @@ export function GoogleSignInButton({
         client_id: googleClientId,
         auto_select: false,
         cancel_on_tap_outside: true,
+        itp_support: true,
+        use_fedcm_for_prompt: true,
         callback: async (response: { credential?: string }) => {
           setPending(true);
           updateError("");
