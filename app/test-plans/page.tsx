@@ -45,6 +45,7 @@ export default async function TestPlansPage({
         plans={plans}
         projectOptions={projectOptions}
         initialSearch={initialSearch}
+        hideToolbarAction={true}
       />
     </PageShell>
   );

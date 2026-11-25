@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Funnel,
@@ -23,6 +23,7 @@ export interface TestPlanLibraryProps {
   plans: TestPlanItem[];
   projectOptions?: string[];
   initialSearch?: string;
+  hideToolbarAction?: boolean;
 }
 
 const ALL = "All";
@@ -31,6 +32,7 @@ export function TestPlanLibrary({
   plans,
   projectOptions = [],
   initialSearch = "",
+  hideToolbarAction = false,
 }: TestPlanLibraryProps) {
   const router = useRouter();
   const [search, setSearch] = useState(initialSearch);
@@ -72,6 +74,19 @@ export function TestPlanLibrary({
     });
     return Array.from(set).sort();
   }, [plans, projectOptions]);
+
+  useEffect(() => {
+    const handleOpenPlan = () => {
+      setEditingPlan(null);
+      setShowModal(true);
+    };
+    window.addEventListener("qa:open-new-plan", handleOpenPlan);
+    window.addEventListener("qa:open-form", handleOpenPlan);
+    return () => {
+      window.removeEventListener("qa:open-new-plan", handleOpenPlan);
+      window.removeEventListener("qa:open-form", handleOpenPlan);
+    };
+  }, []);
 
   const handleStatusChange = async (planId: number, nextStatus: string) => {
     try {
@@ -253,18 +268,19 @@ export function TestPlanLibrary({
             {filteredPlans.length} plan{filteredPlans.length === 1 ? "" : "s"}
           </span>
 
-          {/* Primary CTA: New Test Plan */}
-          <button
-            type="button"
-            onClick={() => {
-              setEditingPlan(null);
-              setShowModal(true);
-            }}
-            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3 text-xs font-bold text-white transition hover:bg-blue-700 shadow-2xs"
-          >
-            <Plus size={14} weight="bold" />
-            <span>New Test Plan</span>
-          </button>
+          {!hideToolbarAction && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingPlan(null);
+                setShowModal(true);
+              }}
+              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3 text-xs font-bold text-white transition hover:bg-blue-700 shadow-2xs"
+            >
+              <Plus size={14} weight="bold" />
+              <span>New Test Plan</span>
+            </button>
+          )}
         </div>
       </div>
 

@@ -110,6 +110,18 @@ export function SuitesHeaderActions({
           </>
         )}
 
+        {exportModule === "test-plans" && (
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("qa:open-new-plan"))}
+            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
+            title="Create a new Test Plan"
+          >
+            <Plus size={14} weight="bold" className="shrink-0" />
+            <span>New Test Plan</span>
+          </button>
+        )}
+
         <ModuleMoreActionsMenu
           module={exportModule}
           canAdd={true}

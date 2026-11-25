@@ -362,26 +362,19 @@ export function ExecutionSuiteCards({
             </div>
           )}
 
-          <div className="relative flex items-center">
-            <MagnifyingGlass size={13} weight="bold" className="absolute left-2.5 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search runs..."
-              className="h-8 w-44 sm:w-56 rounded-lg border border-slate-200 bg-white pl-8 pr-7 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                className="absolute right-2 text-slate-400 hover:text-slate-600"
-                aria-label="Clear search"
-              >
-                <X size={12} weight="bold" />
-              </button>
-            )}
-          </div>
+          {(selectedProject !== "all" || selectedPlan !== "all") && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedProject("all");
+                setSelectedPlan("all");
+              }}
+              className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+            >
+              <X size={11} weight="bold" />
+              Clear
+            </button>
+          )}
         </div>
       </div>
 
