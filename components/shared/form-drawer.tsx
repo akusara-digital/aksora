@@ -19,7 +19,7 @@ type FormDrawerProps = {
 const SIZE_MAP: Record<string, string> = {
   sm: "max-w-sm",
   md: "max-w-2xl",
-  lg: "max-w-3xl",
+  lg: "max-w-2xl sm:max-w-3xl",
   xl: "max-w-5xl",
 };
 
@@ -57,7 +57,7 @@ export function FormDrawer({ open, title, subtitle, headerAccessory, customHeade
       <div
         ref={ref}
         className={cn(
-          "relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl bg-white border border-gray-200 shadow-lg",
+          "relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-xl bg-white border border-gray-200 shadow-lg",
           SIZE_MAP[size] ?? "max-w-2xl",
           "animate-in fade-in duration-100",
         )}
