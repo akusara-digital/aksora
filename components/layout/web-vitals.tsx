@@ -12,6 +12,10 @@ export function WebVitals() {
       return;
     }
 
+    // Only report degraded vitals in production to avoid burning function
+    // invocations on healthy page loads.
+    if (metric.rating === "good") return;
+
     // In production, send to analytics endpoint (non-blocking)
     const body = JSON.stringify({
       name: metric.name,

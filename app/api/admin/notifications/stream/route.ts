@@ -114,10 +114,10 @@ export async function GET(request: Request) {
         safeEnqueue(`:heartbeat\n\n`);
       }, 20000);
 
-      // Auto-close after 5 minutes (client will reconnect)
+      // Close gracefully before Vercel's 60s maxDuration so LISTEN releases cleanly
       autoCloseTimer = setTimeout(() => {
         cleanup();
-      }, 5 * 60 * 1000);
+      }, 50 * 1000);
     },
     cancel() {
       cleanup();

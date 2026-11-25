@@ -11,8 +11,8 @@ export type CollaborationEditor = {
   updatedAt: string;
 };
 
-const HEARTBEAT_INTERVAL = 30_000; // 30 seconds
-const POLL_INTERVAL = 15_000; // 15 seconds
+const HEARTBEAT_INTERVAL = 60_000; // 60 seconds
+const POLL_INTERVAL = 45_000; // 45 seconds
 
 /**
  * useCollaborationPresence - tracks and displays who else is viewing/editing
@@ -76,17 +76,22 @@ export function useCollaborationPresence(module: string, itemId: string | number
 
     mountedRef.current = true;
 
-    // Initial presence + fetch
-    sendPresence(actionRef.current);
-    queueMicrotask(() => { void fetchEditors(); });
-
-    // Heartbeat interval
-    heartbeatRef.current = setInterval(() => {
+    const startLoops = () => {
       sendPresence(actionRef.current);
-    }, HEARTBEAT_INTERVAL);
+      queueMicrotask(() => { void fetchEditors(); });
+      if (!heartbeatRef.current) {
+        heartbeatRef.current = setInterval(() => {
+          sendPresence(actionRef.current);
+        }, HEARTBEAT_INTERVAL);
+      }
+      if (!pollRef.current) {
+        pollRef.current = setInterval(fetchEditors, POLL_INTERVAL);
+      }
+    };
 
-    // Poll for other editors
-    pollRef.current = setInterval(fetchEditors, POLL_INTERVAL);
+    if (typeof document === "undefined" || !document.hidden) {
+      startLoops();
+    }
 
     // Pause heartbeat/polling while the tab is backgrounded; resume on return.
     const handleVisibilityChange = () => {
@@ -96,10 +101,7 @@ export function useCollaborationPresence(module: string, itemId: string | number
         heartbeatRef.current = null;
         pollRef.current = null;
       } else if (mountedRef.current) {
-        sendPresence(actionRef.current);
-        void fetchEditors();
-        heartbeatRef.current = setInterval(() => sendPresence(actionRef.current), HEARTBEAT_INTERVAL);
-        pollRef.current = setInterval(fetchEditors, POLL_INTERVAL);
+        startLoops();
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -153,8 +155,11 @@ export function useModuleCollaboration(module: string) {
       }
     };
 
-    fetchAll();
-    let interval: ReturnType<typeof setInterval> | null = setInterval(fetchAll, POLL_INTERVAL);
+    let interval: ReturnType<typeof setInterval> | null = null;
+    if (typeof document === "undefined" || !document.hidden) {
+      fetchAll();
+      interval = setInterval(fetchAll, POLL_INTERVAL);
+    }
 
     // Pause polling while the tab is backgrounded; resume on return.
     const handleVisibilityChange = () => {
@@ -163,7 +168,7 @@ export function useModuleCollaboration(module: string) {
         interval = null;
       } else if (mountedRef.current) {
         void fetchAll();
-        interval = setInterval(fetchAll, POLL_INTERVAL);
+        if (!interval) interval = setInterval(fetchAll, POLL_INTERVAL);
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);

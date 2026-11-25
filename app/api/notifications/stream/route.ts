@@ -177,10 +177,10 @@ export async function GET(request: Request) {
         safeEnqueue(`: heartbeat\n\n`);
       }, 30000);
 
-      // Clean up after 5 minutes to avoid hanging lambdas indefinitely
+      // Close gracefully before Vercel's 60s maxDuration so LISTEN releases cleanly
       autoCloseTimer = setTimeout(() => {
         cleanup();
-      }, 5 * 60 * 1000);
+      }, 50 * 1000);
     },
     cancel() {
       cleanup();

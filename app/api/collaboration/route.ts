@@ -13,7 +13,9 @@ export const dynamic = "force-dynamic";
  * DELETE: Remove presence (user left the item)
  */
 
-const PRESENCE_TTL_MS = 90_000; // 90 seconds - stale after this
+const PRESENCE_TTL_MS = 150_000; // 150 seconds - stale after this
+const PRUNE_INTERVAL_MS = 60_000;
+let lastPrunedAt = 0;
 
 export async function POST(request: NextRequest) {
   const user = await getCurrentUser();
@@ -60,12 +62,16 @@ export async function POST(request: NextRequest) {
       [userId, userName, module, String(itemId), action, user.company, now]
     );
 
-    // Clean up stale entries
-    const staleThreshold = new Date(Date.now() - PRESENCE_TTL_MS).toISOString();
-    await db.run(
-      'DELETE FROM "CollaborationPresence" WHERE "updatedAt" < ?',
-      [staleThreshold]
-    );
+    // Throttle stale-entry cleanup writes to at most once per minute per instance
+    const nowMs = Date.now();
+    if (nowMs - lastPrunedAt >= PRUNE_INTERVAL_MS) {
+      lastPrunedAt = nowMs;
+      const staleThreshold = new Date(nowMs - PRESENCE_TTL_MS).toISOString();
+      await db.run(
+        'DELETE FROM "CollaborationPresence" WHERE "updatedAt" < ?',
+        [staleThreshold]
+      );
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
@@ -98,25 +104,19 @@ export async function GET(request: NextRequest) {
   try {
     const staleThreshold = new Date(Date.now() - PRESENCE_TTL_MS).toISOString();
 
-    // Clean stale entries first
-    await db.run(
-      'DELETE FROM "CollaborationPresence" WHERE "updatedAt" < ?',
-      [staleThreshold]
-    );
-
     let editors: Array<{ userId: number; userName: string; module: string; itemId: string; action: string; updatedAt: string }>;
 
     if (itemId) {
-      // Get editors for a specific item
+      // Get active editors for a specific item without mutating on GET
       editors = await db.query(
-        'SELECT "userId", "userName", "module", "itemId", "action", "updatedAt" FROM "CollaborationPresence" WHERE "module" = ? AND "itemId" = ? AND "company" = ? AND "userId" != CAST(? AS INTEGER)',
-        [moduleKey, itemId, user.company, user.id]
+        'SELECT "userId", "userName", "module", "itemId", "action", "updatedAt" FROM "CollaborationPresence" WHERE "module" = ? AND "itemId" = ? AND "company" = ? AND "userId" != CAST(? AS INTEGER) AND "updatedAt" >= ?',
+        [moduleKey, itemId, user.company, user.id, staleThreshold]
       );
     } else {
       // Get all active editors in a module (for showing indicators on list view)
       editors = await db.query(
-        'SELECT "userId", "userName", "module", "itemId", "action", "updatedAt" FROM "CollaborationPresence" WHERE "module" = ? AND "company" = ? AND "userId" != CAST(? AS INTEGER)',
-        [moduleKey, user.company, user.id]
+        'SELECT "userId", "userName", "module", "itemId", "action", "updatedAt" FROM "CollaborationPresence" WHERE "module" = ? AND "company" = ? AND "userId" != CAST(? AS INTEGER) AND "updatedAt" >= ?',
+        [moduleKey, user.company, user.id, staleThreshold]
       );
     }
 

@@ -11,7 +11,8 @@ export const maxDuration = 60;
 const HEARTBEAT_MS = 30_000; // 30 seconds keep-alive
 // Presence has no natural "changed" event to LISTEN for (it's lastSeen-based),
 // so it stays on a cheap poll. Notifications react to NOTIFY instead (below).
-const PRESENCE_POLL_MS = 20_000;
+const PRESENCE_POLL_MS = 45_000;
+const AUTO_CLOSE_MS = 50_000;
 const MAX_MISSED_NOTIFICATIONS = 50;
 
 type SseNotification = {
@@ -135,6 +136,7 @@ export async function GET(request: Request) {
 
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined;
   let presenceTimer: ReturnType<typeof setInterval> | undefined;
+  let autoCloseTimer: ReturnType<typeof setTimeout> | undefined;
   let controllerRef: ReadableStreamDefaultController<Uint8Array> | null = null;
 
   // Tear down on client disconnect. Declared and wired to the abort signal
@@ -146,6 +148,7 @@ export async function GET(request: Request) {
     closed = true;
     clearInterval(heartbeatTimer);
     clearInterval(presenceTimer);
+    if (autoCloseTimer) clearTimeout(autoCloseTimer);
     void unlisten?.();
     try {
       controllerRef?.close();
@@ -245,6 +248,10 @@ export async function GET(request: Request) {
         // If LISTEN setup fails, presence polling above still keeps the
         // client connected; it will reconnect and retry LISTEN shortly after.
       }
+      // Close gracefully before Vercel's 60s maxDuration so LISTEN releases cleanly
+      autoCloseTimer = setTimeout(() => {
+        cleanup();
+      }, AUTO_CLOSE_MS);
     },
     cancel() {
       cleanup();

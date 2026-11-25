@@ -34,5 +34,12 @@ export async function GET() {
     [company]
   );
 
-  return NextResponse.json({ data: JSON.parse(JSON.stringify(announcements)) });
+  return NextResponse.json(
+    { data: JSON.parse(JSON.stringify(announcements)) },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=120, stale-while-revalidate=300",
+      },
+    }
+  );
 }

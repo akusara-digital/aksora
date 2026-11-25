@@ -14,15 +14,20 @@ type AssignmentEvent = {
 };
 
 // Listens to /api/notifications/stream SSE and toasts when a new assignment arrives.
-// ponytail: reconnects once on close; no exponential backoff — add if flakiness is observed in prod.
+const INITIAL_RECONNECT_MS = 30_000;
+const MAX_RECONNECT_MS = 300_000;
+const MAX_IDLE_RECONNECTS = 6;
+
 export function useAssignmentNotifications(enabled = true) {
   const esRef = useRef<EventSource | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const attemptsRef = useRef(0);
 
   useEffect(() => {
     if (!enabled) return;
 
     function connect() {
+      if (typeof document !== "undefined" && document.hidden) return;
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
@@ -36,6 +41,7 @@ export function useAssignmentNotifications(enabled = true) {
       esRef.current = es;
 
       es.addEventListener("assignment", (event) => {
+        attemptsRef.current = 0;
         try {
           const data = JSON.parse(event.data) as AssignmentEvent;
           toast(data.message, "info");
@@ -47,12 +53,17 @@ export function useAssignmentNotifications(enabled = true) {
       es.addEventListener("error", () => {
         es.close();
         esRef.current = null;
-        // Reconnect once after 15s if connection drops
-        reconnectTimerRef.current = setTimeout(connect, 15000);
+        if (typeof document !== "undefined" && document.hidden) return;
+        if (attemptsRef.current >= MAX_IDLE_RECONNECTS) return;
+        const delay = Math.min(INITIAL_RECONNECT_MS * Math.pow(2, attemptsRef.current), MAX_RECONNECT_MS);
+        attemptsRef.current += 1;
+        reconnectTimerRef.current = setTimeout(connect, delay);
       });
     }
 
-    connect();
+    if (typeof document === "undefined" || !document.hidden) {
+      connect();
+    }
 
     // Close the SSE connection while the tab is backgrounded so the serverless
     // function isn't kept alive polling for a tab nobody is looking at, and
@@ -66,6 +77,7 @@ export function useAssignmentNotifications(enabled = true) {
         esRef.current?.close();
         esRef.current = null;
       } else if (!esRef.current) {
+        attemptsRef.current = 0;
         connect();
       }
     };

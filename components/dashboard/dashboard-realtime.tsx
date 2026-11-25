@@ -18,9 +18,9 @@ interface SSENotification {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const BACKOFF_BASE = 1000;
-const BACKOFF_MAX = 30000;
-const MAX_ATTEMPTS = 10;
+const BACKOFF_BASE = 15000;
+const BACKOFF_MAX = 120000;
+const MAX_ATTEMPTS = 6;
 const UNREAD_COLLAPSE_THRESHOLD = 20;
 
 function getBackoffDelay(attempt: number): number {
@@ -120,13 +120,11 @@ export function DashboardRealtime() {
 
     es.onopen = () => {
       if (!mountedRef.current) return;
-      attemptRef.current = 0;
       setConnectionState("connected");
     };
 
     es.addEventListener("connected", (event) => {
       if (!mountedRef.current) return;
-      attemptRef.current = 0;
       setConnectionState("connected");
 
       // Track timestamp from connected event
@@ -142,6 +140,7 @@ export function DashboardRealtime() {
 
     es.addEventListener("notification", (event) => {
       if (!mountedRef.current) return;
+      attemptRef.current = 0;
       try {
         const notification: SSENotification = JSON.parse(event.data);
         handleNotification(notification);
@@ -159,6 +158,7 @@ export function DashboardRealtime() {
 
     es.addEventListener("data-update", () => {
       if (!mountedRef.current) return;
+      attemptRef.current = 0;
       handleDataUpdate();
     });
 
@@ -167,8 +167,9 @@ export function DashboardRealtime() {
 
       es.close();
       eventSourceRef.current = null;
+      if (typeof document !== "undefined" && document.hidden) return;
 
-      // Attempt reconnection with exponential backoff
+      // Attempt reconnection with exponential backoff (reset only on real activity or tab focus)
       if (attemptRef.current < MAX_ATTEMPTS) {
         setConnectionState("reconnecting");
         const delay = getBackoffDelay(attemptRef.current);
@@ -196,16 +197,18 @@ export function DashboardRealtime() {
   useEffect(() => {
     mountedRef.current = true;
 
-    // Check if user is authenticated before connecting
-    fetch("/api/auth/me")
-      .then((r) => {
-        if (r.ok) {
-          connect();
-        }
-      })
-      .catch(() => {
-        // Not authenticated - don't connect
-      });
+    // Check if user is authenticated before connecting (skip if tab is hidden)
+    if (typeof document === "undefined" || !document.hidden) {
+      fetch("/api/auth/me")
+        .then((r) => {
+          if (r.ok && mountedRef.current && (typeof document === "undefined" || !document.hidden)) {
+            connect();
+          }
+        })
+        .catch(() => {
+          // Not authenticated - don't connect
+        });
+    }
 
     // Close the SSE connection while the tab is backgrounded so the serverless
     // function isn't kept alive polling for a tab nobody is looking at, and
