@@ -36,21 +36,6 @@ const STATUS_OPTIONS = [
   { value: "archived", label: "Archived" },
 ];
 
-const AI_PLAN_EXAMPLES = [
-  {
-    label: "Sprint Regression",
-    prompt: "Sprint 14 regression and stabilization plan covering checkout, cart persistence, and payment gateway",
-  },
-  {
-    label: "Release v2.0 Hardening",
-    prompt: "End-to-end acceptance test plan for mobile release v2.0, auth token refresh, and offline cache sync",
-  },
-  {
-    label: "API & Performance",
-    prompt: "Integration and load test plan for user authentication endpoints, webhook delivery, and rate limiting",
-  },
-];
-
 export function QuickTestPlanModal({
   isOpen,
   onClose,
@@ -374,11 +359,11 @@ export function QuickTestPlanModal({
                     Describe what you want to plan and test
                   </label>
                   <textarea
-                    rows={8}
+                    rows={11}
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     placeholder="Paste your PRD, feature specifications, sprint goals, or target release acceptance criteria..."
-                    className="w-full min-h-[190px] sm:min-h-[210px] text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
+                    className="w-full min-h-[260px] sm:min-h-[290px] text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
                   />
 
                   {/* Inner Action Bar */}
@@ -427,28 +412,6 @@ export function QuickTestPlanModal({
                       </span>
                     </div>
                   </div>
-                </div>
-
-                {/* Quick Example Templates */}
-                <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
-                  <span className="font-semibold text-slate-400">Try example:</span>
-                  {AI_PLAN_EXAMPLES.map((ex) => (
-                    <button
-                      key={ex.label}
-                      type="button"
-                      onClick={() => setAiPrompt(ex.prompt)}
-                      className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-medium text-slate-600 hover:border-blue-300 hover:bg-blue-50/60 hover:text-blue-700 transition cursor-pointer shadow-2xs"
-                    >
-                      {ex.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="rounded-lg bg-blue-50/60 border border-blue-100 p-3 text-xs text-blue-800 flex items-start gap-2">
-                  <Sparkle size={16} weight="bold" className="text-blue-600 mt-0.5 shrink-0" />
-                  <p className="leading-relaxed">
-                    AI will analyze your description, draft the plan objectives, estimate testing boundaries, and structure execution milestones.
-                  </p>
                 </div>
               </div>
             </div>
