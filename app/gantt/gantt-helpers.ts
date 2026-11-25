@@ -61,19 +61,20 @@ export type Holidays = Record<string, string>;
 
 export const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export const STATUS_COLORS: Record<string, string> = {
+  // Sprint statuses
+  planning: "#4f46e5",
   active: "#2563eb",
-  planning: "#6366f1",
   completed: "#059669",
+  // Test Plan statuses
+  draft: "#6b7280",
   closed: "#059669",
-  draft: "#94a3b8",
-  deferred: "#64748b",
-  idea: "#a78bfa",
-  triage: "#f59e0b",
-  ready: "#0ea5e9",
-  "IN PROGRESS": "#2563eb",
-  review: "#8b5cf6",
-  done: "#059669",
-  blocked: "#ef4444",
+  archived: "#6b7280",
+  // Task statuses
+  backlog: "#475569",
+  todo: "#b45309",
+  in_progress: "#2563eb",
+  need_to_test: "#ea580c",
+  hold: "#9333ea",
 };
 export const DAY_PX: Record<ViewMode, number> = { month: 48, year: 8 };
 export const ZOOM_SCALE: Record<ZoomLevel, number> = { tight: 0.8, normal: 1, wide: 1.35 };
