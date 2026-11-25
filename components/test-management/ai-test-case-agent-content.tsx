@@ -43,12 +43,6 @@ export interface AiTestCaseAgentContentProps {
 
 const STORAGE_AI_TC_MEMORY = "aksora_test_case_ai_prompt_memory";
 
-const AI_TEST_EXAMPLES = [
-  { label: "Auth & 2FA Flow", prompt: "User signs in with valid credentials, receives 2FA SMS OTP, enters OTP, and lands on dashboard" },
-  { label: "Checkout & Payment", prompt: "User applies valid discount promo coupon on checkout, selects credit card, and verifies order total deduction" },
-  { label: "Profile & Settings", prompt: "User updates display name and uploads avatar image with JPG format under 2MB size limit" },
-];
-
 export function AiTestCaseAgentContent({
   defaultProject = "",
   selectedProject = "",
@@ -318,21 +312,6 @@ export function AiTestCaseAgentContent({
               </span>
             </div>
           </div>
-        </div>
-
-        {/* Quick Example Templates */}
-        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
-          <span className="font-semibold text-slate-400">Try example:</span>
-          {AI_TEST_EXAMPLES.map((ex) => (
-            <button
-              key={ex.label}
-              type="button"
-              onClick={() => handleNotesChange(ex.prompt)}
-              className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-medium text-slate-600 hover:border-blue-300 hover:bg-blue-50/60 hover:text-blue-700 transition cursor-pointer shadow-2xs"
-            >
-              {ex.label}
-            </button>
-          ))}
         </div>
       </div>
 
