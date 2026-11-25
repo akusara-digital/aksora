@@ -51,7 +51,6 @@ const dict = {
     groupPersonal: "Personal Tools",
     groupPersonalTools: "Personal Tools",
     notes: "Notes",
-    notesAndVault: "Notes & Vault",
     passwordManager: "Password Manager",
     groupReports: "Reports",
     groupReportsAnalytics: "Reports",

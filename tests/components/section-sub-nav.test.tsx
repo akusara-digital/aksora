@@ -64,7 +64,7 @@ describe("SectionSubNav", () => {
     expect(html).not.toContain("Sprints Backlog");
   });
 
-  it("renders Notes & Vault tabs including Daily Work and Meeting Notes when on /notes, /meeting-notes, or /work-logs", () => {
+  it("renders Daily Work tabs including Personal Notes, Meeting Notes, and Password Vault when on /notes, /meeting-notes, or /work-logs", () => {
     currentPathname = "/meeting-notes";
     let html = renderToStaticMarkup(<SectionSubNav />);
     expect(html).toContain('href="/work-logs"');

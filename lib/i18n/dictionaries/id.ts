@@ -53,7 +53,6 @@ const dict: Dictionary = {
     groupPersonal: "Alat Pribadi",
     groupPersonalTools: "Alat Pribadi",
     notes: "Catatan",
-    notesAndVault: "Catatan & Vault",
     passwordManager: "Pengelola Sandi",
     groupReports: "Laporan",
     groupReportsAnalytics: "Laporan",

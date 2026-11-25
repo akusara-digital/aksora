@@ -135,7 +135,6 @@ describe("Sidebar", () => {
       testRuns: "Test Runs",
       groupReports: "Reports",
       weeklyReport: "Weekly Report",
-      notesAndVault: "Notes & Vault",
       settings: "Settings",
     } as unknown as Parameters<typeof getGroups>[0];
 
