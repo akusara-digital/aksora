@@ -8,7 +8,12 @@ import {
   PencilSimple,
   Check,
   CircleNotch,
+  CheckCircle,
+  XCircle,
+  Warning,
+  Clock,
 } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/toast";
 import { MaturityBadge } from "@/components/test-management/maturity-badge";
 import { formatStepScenario } from "@/lib/test-step-utils";
@@ -218,6 +223,68 @@ export function TestCaseDrawer({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          {/* Single Case Quick Execution Bar */}
+          <div className="rounded-xl border border-blue-200/80 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 p-3.5 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded">
+                  Single Case Execution
+                </span>
+                <p className="mt-1 text-xs text-slate-600">Quickly record the execution verdict for this case:</p>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handleQuickStatusChange("Passed")}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition shadow-2xs cursor-pointer",
+                    status === "Passed"
+                      ? "bg-emerald-600 text-white"
+                      : "border border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50",
+                  )}
+                >
+                  <CheckCircle size={13} weight="fill" /> Passed
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickStatusChange("Failed")}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition shadow-2xs cursor-pointer",
+                    status === "Failed"
+                      ? "bg-rose-600 text-white"
+                      : "border border-rose-300 bg-white text-rose-700 hover:bg-rose-50",
+                  )}
+                >
+                  <XCircle size={13} weight="fill" /> Failed
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickStatusChange("Blocked")}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition shadow-2xs cursor-pointer",
+                    status === "Blocked"
+                      ? "bg-amber-600 text-white"
+                      : "border border-amber-300 bg-white text-amber-700 hover:bg-amber-50",
+                  )}
+                >
+                  <Warning size={13} weight="fill" /> Blocked
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickStatusChange("Pending")}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition shadow-2xs cursor-pointer",
+                    status === "Pending"
+                      ? "bg-slate-700 text-white"
+                      : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100",
+                  )}
+                >
+                  <Clock size={13} weight="fill" /> Reset
+                </button>
+              </div>
+            </div>
+          </div>
+
           <TestCaseMetadataBar
             testCase={testCase}
             editing={editing}

@@ -7,6 +7,7 @@ import {
   DotsSixVertical,
   CaretDown,
   ArrowSquareOut,
+  Play,
 } from "@phosphor-icons/react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -201,19 +202,31 @@ export function SortableTestCaseRow({
       {/* 11. STATUS */}
       <td className="px-3 py-3 align-top border-r border-slate-200 whitespace-nowrap min-w-[130px]">
         {onQuickStatusChange ? (
-          <select
-            value={testCase.status || "Pending"}
-            onChange={(e) => onQuickStatusChange(testCase.id, e.target.value)}
-            className={cn(
-              "h-7 rounded border px-2 text-[11px] font-bold uppercase tracking-wider outline-none cursor-pointer transition",
-              STATUS_PILL_STYLES[testCase.status] || STATUS_PILL_STYLES.Pending,
+          <div className="flex items-center gap-1.5">
+            <select
+              value={testCase.status || "Pending"}
+              onChange={(e) => onQuickStatusChange(testCase.id, e.target.value)}
+              className={cn(
+                "h-7 rounded border px-2 text-[11px] font-bold uppercase tracking-wider outline-none cursor-pointer transition",
+                STATUS_PILL_STYLES[testCase.status] || STATUS_PILL_STYLES.Pending,
+              )}
+            >
+              <option value="Pending">NOT YET STARTED</option>
+              <option value="Passed">PASSED</option>
+              <option value="Failed">FAILED</option>
+              <option value="Blocked">BLOCKED</option>
+            </select>
+            {onOpenDetail && (
+              <button
+                type="button"
+                onClick={() => onOpenDetail(testCase)}
+                title="Single Case Quick Execution"
+                className="flex h-7 w-7 items-center justify-center rounded border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition cursor-pointer"
+              >
+                <Play size={11} weight="fill" />
+              </button>
             )}
-          >
-            <option value="Pending">NOT YET STARTED</option>
-            <option value="Passed">PASSED</option>
-            <option value="Failed">FAILED</option>
-            <option value="Blocked">BLOCKED</option>
-          </select>
+          </div>
         ) : (
           <span
             className={cn(

@@ -1,6 +1,6 @@
 # Aksora - Agent Rules
 
-**Aksora** (formerly QA Daily Hub) is the workspace for engineering teams: test planning, execution, bug tracking, tasks/sprints, standups, and auto-generated weekly reports — all in one app. Built by Akusara Digital. Brand: **Aksora — One Team. One Flow.** Site: `aksora.akusaraproject.my.id`. Company: `https://akusaradigital.com`.
+**Aksora** (formerly QA Daily Hub) is the workspace for engineering teams: test planning, execution, bug tracking, tasks/sprints, standups, and auto-generated weekly reports - all in one app. Built by Akusara Digital. Brand: **Aksora - One Team. One Flow.** Site: `aksora.akusaraproject.my.id`. Company: `https://akusaradigital.com`.
 
 ## Multi-Agent Git Safety & Local Commit Rule (MANDATORY)
 1. **Commit Locally Often (Safety Net)**:
@@ -29,7 +29,7 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 
 | Type | Location |
 |------|----------|
-| Feature component | `components/[domain]/` — create new folder if needed |
+| Feature component | `components/[domain]/` - create new folder if needed |
 | Global hook | `hooks/` |
 | Module-specific hook | `components/module/` (prefix `use-`) |
 | Business logic | `lib/` |
@@ -38,13 +38,13 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 
 ## Knowledge Graph / Graphify (MANDATORY)
 - **MANDATORY**: Before fixing bugs, refactoring, or building new features, always consult `graphify-out/graph.json` or run `pnpm graphify:query "<target>"` (`python -m graphify query "<target>"`) / `graphify-out/GRAPH_REPORT.md` first.
-- **Graph Rebuilding & Pre-Push**: Whenever file exports, dependencies, or architectural boundaries change — and **WAJIB sebelum push** — re-index via `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`). Hapus folder/history snapshot lama di `graphify-out/` agar graph selalu bersih.
+- **Graph Rebuilding & Pre-Push**: Whenever file exports, dependencies, or architectural boundaries change - and **WAJIB sebelum push** - re-index via `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`). Hapus folder/history snapshot lama di `graphify-out/` agar graph selalu bersih.
 - **Subagent Rule (STRICT)**: Always run `graphify query "<target>"` YOURSELF before spawning any subagent. Extract the caller hierarchy, exact file paths, and line locations (`src=... loc=L...`) from the graph query and paste them directly into the subagent's prompt.
 - **Strict Ban on Sweep-Reading**: NEVER spawn a subagent with broad/open-ended instructions that cause it to blindly grep, scan random directories, or sweep-read large files. Go straight to the pinpointed nodes using the knowledge graph.
-- Pinpoint the exact files, caller hierarchies, and dependencies to touch. Do NOT waste context tokens scanning random files — go straight to the point using the knowledge graph.
+- Pinpoint the exact files, caller hierarchies, and dependencies to touch. Do NOT waste context tokens scanning random files - go straight to the point using the knowledge graph.
 
 ## Markdown File Hygiene & Documentation (STRICT)
-- **Zero-Spec Policy**: NEVER generate loose `.md` spec files, plan files, or scratch notes in repository folders (`.zcode/`, `docs/plans/`, root, etc.) — implement features directly in code. Temporary agent planning belongs only to brain artifacts outside the repo.
+- **Zero-Spec Policy**: NEVER generate loose `.md` spec files, plan files, or scratch notes in repository folders (`.zcode/`, `docs/plans/`, root, etc.) - implement features directly in code. Temporary agent planning belongs only to brain artifacts outside the repo.
 - **Prune Stale Markdown**: Delete obsolete `.md` files immediately (e.g. stale session plans, outdated architecture references like Prisma/SQLite). Keep all documentation lean, truthful, and reflective of the latest codebase state.
 - **UI & In-App Copy in English**: All text and copy displayed to users in the UI, error messages, placeholders, labels, and in-app documentation must be strictly in English.
 
@@ -62,7 +62,7 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 | DB Reset & Health | `scripts/reset-db.mjs` (`pnpm db:reset`) → `scripts/db-schema-health.mjs` (`pnpm db:health`) |
 
 ## SQL & Database (CRITICAL)
-- Postgres only — no SQLite, no branching.
+- Postgres only - no SQLite, no branching.
 - Double-quote camelCase columns: `"createdAt"` `"updatedAt"` `"deletedAt"` `"startDate"` `"endDate"` `"sprintId"` `"testPlanId"` `"testSuiteId"` `"publicToken"` `"suggestedDev"` `"totalCases"` `"bugType"` `"relatedItems"` `"relatedFeature"` `"lastRunAt"` `"automationResult"` `"typeCase"` `"preCondition"` `"caseName"` `"testStep"` `"expectedResult"` `"actualResult"` `"actionItems"` `"entityType"` `"entityId"`
 - Parameterized queries only. `toPostgresQuery()` converts `?`→`$n`.
 - Guard empty dates: `COALESCE(col, '') != ''`. Return early on empty `IN (...)`.
@@ -73,16 +73,20 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 - **Hierarchy & Auto-Suite Flow**: Alur pengujian di Aksora wajib mengikuti urutan hierarki: `Test Suite` → `Test Case` → `Test Execution (Test Runs)`.
 - **First Case Auto-Suite**: Saat membuat Test Case pertama kali (atau tanpa suite terpilih), sistem WAJIB otomatis membuat dan menghubungkan `TestSuite` induk (e.g. `<Project> Test Suite` atau `General Test Suite`) agar test case tidak hilang/orphan dan langsung terlihat di daftar library.
 - **Unified Views**: Halaman Test Cases (`/test-cases`) dan Test Runs (`/test-execution`) wajib memiliki mode tampilan yang selaras: Table view, Kanban view, dan Cards view.
+- **3-Level Flexible Execution**: Test Runs mendukung eksekusi fleksibel pada 3 level:
+  1. `By Test Plan`: Eksekusi terpadu untuk rilis/sprint (tombol Start Run di Test Plan).
+  2. `By Test Suite`: Eksekusi per modul fitur (tombol Run Suite di Test Runs).
+  3. `By Single Test Case`: Eksekusi satuan / quick retest (tombol Play / Quick Verdict bar di tabel dan drawer Test Case).
 
 ## Worker & Code Hygiene Rules
 1. **Strict Scope**: Modify ONLY the files and logic requested. Do not perform drive-by refactorings, UI restyling, or touching unrequested files.
-2. **Preserve Character Encoding**: Dilarang merusak karakter non-ASCII (©, ·, —, é) atau menyisipkan BOM. Selalu gunakan internal edit tools atau `-Encoding utf8NoBOM`. Pastikan tidak ada mojibake setelah edit.
+2. **Preserve Character Encoding**: Dilarang merusak karakter non-ASCII (©, ·, -, é) atau menyisipkan BOM. Selalu gunakan internal edit tools atau `-Encoding utf8NoBOM`. Pastikan tidak ada mojibake setelah edit.
 3. **No Hallucinated Constraints or Features**: Jangan pernah mengarang allowlist email, blocklist, approval gate, atau klaim restriksi akses di kode maupun copy UI tanpa instruksi eksplisit dan verifikasi kode sumber.
 4. **Test Integrity**: Jangan mengubah test agar cocok dengan klaim/teks buatan sendiri. Dilarang menyembunyikan elemen dengan `hidden`, `sr-only`, atau `display: none` semata-mata untuk memanipulasi test agar lulus.
 5. **Pre-Completion Verification & Fast Testing**: Selalu verifikasi sebelum melapor selesai:
-   - `npx tsc --noEmit` — pastikan 0 error TypeScript baru.
-   - `pnpm db:health` — pastikan 56 tabel sinkron jika ada perubahan skema DB.
-   - `pnpm test` (atau `pnpm test <file>`) — menjalankan HANYA test terkait dan relevan secara otomatis berdasarkan git diff/status agar proses verifikasi cepat (<15s). JANGAN menjalankan full test suite (`pnpm test:all` atau `vitest run`) kecuali diminta full regression secara eksplisit.
+   - `npx tsc --noEmit` - pastikan 0 error TypeScript baru.
+   - `pnpm db:health` - pastikan 56 tabel sinkron jika ada perubahan skema DB.
+   - `pnpm test` (atau `pnpm test <file>`) - menjalankan HANYA test terkait dan relevan secara otomatis berdasarkan git diff/status agar proses verifikasi cepat (<15s). JANGAN menjalankan full test suite (`pnpm test:all` atau `vitest run`) kecuali diminta full regression secara eksplisit.
 6. **Filter by workspaceId**: Pastikan selalu filter berdasarkan `workspaceId` (kecuali superadmin). Log semua CRUD via `logActivity()`.
 7. **Validate Session**: Validasi session pada setiap mutating route. Gunakan validasi Zod dari `lib/modules.ts`.
 8. **API Standard**: `{ data }` untuk success, `{ error: string }` + status code untuk failure.
@@ -90,7 +94,7 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 10. **UI Standard**: Tailwind v4 only, `@phosphor-icons/react` bold. Charts: `responsive-container.tsx`.
 11. **Dates**: ISO 8601 tersimpan, `date-fns` untuk display, server UTC.
 12. **DB → Client Serialization**: `JSON.parse(JSON.stringify(data))`.
-13. **File Size Limit**: Max 400 lines/component, 600 lines/lib — split bila lebih besar.
+13. **File Size Limit**: Max 400 lines/component, 600 lines/lib - split bila lebih besar.
 14. **New Components**: WAJIB masuk folder domain dalam `components/[domain]/`.
 
 ## Do NOT (CRITICAL - STRICTLY ENFORCED)
@@ -98,8 +102,8 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 - **NEVER add a `Co-Authored-By` trailer (or any co-author credit) to commit messages.**
 - Add packages without checking `package.json`.
 - Add SQLite or `isPostgres` branching.
-- Use `/test-case-management` — it's `/test-cases`.
-- Generate `.md` spec files — implement directly.
+- Use `/test-case-management` - it's `/test-cases`.
+- Generate `.md` spec files - implement directly.
 - Run full test suites (`pnpm test:all` / `vitest run`) unless explicitly requested; always use fast relevant tests (`pnpm test`).
 - Put files flat in `components/` root.
 - Duplicate logic from `lib/data-helpers.ts` or `lib/utils.ts`.

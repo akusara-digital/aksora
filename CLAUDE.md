@@ -2,7 +2,7 @@
 
 ## Knowledge Graph / Graphify (MANDATORY)
 - **MANDATORY**: Before fixing bugs, investigating errors, refactoring, or starting any feature development, consult `graphify-out/graph.json` or run `pnpm graphify:query "<topic>"` (`python -m graphify query "<topic>"`) to locate the exact files, callers, and dependencies.
-- **Graph Maintenance & Pre-Push**: Whenever exports, modules, or dependencies change — and **WAJIB sebelum push** — re-index via `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`). Hapus folder/history snapshot lama di `graphify-out/` agar graph selalu bersih dan sinkron dengan codebase terbaru.
+- **Graph Maintenance & Pre-Push**: Whenever exports, modules, or dependencies change - and **WAJIB sebelum push** - re-index via `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`). Hapus folder/history snapshot lama di `graphify-out/` agar graph selalu bersih dan sinkron dengan codebase terbaru.
 - **Subagent Rule (STRICT)**: Always run `graphify query "<target>"` YOURSELF before spawning any subagent. Extract the caller hierarchy, exact file paths, and line locations (`src=... loc=L...`) from the graph query and paste them directly into the subagent's prompt.
 - **Strict Ban on Sweep-Reading**: NEVER spawn a subagent with broad/open-ended instructions that cause it to blindly grep, scan random directories, or sweep-read large files. Go straight to the pinpointed nodes using the knowledge graph.
 - Never blindly search or dump large files into context. Go straight to the point using graphify to determine which exact files to modify and avoid token waste.
@@ -17,9 +17,9 @@
 - **Preserve Encoding**: Never corrupt non-ASCII characters or introduce BOM (`-Encoding utf8NoBOM`).
 - **No Hallucinated Gates**: Do not invent fake allowlists, blocklists, or access barriers.
 - **Verification & Fast Testing**:
-  - `npx tsc --noEmit` — ensure 0 new TypeScript errors.
-  - `pnpm db:health` — ensure 56 tables in sync if DB schema was modified.
-  - `pnpm test` (or `pnpm test <file>`) — runs ONLY relevant and changed tests to keep verification fast (<15s). NEVER run the full 170+ test suite unless explicitly asked for full regression (use `pnpm test:all`).
+  - `npx tsc --noEmit` - ensure 0 new TypeScript errors.
+  - `pnpm db:health` - ensure 56 tables in sync if DB schema was modified.
+  - `pnpm test` (or `pnpm test <file>`) - runs ONLY relevant and changed tests to keep verification fast (<15s). NEVER run the full 170+ test suite unless explicitly asked for full regression (use `pnpm test:all`).
 
 ## Multi-Agent Git Safety & Local Commit Rule (MANDATORY)
 1. **Commit Locally Often (Safety Net)**:
@@ -38,6 +38,10 @@
 - **Hierarchy & Auto-Suite Flow**: Alur pengujian di Aksora wajib mengikuti urutan hierarki: `Test Suite` → `Test Case` → `Test Execution (Test Runs)`.
 - **First Case Auto-Suite**: Saat membuat Test Case pertama kali (atau tanpa suite terpilih), sistem WAJIB otomatis membuat dan menghubungkan `TestSuite` induk (e.g. `<Project> Test Suite` atau `General Test Suite`) agar test case tidak hilang/orphan dan langsung terlihat di daftar library.
 - **Unified Views**: Halaman Test Cases (`/test-cases`) dan Test Runs (`/test-execution`) wajib memiliki mode tampilan yang selaras: Table view, Kanban view, dan Cards view.
+- **3-Level Flexible Execution**: Test Runs mendukung eksekusi fleksibel pada 3 level:
+  1. `By Test Plan`: Eksekusi terpadu untuk rilis/sprint (tombol Start Run di Test Plan).
+  2. `By Test Suite`: Eksekusi per modul fitur (tombol Run Suite di Test Runs).
+  3. `By Single Test Case`: Eksekusi satuan / quick retest (tombol Play / Quick Verdict bar di tabel dan drawer Test Case).
 
 ## Git & Pre-Push Rules (CRITICAL)
 - **Mandatory Pre-Push Routine**: Selalu jalankan `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`) untuk menyegarkan knowledge graph (hapus history snapshot lama) dan bump `version` di `package.json` sebelum push.

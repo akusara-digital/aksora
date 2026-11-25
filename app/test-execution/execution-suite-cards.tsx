@@ -191,6 +191,30 @@ export function ExecutionSuiteCards({
 
   return (
     <div className="space-y-6">
+      {/* 0. Execution Scopes Indicator Banner */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 border border-blue-100 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-bold uppercase tracking-wider text-[10px] text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-md">
+            Flexible Test Runs
+          </span>
+          <span className="text-slate-600">Run tests flexibly at 3 levels:</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-medium text-slate-700">
+          <span className="inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-slate-200/80 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-blue-600" />
+            <strong className="font-bold text-slate-900">By Test Plan</strong> (Sprint / Release)
+          </span>
+          <span className="inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-slate-200/80 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-emerald-600" />
+            <strong className="font-bold text-slate-900">By Test Suite</strong> (Module / Feature)
+          </span>
+          <span className="inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-slate-200/80 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-violet-600" />
+            <strong className="font-bold text-slate-900">By Test Case</strong> (Single Retest)
+          </span>
+        </div>
+      </div>
+
       {/* 1. KPI Metric Overview Cards */}
       {metrics && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
@@ -256,7 +280,7 @@ export function ExecutionSuiteCards({
                     : "text-slate-400",
                 )}
               >
-                {metrics.passRate !== null ? `${metrics.passRate}%` : "—"}
+                {metrics.passRate !== null ? `${metrics.passRate}%` : "-"}
               </span>
               <span className="text-xs text-slate-400">avg</span>
             </div>
