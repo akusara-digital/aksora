@@ -15,6 +15,7 @@ import {
   AI_PROVIDER_LABELS,
   type SupportedProvider,
 } from "@/lib/ai-types";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { AIProviderIcon } from "./ai-provider-icon";
 
 export interface ProviderCardState {
@@ -208,17 +209,16 @@ export function AIProviderCard({
                 className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 font-mono text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
               />
             ) : state.models.length > 0 ? (
-              <select
+              <CustomSelect
                 value={state.selectedModel}
-                onChange={(e) => onModelChange(e.target.value)}
-                className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 cursor-pointer"
-              >
-                {state.models.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
+                onChange={onModelChange}
+                options={state.models}
+                searchable
+                searchPlaceholder="Search models..."
+                placeholder="Select a model..."
+                aria-label="Default Model"
+                className="h-9"
+              />
             ) : (
               <input
                 type="text"

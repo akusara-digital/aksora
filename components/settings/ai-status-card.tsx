@@ -6,6 +6,7 @@ import {
   AI_PROVIDER_LABELS,
   type SupportedProvider,
 } from "@/lib/ai-types";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { AIProviderIcon } from "./ai-provider-icon";
 import type { ProviderCardState } from "./ai-provider-card";
 
@@ -91,30 +92,29 @@ export function AIStatusCard({
         {/* Right: Quick Active Switcher (if configured) */}
         {configuredProviders.length > 0 && (
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <select
+            <CustomSelect
               value={activeProvider}
-              onChange={(e) => onSetActive(e.target.value)}
-              className="h-8.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 cursor-pointer"
-            >
-              {configuredProviders.map((p) => (
-                <option key={p} value={p}>
-                  {AI_PROVIDER_LABELS[p]?.label}
-                </option>
-              ))}
-            </select>
+              onChange={onSetActive}
+              options={configuredProviders.map((p) => ({
+                value: p,
+                label: AI_PROVIDER_LABELS[p]?.label || p,
+              }))}
+              aria-label="Active AI Provider"
+              className="h-8.5 w-auto min-w-[140px]"
+            />
 
             {providerStates[activeProvider]?.models?.length > 0 && (
-              <select
+              <CustomSelect
                 value={activeModel}
-                onChange={(e) => onModelChange(activeProvider, e.target.value)}
-                className="h-8.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 cursor-pointer max-w-[160px] truncate"
-              >
-                {providerStates[activeProvider].models.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => onModelChange(activeProvider, val)}
+                options={providerStates[activeProvider].models}
+                searchable
+                searchPlaceholder="Search models..."
+                placeholder="Select a model..."
+                aria-label="Active AI Model"
+                className="h-8.5 w-[180px]"
+                menuClassName="min-w-[240px]"
+              />
             )}
           </div>
         )}
