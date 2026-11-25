@@ -7,7 +7,6 @@ import { InlineAlert } from "@/components/ui/inline-alert";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { FormDrawer } from "@/components/shared/form-drawer";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
-import { PageShell } from "@/components/layout/page-shell";
 import { isSafeHref, cn } from "@/lib/utils";
 
 type VaultEntry = {
@@ -220,139 +219,154 @@ export function VaultClient() {
   });
 
   return (
-    <PageShell
-      icon={<LockKey size={22} weight="bold" />}
-      title="Password Vault"
-      description="Your private password vault. Only you can see and decrypt these entries."
-      crumbs={[{ label: "Notes & Vault", href: "/notes" }, { label: "Password Vault" }]}
-      actions={
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
-          <div className="relative w-full min-w-0 md:w-56 lg:max-w-56">
-            <div className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-gray-400">
-              <MagnifyingGlass size={14} weight="bold" />
+    <>
+      <section className="overflow-hidden bg-white border border-gray-200">
+        {/* Header Row */}
+        <div className="border-b border-gray-200 bg-white px-4 sm:px-5 py-3 sm:py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-blue-50 text-blue-700 border border-blue-100">
+                  <LockKey size={18} weight="bold" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold tracking-tight text-gray-900">Password Vault</h2>
+                </div>
+              </div>
+              <p className="mt-1 text-sm text-gray-500">Your private password vault. Only you can see and decrypt these entries.</p>
             </div>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search passwords..."
-              className="h-8 w-full border border-gray-200 bg-white pl-8 pr-7 text-[13px] outline-none transition-colors focus:border-blue-500"
-            />
-            {search && (
+
+            <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
+              <div className="relative w-full min-w-0 md:w-56 lg:max-w-56">
+                <div className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-gray-400">
+                  <MagnifyingGlass size={14} weight="bold" />
+                </div>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search passwords..."
+                  className="h-8 w-full border border-gray-200 bg-white pl-8 pr-7 text-[13px] outline-none transition-colors focus:border-blue-500"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                    aria-label="Clear search"
+                  >
+                    <X size={12} weight="bold" />
+                  </button>
+                )}
+              </div>
+
               <button
                 type="button"
-                onClick={() => setSearch("")}
-                className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
-                aria-label="Clear search"
+                onClick={openCreate}
+                className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
               >
-                <X size={12} weight="bold" />
+                <Plus size={14} weight="bold" className="shrink-0" />
+                <span>New Entry</span>
               </button>
-            )}
+            </div>
           </div>
-
-          <button
-            type="button"
-            onClick={openCreate}
-            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
-          >
-            <Plus size={14} weight="bold" className="shrink-0" />
-            <span>New Entry</span>
-          </button>
         </div>
-      }
-    >
-      <div className="w-full space-y-4">
-        {/* Toolbar Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200/80 pb-3">
-          {/* Left: Quick Category Tabs */}
-          <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
-            <button
-              type="button"
-              onClick={() => setFilterCategory("all")}
-              className={cn(
-                "h-full px-3 text-[12px] font-medium transition-colors cursor-pointer",
-                filterCategory === "all"
-                  ? "bg-gray-100 text-gray-900 font-semibold"
-                  : "text-gray-500 hover:bg-gray-50",
-              )}
-            >
-              All ({entries.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterCategory("work")}
-              className={cn(
-                "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
-                filterCategory === "work"
-                  ? "bg-gray-100 text-gray-900 font-semibold"
-                  : "text-gray-500 hover:bg-gray-50",
-              )}
-            >
-              Work ({entries.filter((e) => e.category === "work").length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterCategory("personal")}
-              className={cn(
-                "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
-                filterCategory === "personal"
-                  ? "bg-gray-100 text-gray-900 font-semibold"
-                  : "text-gray-500 hover:bg-gray-50",
-              )}
-            >
-              Personal ({entries.filter((e) => e.category === "personal").length})
-            </button>
-          </div>
 
-          {/* Right: Filters & Info */}
-          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-            <span className="flex items-center gap-1 text-xs font-semibold text-gray-500">
-              <Funnel size={13} weight="bold" />
-              Filters
-            </span>
-
-            <div className="relative">
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                aria-label="Filter by category"
+        {/* Sticky Toolbar Row */}
+        <div className="sticky top-0 z-[var(--z-sticky)] border-b border-gray-200 bg-white px-4 sm:px-5 py-2.5 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Left: Quick Category Tabs */}
+            <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
+              <button
+                type="button"
+                onClick={() => setFilterCategory("all")}
                 className={cn(
-                  "h-8 rounded-md border px-2.5 text-xs font-semibold outline-none transition touch-manipulation cursor-pointer capitalize",
-                  filterCategory !== "all"
-                    ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
-                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
+                  "h-full px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                  filterCategory === "all"
+                    ? "bg-gray-100 text-gray-900 font-semibold"
+                    : "text-gray-500 hover:bg-gray-50",
                 )}
               >
-                <option value="all">All Categories</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {(filterCategory !== "all" || search) && (
+                All ({entries.length})
+              </button>
               <button
                 type="button"
-                onClick={() => {
-                  setFilterCategory("all");
-                  setSearch("");
-                }}
-                className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+                onClick={() => setFilterCategory("work")}
+                className={cn(
+                  "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                  filterCategory === "work"
+                    ? "bg-gray-100 text-gray-900 font-semibold"
+                    : "text-gray-500 hover:bg-gray-50",
+                )}
               >
-                <X size={11} weight="bold" />
-                Clear
+                Work ({entries.filter((e) => e.category === "work").length})
               </button>
-            )}
+              <button
+                type="button"
+                onClick={() => setFilterCategory("personal")}
+                className={cn(
+                  "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                  filterCategory === "personal"
+                    ? "bg-gray-100 text-gray-900 font-semibold"
+                    : "text-gray-500 hover:bg-gray-50",
+                )}
+              >
+                Personal ({entries.filter((e) => e.category === "personal").length})
+              </button>
+            </div>
 
-            <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+            {/* Right: Filters & Info */}
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+              <span className="flex items-center gap-1 text-xs font-semibold text-gray-500">
+                <Funnel size={13} weight="bold" />
+                Filters
+              </span>
 
-            <span className="text-xs font-medium text-gray-400 hidden sm:inline">
-              {filteredEntries.length} entr{filteredEntries.length === 1 ? "y" : "ies"}
-            </span>
+              <div className="relative">
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  aria-label="Filter by category"
+                  className={cn(
+                    "h-8 rounded-md border px-2.5 text-xs font-semibold outline-none transition touch-manipulation cursor-pointer capitalize",
+                    filterCategory !== "all"
+                      ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
+                      : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
+                  )}
+                >
+                  <option value="all">All Categories</option>
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c.charAt(0).toUpperCase() + c.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {(filterCategory !== "all" || search) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterCategory("all");
+                    setSearch("");
+                  }}
+                  className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+                >
+                  <X size={11} weight="bold" />
+                  Clear
+                </button>
+              )}
+
+              <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+
+              <span className="text-xs font-medium text-gray-400 hidden sm:inline">
+                {filteredEntries.length} entr{filteredEntries.length === 1 ? "y" : "ies"}
+              </span>
+            </div>
           </div>
         </div>
+
+        <div className="p-4 sm:p-5">
 
       {error && <InlineAlert variant="error" message={error} />}
 
@@ -479,6 +493,8 @@ export function VaultClient() {
         </div>
       </div>
       )}
+    </div>
+  </section>
 
       <FormDrawer
         open={drawerOpen}
@@ -596,7 +612,6 @@ export function VaultClient() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
       />
-    </div>
-    </PageShell>
+</>
   );
 }

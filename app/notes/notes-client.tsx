@@ -7,7 +7,6 @@ import { InlineAlert } from "@/components/ui/inline-alert";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { FormDrawer } from "@/components/shared/form-drawer";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
-import { PageShell } from "@/components/layout/page-shell";
 import { cn } from "@/lib/utils";
 
 type Note = {
@@ -158,128 +157,143 @@ export function NotesClient() {
   const pinnedCount = notes.filter((n) => Boolean(n.pinned)).length;
 
   return (
-    <PageShell
-      icon={<NotePencil size={22} weight="bold" />}
-      title="Personal Notes"
-      description="Your private notes. Only you can see these."
-      crumbs={[{ label: "Notes & Vault", href: "/notes" }, { label: "Personal Notes" }]}
-      actions={
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
-          <div className="relative w-full min-w-0 md:w-56 lg:max-w-56">
-            <div className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-gray-400">
-              <MagnifyingGlass size={14} weight="bold" />
+    <>
+      <section className="overflow-hidden bg-white border border-gray-200">
+        {/* Header Row */}
+        <div className="border-b border-gray-200 bg-white px-4 sm:px-5 py-3 sm:py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-blue-50 text-blue-700 border border-blue-100">
+                  <NotePencil size={18} weight="bold" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold tracking-tight text-gray-900">Personal Notes</h2>
+                </div>
+              </div>
+              <p className="mt-1 text-sm text-gray-500">Your private notes. Only you can see these.</p>
             </div>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search notes..."
-              className="h-8 w-full border border-gray-200 bg-white pl-8 pr-7 text-[13px] outline-none transition-colors focus:border-blue-500"
-            />
-            {search && (
+
+            <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
+              <div className="relative w-full min-w-0 md:w-56 lg:max-w-56">
+                <div className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-gray-400">
+                  <MagnifyingGlass size={14} weight="bold" />
+                </div>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search notes..."
+                  className="h-8 w-full border border-gray-200 bg-white pl-8 pr-7 text-[13px] outline-none transition-colors focus:border-blue-500"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                    aria-label="Clear search"
+                  >
+                    <X size={12} weight="bold" />
+                  </button>
+                )}
+              </div>
+
               <button
                 type="button"
-                onClick={() => setSearch("")}
-                className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
-                aria-label="Clear search"
+                onClick={openCreate}
+                className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
               >
-                <X size={12} weight="bold" />
+                <Plus size={14} weight="bold" className="shrink-0" />
+                <span>New Note</span>
               </button>
-            )}
+            </div>
           </div>
-
-          <button
-            type="button"
-            onClick={openCreate}
-            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
-          >
-            <Plus size={14} weight="bold" className="shrink-0" />
-            <span>New Note</span>
-          </button>
         </div>
-      }
-    >
-      <div className="w-full space-y-4">
-        {/* Toolbar Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200/80 pb-3">
-          {/* Left: View Tabs */}
-          <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
-            <button
-              type="button"
-              onClick={() => setFilterTab("all")}
-              className={cn(
-                "h-full px-3 text-[12px] font-medium transition-colors cursor-pointer",
-                filterTab === "all"
-                  ? "bg-gray-100 text-gray-900 font-semibold"
-                  : "text-gray-500 hover:bg-gray-50",
-              )}
-            >
-              All Notes ({notes.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterTab("pinned")}
-              className={cn(
-                "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
-                filterTab === "pinned"
-                  ? "bg-gray-100 text-gray-900 font-semibold"
-                  : "text-gray-500 hover:bg-gray-50",
-              )}
-            >
-              Pinned ({pinnedCount})
-            </button>
-          </div>
 
-          {/* Right: Filters & Info */}
-          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-            <span className="flex items-center gap-1 text-xs font-semibold text-gray-500">
-              <Funnel size={13} weight="bold" />
-              Filters
-            </span>
-
-            <div className="relative">
-              <select
-                value={filterColor}
-                onChange={(e) => setFilterColor(e.target.value)}
-                aria-label="Filter by color"
+        {/* Sticky Toolbar Row */}
+        <div className="sticky top-0 z-[var(--z-sticky)] border-b border-gray-200 bg-white px-4 sm:px-5 py-2.5 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Left: View Tabs */}
+            <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
+              <button
+                type="button"
+                onClick={() => setFilterTab("all")}
                 className={cn(
-                  "h-8 rounded-md border px-2.5 text-xs font-semibold outline-none transition touch-manipulation cursor-pointer capitalize",
-                  filterColor !== "all"
-                    ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
-                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
+                  "h-full px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                  filterTab === "all"
+                    ? "bg-gray-100 text-gray-900 font-semibold"
+                    : "text-gray-500 hover:bg-gray-50",
                 )}
               >
-                <option value="all">All Colors</option>
-                {COLORS.map((c) => (
-                  <option key={c} value={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {(filterColor !== "all" || filterTab !== "all" || search) && (
+                All Notes ({notes.length})
+              </button>
               <button
                 type="button"
-                onClick={() => {
-                  setFilterColor("all");
-                  setFilterTab("all");
-                  setSearch("");
-                }}
-                className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+                onClick={() => setFilterTab("pinned")}
+                className={cn(
+                  "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                  filterTab === "pinned"
+                    ? "bg-gray-100 text-gray-900 font-semibold"
+                    : "text-gray-500 hover:bg-gray-50",
+                )}
               >
-                <X size={11} weight="bold" />
-                Clear
+                Pinned ({pinnedCount})
               </button>
-            )}
+            </div>
 
-            <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+            {/* Right: Filters & Info */}
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+              <span className="flex items-center gap-1 text-xs font-semibold text-gray-500">
+                <Funnel size={13} weight="bold" />
+                Filters
+              </span>
 
-            <span className="text-xs font-medium text-gray-400 hidden sm:inline">
-              {filteredNotes.length} note{filteredNotes.length === 1 ? "" : "s"}
-            </span>
+              <div className="relative">
+                <select
+                  value={filterColor}
+                  onChange={(e) => setFilterColor(e.target.value)}
+                  aria-label="Filter by color"
+                  className={cn(
+                    "h-8 rounded-md border px-2.5 text-xs font-semibold outline-none transition touch-manipulation cursor-pointer capitalize",
+                    filterColor !== "all"
+                      ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
+                      : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
+                  )}
+                >
+                  <option value="all">All Colors</option>
+                  {COLORS.map((c) => (
+                    <option key={c} value={c}>
+                      {c.charAt(0).toUpperCase() + c.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {(filterColor !== "all" || filterTab !== "all" || search) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterColor("all");
+                    setFilterTab("all");
+                    setSearch("");
+                  }}
+                  className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+                >
+                  <X size={11} weight="bold" />
+                  Clear
+                </button>
+              )}
+
+              <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+
+              <span className="text-xs font-medium text-gray-400 hidden sm:inline">
+                {filteredNotes.length} note{filteredNotes.length === 1 ? "" : "s"}
+              </span>
+            </div>
           </div>
         </div>
+
+        <div className="p-4 sm:p-5">
 
       {error && <InlineAlert variant="error" message={error} />}
 
@@ -351,84 +365,85 @@ export function NotesClient() {
           ))}
         </div>
       )}
-
-      <FormDrawer
-        open={drawerOpen}
-        title={editing ? "Edit Note" : "New Note"}
-        onClose={() => setDrawerOpen(false)}
-        size="md"
-      >
-        <div className="space-y-4 p-5">
-          <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700">Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Note title"
-              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700">Content</label>
-            <AutoResizeTextarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write something..."
-              rows={4}
-              maxHeight={320}
-              className="px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700">Color</label>
-            <div className="flex items-center gap-2">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  aria-label={c}
-                  className={cn(
-                    "h-9 w-9 rounded-full border-2",
-                    COLOR_DOT[c],
-                    color === c ? "border-slate-900" : "border-transparent",
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setDrawerOpen(false)}
-              className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-50"
-            >
-              {saving ? "Saving..." : "Save"}
-            </button>
-          </div>
-        </div>
-      </FormDrawer>
-
-      <ConfirmModal
-        isOpen={Boolean(deleteTarget)}
-        title="Delete Note"
-        message={`Are you sure you want to delete "${deleteTarget?.title || "this note"}"? This cannot be undone.`}
-        confirmText={deleting ? "Deleting..." : "Yes, Delete"}
-        cancelText="Cancel"
-        type="danger"
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
-      />
     </div>
-    </PageShell>
+  </section>
+
+  <FormDrawer
+    open={drawerOpen}
+    title={editing ? "Edit Note" : "New Note"}
+    onClose={() => setDrawerOpen(false)}
+    size="md"
+  >
+    <div className="space-y-4 p-5">
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700">Title</label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Note title"
+          className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700">Content</label>
+        <AutoResizeTextarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Write something..."
+          rows={4}
+          maxHeight={320}
+          className="px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700">Color</label>
+        <div className="flex items-center gap-2">
+          {COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setColor(c)}
+              aria-label={c}
+              className={cn(
+                "h-9 w-9 rounded-full border-2",
+                COLOR_DOT[c],
+                color === c ? "border-slate-900" : "border-transparent",
+              )}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="flex justify-end gap-2 pt-2">
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(false)}
+          className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {saving ? "Saving..." : "Save"}
+        </button>
+      </div>
+    </div>
+  </FormDrawer>
+
+  <ConfirmModal
+    isOpen={Boolean(deleteTarget)}
+    title="Delete Note"
+    message={`Are you sure you want to delete "${deleteTarget?.title || "this note"}"? This cannot be undone.`}
+    confirmText={deleting ? "Deleting..." : "Yes, Delete"}
+    cancelText="Cancel"
+    type="danger"
+    onConfirm={handleDeleteConfirm}
+    onCancel={() => setDeleteTarget(null)}
+  />
+</>
   );
 }

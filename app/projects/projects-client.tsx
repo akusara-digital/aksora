@@ -26,7 +26,6 @@ import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
-import { PageShell } from "@/components/layout/page-shell";
 import { formatDate, cn } from "@/lib/utils";
 
 interface ProjectItem {
@@ -142,113 +141,128 @@ export function ProjectsClient() {
   const archivedCount = projects.filter((p) => p.status === "archived").length;
 
   return (
-    <PageShell
-      icon={<FolderSimple size={22} weight="bold" />}
-      title="Projects"
-      description="Projects, test plans, suites, tasks, and defects for your workspace."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Projects" }]}
-      actions={
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
-          <div className="relative w-full min-w-0 md:w-56 lg:max-w-56">
-            <div className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-gray-400">
-              <MagnifyingGlass size={14} weight="bold" />
+    <>
+      <section className="overflow-hidden bg-white border border-gray-200">
+        {/* Header Row */}
+        <div className="border-b border-gray-200 bg-white px-4 sm:px-5 py-3 sm:py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-blue-50 text-blue-700 border border-blue-100">
+                  <FolderSimple size={18} weight="bold" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold tracking-tight text-gray-900">Projects</h2>
+                </div>
+              </div>
+              <p className="mt-1 text-sm text-gray-500">Projects, test plans, suites, tasks, and defects for your workspace.</p>
             </div>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search projects..."
-              className="h-8 w-full border border-gray-200 bg-white pl-8 pr-7 text-[13px] outline-none transition-colors focus:border-blue-500"
-            />
-            {search && (
+
+            <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
+              <div className="relative w-full min-w-0 md:w-56 lg:max-w-56">
+                <div className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-gray-400">
+                  <MagnifyingGlass size={14} weight="bold" />
+                </div>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search projects..."
+                  className="h-8 w-full border border-gray-200 bg-white pl-8 pr-7 text-[13px] outline-none transition-colors focus:border-blue-500"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                    aria-label="Clear search"
+                  >
+                    <X size={12} weight="bold" />
+                  </button>
+                )}
+              </div>
+
               <button
                 type="button"
-                onClick={() => setSearch("")}
-                className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
-                aria-label="Clear search"
+                onClick={() => setModalOpen(true)}
+                className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
               >
-                <X size={12} weight="bold" />
+                <Plus size={14} weight="bold" className="shrink-0" />
+                <span>New Project</span>
               </button>
-            )}
+            </div>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
-          >
-            <Plus size={14} weight="bold" className="shrink-0" />
-            <span>New Project</span>
-          </button>
         </div>
-      }
-    >
-      <div className="space-y-6">
-        {/* Toolbar Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200/80 pb-3">
-          {/* Left: Tabs */}
-          <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
-            <button
-              type="button"
-              onClick={() => setTab("active")}
-              className={cn(
-                "h-full px-3 text-[12px] font-medium transition-colors cursor-pointer",
-                tab === "active"
-                  ? "bg-gray-100 text-gray-900 font-semibold"
-                  : "text-gray-500 hover:bg-gray-50",
-              )}
-            >
-              Active ({activeCount})
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("archived")}
-              className={cn(
-                "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
-                tab === "archived"
-                  ? "bg-gray-100 text-gray-900 font-semibold"
-                  : "text-gray-500 hover:bg-gray-50",
-              )}
-            >
-              Archived ({archivedCount})
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("all")}
-              className={cn(
-                "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
-                tab === "all"
-                  ? "bg-gray-100 text-gray-900 font-semibold"
-                  : "text-gray-500 hover:bg-gray-50",
-              )}
-            >
-              All ({projects.length})
-            </button>
-          </div>
 
-          {/* Right: Info & Clear */}
-          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-            {(tab !== "active" || search) && (
+        {/* Sticky Toolbar Row */}
+        <div className="sticky top-0 z-[var(--z-sticky)] border-b border-gray-200 bg-white px-4 sm:px-5 py-2.5 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Left: Tabs */}
+            <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  setTab("active");
-                  setSearch("");
-                }}
-                className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+                onClick={() => setTab("active")}
+                className={cn(
+                  "h-full px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                  tab === "active"
+                    ? "bg-gray-100 text-gray-900 font-semibold"
+                    : "text-gray-500 hover:bg-gray-50",
+                )}
               >
-                <X size={11} weight="bold" />
-                Clear
+                Active ({activeCount})
               </button>
-            )}
+              <button
+                type="button"
+                onClick={() => setTab("archived")}
+                className={cn(
+                  "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                  tab === "archived"
+                    ? "bg-gray-100 text-gray-900 font-semibold"
+                    : "text-gray-500 hover:bg-gray-50",
+                )}
+              >
+                Archived ({archivedCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("all")}
+                className={cn(
+                  "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                  tab === "all"
+                    ? "bg-gray-100 text-gray-900 font-semibold"
+                    : "text-gray-500 hover:bg-gray-50",
+                )}
+              >
+                All ({projects.length})
+              </button>
+            </div>
 
-            <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+            {/* Right: Info & Clear */}
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+              {(tab !== "active" || search) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab("active");
+                    setSearch("");
+                  }}
+                  className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+                >
+                  <X size={11} weight="bold" />
+                  Clear
+                </button>
+              )}
 
-            <span className="text-xs font-medium text-gray-400 hidden sm:inline">
-              {filtered.length} project{filtered.length === 1 ? "" : "s"}
-            </span>
+              <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+
+              <span className="text-xs font-medium text-gray-400 hidden sm:inline">
+                {filtered.length} project{filtered.length === 1 ? "" : "s"}
+              </span>
+            </div>
           </div>
         </div>
+
+        <div className="p-4 sm:p-5">
 
       {error && <InlineAlert variant="error" message={error} />}
 
@@ -445,6 +459,8 @@ export function ProjectsClient() {
           })}
         </div>
       )}
+        </div>
+      </section>
 
       {/* Project Members Modal */}
       <ProjectMembersModal
@@ -490,7 +506,6 @@ export function ProjectsClient() {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
-    </div>
-    </PageShell>
+    </>
   );
 }
