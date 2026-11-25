@@ -24,41 +24,6 @@ export interface QuickTestPlanModalProps {
   onCreated?: (planId: string | number) => void;
 }
 
-const TEMPLATE_CHIPS = [
-  {
-    label: "Sprint 14 Release Plan",
-    text: "Sprint 14 regression and verification plan covering payment checkout, auth tokens, and order history.",
-    project: "CORE WEB",
-    sprint: "Sprint 14",
-    scope: "Checkout flows, payment gateways, authentication sessions, and user order lookup.",
-    notes: "Excludes 3rd party loyalty points sync (scheduled for Sprint 15).",
-  },
-  {
-    label: "Major Feature Launch",
-    text: "E2E verification for new multi-currency wallet and checkout overhaul.",
-    project: "ECOMMERCE",
-    sprint: "Release 2.4",
-    scope: "Multi-currency switcher, currency conversion rate updates, cart checkout calculations.",
-    notes: "Requires staging sandbox credentials for Stripe and PayPal.",
-  },
-  {
-    label: "Smoke & Sanity Strategy",
-    text: "Lightweight smoke and sanity test plan for daily deployment gating.",
-    project: "PORTAL",
-    sprint: "Continuous",
-    scope: "Core critical user journeys: Login, Homepage feed, Search, Product view, and Health checks.",
-    notes: "Execution must finish within 15 minutes.",
-  },
-  {
-    label: "Mobile & API Hardening",
-    text: "API regression and contract testing plan for mobile client release.",
-    project: "MOBILE APP",
-    sprint: "Sprint 14",
-    scope: "REST & GraphQL endpoints, rate limiting, token refresh, and push notification triggers.",
-    notes: "Requires mock push notification server.",
-  },
-];
-
 const STATUS_OPTIONS = [
   { value: "draft", label: "Draft" },
   { value: "active", label: "Active" },
@@ -129,15 +94,6 @@ export function QuickTestPlanModal({
   if (!isOpen) return null;
 
   const isEditing = Boolean(initialData?.id);
-
-  const handleApplyChip = (chip: typeof TEMPLATE_CHIPS[0]) => {
-    setAiPrompt(chip.text);
-    if (!project) setProject(chip.project);
-    setSprint(chip.sprint);
-    setScope(chip.scope);
-    setNotes(chip.notes);
-    setTitle(chip.label);
-  };
 
   const handleStructureWithAi = async () => {
     if (!aiPrompt.trim()) {
@@ -233,7 +189,7 @@ export function QuickTestPlanModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/40 backdrop-blur-xs">
-      <div className="relative flex flex-col w-full max-w-2xl max-h-[90vh] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative flex max-h-[92vh] w-full max-w-2xl sm:max-w-3xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-100">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gray-50/60">
           <div className="flex items-center gap-2">
@@ -244,28 +200,28 @@ export function QuickTestPlanModal({
 
           <div className="flex items-center gap-2">
             {!isEditing && (
-              <div className="flex items-center rounded-lg border border-gray-200 bg-white p-0.5 shadow-2xs">
+              <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setMode("ai")}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition cursor-pointer",
+                    "flex items-center gap-1.5 rounded-md px-3 py-1 transition cursor-pointer",
                     mode === "ai"
-                      ? "bg-blue-600 text-white shadow-xs font-bold"
-                      : "text-gray-600 hover:text-gray-900",
+                      ? "bg-white text-blue-600 shadow-2xs font-bold"
+                      : "text-slate-500 hover:text-slate-900",
                   )}
                 >
-                  <Sparkle size={13} weight="bold" />
+                  <Sparkle size={13} weight="bold" className={mode === "ai" ? "text-blue-600" : "text-slate-400"} />
                   <span>Auto (AI)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("manual")}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition cursor-pointer",
+                    "flex items-center gap-1.5 rounded-md px-3 py-1 transition cursor-pointer",
                     mode === "manual"
-                      ? "bg-blue-600 text-white shadow-xs font-bold"
-                      : "text-gray-600 hover:text-gray-900",
+                      ? "bg-white text-slate-900 shadow-2xs font-bold"
+                      : "text-slate-500 hover:text-slate-900",
                   )}
                 >
                   <span>Manual</span>
@@ -298,26 +254,6 @@ export function QuickTestPlanModal({
                   placeholder="Paste your PRD, feature specifications, sprint goals, or target release acceptance criteria..."
                   className="w-full rounded-lg border border-gray-200 p-3 text-xs text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
                 />
-              </div>
-
-              {/* Template Chips */}
-              <div>
-                <span className="block text-[11px] font-semibold text-gray-400 mb-1.5">
-                  Try example templates:
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {TEMPLATE_CHIPS.map((chip) => (
-                    <button
-                      key={chip.label}
-                      type="button"
-                      onClick={() => handleApplyChip(chip)}
-                      className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-700 transition cursor-pointer"
-                    >
-                      <Sparkle size={10} weight="bold" className="text-blue-500" />
-                      <span>{chip.label}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
 
               <div className="rounded-lg bg-blue-50/60 border border-blue-100 p-3 text-xs text-blue-800 flex items-start gap-2">
