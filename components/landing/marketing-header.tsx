@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { List, X } from "@phosphor-icons/react";
@@ -12,6 +12,16 @@ export function MarketingHeader() {
   const { dict } = useTranslation();
   const t = dict.header;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) setIsAuthenticated(true);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <nav className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-sm transition-colors dark:border-slate-800 dark:bg-slate-950/95" aria-label="Main navigation">
@@ -28,10 +38,10 @@ export function MarketingHeader() {
         <div className="flex items-center gap-2.5 sm:gap-3">
           <LanguageSwitcher />
           <Link
-            href="/login"
+            href={isAuthenticated ? "/dashboard" : "/login"}
             className="rounded-full bg-blue-600 px-5 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow cursor-pointer dark:bg-blue-600 dark:hover:bg-blue-500"
           >
-            {t.signIn}
+            {isAuthenticated ? (dict.sidebar?.dashboard || "Dashboard") : t.signIn}
           </Link>
 
           {/* Mobile Menu Hamburger Button */}

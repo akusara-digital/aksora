@@ -125,6 +125,14 @@ export async function proxy(request: NextRequest) {
 
   // Exact match for root landing page
   if (pathname === "/") {
+    const token =
+      request.cookies.get("aksora_token")?.value ||
+      request.cookies.get("aksora_session")?.value;
+    if (token && (await verifySessionToken(token))) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
     return withLocale(request, NextResponse.next());
   }
 
