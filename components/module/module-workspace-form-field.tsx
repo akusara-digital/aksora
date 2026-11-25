@@ -1,7 +1,6 @@
 "use client";
 
 import { type Dispatch, type ReactNode, type SetStateAction } from"react";
-import { Note } from"@phosphor-icons/react";
 import type { ModuleKey } from"@/lib/modules";
 import { ModuleWorkspaceFormDate } from"@/components/module/module-workspace-form-date";
 import { ModuleWorkspaceFormSelect } from"@/components/module/module-workspace-form-select";
@@ -82,7 +81,6 @@ export function ModuleWorkspaceFormField({
  versionSequenceLabel,
  versionSequenceDefaultValue,
 }: Props) {
- const Icon = fieldIcons[field.name] || <Note size={16} />;
  const isLocked = Boolean(field.readonly);
  const lockedValue = editingRow ? String(editingRow[field.name] ||"-") :"-";
 
@@ -115,7 +113,6 @@ export function ModuleWorkspaceFormField({
  return (
  <>
  <span className="flex items-center gap-2 text-sm font-bold text-gray-700">
- {Icon}
  {field.label}
  {field.required && <span className="text-rose-500">*</span>}
  </span>
