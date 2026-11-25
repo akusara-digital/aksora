@@ -76,6 +76,24 @@ export function TestCaseLibrary({
     }
   }, []);
 
+  useEffect(() => {
+    const handleOpenCase = () => {
+      setEditingCase(null);
+      setShowNewCaseModal(true);
+    };
+    const handleOpenSuite = () => {
+      setShowNewSuiteModal(true);
+    };
+    window.addEventListener("qa:open-new-case", handleOpenCase);
+    window.addEventListener("qa:open-new-suite", handleOpenSuite);
+    window.addEventListener("qa:open-form", handleOpenCase);
+    return () => {
+      window.removeEventListener("qa:open-new-case", handleOpenCase);
+      window.removeEventListener("qa:open-new-suite", handleOpenSuite);
+      window.removeEventListener("qa:open-form", handleOpenCase);
+    };
+  }, []);
+
   const toggleSidebar = () => {
     setShowSidebar((prev) => {
       const next = !prev;

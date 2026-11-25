@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Funnel, Plus, X, Table, Kanban, FolderPlus } from "@phosphor-icons/react";
+import { Funnel, X, Table, Kanban } from "@phosphor-icons/react";
 
 export interface TestCaseFiltersProps {
   projectOptions: string[];
@@ -11,7 +11,7 @@ export interface TestCaseFiltersProps {
   filterStatus: string;
   setFilterStatus: (val: string) => void;
   suitesCount: number;
-  onOpenNewSuiteModal: () => void;
+  onOpenNewSuiteModal?: () => void;
   onOpenNewCaseModal?: () => void;
   viewMode?: "table" | "kanban";
   onSetViewMode?: (mode: "table" | "kanban") => void;
@@ -25,8 +25,8 @@ export function TestCaseFilters({
   filterStatus,
   setFilterStatus,
   suitesCount,
-  onOpenNewSuiteModal,
-  onOpenNewCaseModal,
+  onOpenNewSuiteModal: _onOpenNewSuiteModal,
+  onOpenNewCaseModal: _onOpenNewCaseModal,
   viewMode = "table",
   onSetViewMode,
   allConstant,
@@ -140,27 +140,6 @@ export function TestCaseFilters({
         <span className="text-xs font-medium text-gray-400 hidden sm:inline">
           {suitesCount} suite{suitesCount === 1 ? "" : "s"}
         </span>
-
-        {/* Secondary: New Suite */}
-        <button
-          type="button"
-          onClick={onOpenNewSuiteModal}
-          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition shadow-2xs"
-          title="Create a new Test Suite"
-        >
-          <FolderPlus size={14} weight="bold" className="text-gray-500" />
-          <span>New Suite</span>
-        </button>
-
-        {/* Primary CTA: New Test Case (Matching Bugs UI) */}
-        <button
-          type="button"
-          onClick={onOpenNewCaseModal || onOpenNewSuiteModal}
-          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3 text-xs font-bold text-white transition hover:bg-blue-700 shadow-2xs"
-        >
-          <Plus size={14} weight="bold" />
-          <span>New Test Case</span>
-        </button>
       </div>
     </div>
   );
