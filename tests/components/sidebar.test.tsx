@@ -109,6 +109,17 @@ describe("Sidebar", () => {
     expect(html).not.toMatch(/href="\/my-work"[^>]*bg-sky-50/);
   });
 
+  it("highlights Daily Work when on child routes /notes, /meeting-notes, or /vault", () => {
+    for (const path of ["/notes", "/meeting-notes", "/vault"]) {
+      mocks.pathname = path;
+      const html = renderToStaticMarkup(
+        <Sidebar collapsed={false} onToggle={() => {}} userRole="admin" />,
+      );
+      expect(html).toMatch(/href="\/work-logs"[^>]*bg-sky-50/);
+    }
+    mocks.pathname = "/test-execution/session-1";
+  });
+
   it("organizes main nav into a Dashboard shortcut + 5 structured groups (10 items)", () => {
     const mockDict = {
       dashboard: "Dashboard",

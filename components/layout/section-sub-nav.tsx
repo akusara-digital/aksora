@@ -122,7 +122,7 @@ const SUB_NAV_GROUPS: SubNavGroup[] = [
       },
     ],
   },
-  // 5. Notes & Vault
+  // 5. Daily Work (Work Logs, Personal Notes, Meeting Notes, Password Vault)
   {
     match: (p) => p.startsWith("/notes") || p.startsWith("/vault") || p.startsWith("/meeting-notes") || p.startsWith("/work-logs"),
     tabs: [

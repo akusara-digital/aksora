@@ -80,5 +80,20 @@ describe("TopBreadcrumbs", () => {
       { label: "Test Runs", href: "/test-execution" },
       { label: "Execution Run" },
     ]);
+    expect(getDefaultCrumbsForPath("/notes")).toEqual([
+      { label: "Work Items", href: "/tasks" },
+      { label: "Daily Work", href: "/work-logs" },
+      { label: "Personal Notes" },
+    ]);
+    expect(getDefaultCrumbsForPath("/meeting-notes")).toEqual([
+      { label: "Work Items", href: "/tasks" },
+      { label: "Daily Work", href: "/work-logs" },
+      { label: "Meeting Notes" },
+    ]);
+    expect(getDefaultCrumbsForPath("/vault")).toEqual([
+      { label: "Work Items", href: "/tasks" },
+      { label: "Daily Work", href: "/work-logs" },
+      { label: "Password Vault" },
+    ]);
   });
 });

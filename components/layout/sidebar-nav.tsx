@@ -90,7 +90,6 @@ const FULL_ROLE_MENU = [
   "/work-logs",
   "/reports",
   "/weekly-report",
-  "/notes",
   "/settings",
 ];
 
@@ -104,7 +103,6 @@ const DEV_ROLE_MENU = [
   "/work-logs",
   "/reports",
   "/weekly-report",
-  "/notes",
   "/settings",
 ];
 
@@ -137,8 +135,8 @@ function canSeeHref(role: string, href: string) {
   if (href === "/test-execution") {
     return allowed.includes("/test-execution") || allowed.includes("/exploratory") || allowed.includes("/schedules") || allowed.includes("/recordings");
   }
-  if (href === "/work-logs" || href === "/notes") {
-    return allowed.includes("/notes") || allowed.includes("/vault") || allowed.includes("/work-logs") || allowed.includes("/meeting-notes");
+  if (href === "/work-logs") {
+    return allowed.includes("/work-logs");
   }
   if (href === "/settings") return true;
   return false;
@@ -215,14 +213,13 @@ export function SidebarNavItem({
   const isWorkLogsGroup =
     item.href === "/work-logs" &&
     (pathname === "/work-logs" ||
-      pathname.startsWith("/work-logs/"));
-
-  const isNotesGroup =
-    item.href === "/notes" &&
-    (pathname === "/notes" ||
+      pathname.startsWith("/work-logs/") ||
+      pathname === "/notes" ||
       pathname.startsWith("/notes/") ||
-      pathname.startsWith("/meeting-notes") ||
-      pathname.startsWith("/vault"));
+      pathname === "/meeting-notes" ||
+      pathname.startsWith("/meeting-notes/") ||
+      pathname === "/vault" ||
+      pathname.startsWith("/vault/"));
 
   const isSettingsGroup =
     item.href === "/settings" &&
@@ -240,7 +237,6 @@ export function SidebarNavItem({
     isTasksGroup ||
     isReportsGroup ||
     isWorkLogsGroup ||
-    isNotesGroup ||
     isSettingsGroup ||
     isProjectsGroup ||
     (item.href !== "/settings" &&
@@ -249,7 +245,6 @@ export function SidebarNavItem({
       item.href !== "/tasks" &&
       item.href !== "/reports" &&
       item.href !== "/weekly-report" &&
-      item.href !== "/notes" &&
       item.href !== "/work-logs" &&
       item.href !== "/my-work" &&
       pathname.startsWith(`${item.href}/`));
