@@ -6,6 +6,8 @@ import {
   createTempMfaToken,
   registerUser,
   sessionCookieName,
+  sessionCookieOptions,
+  SESSION_DURATION,
 } from "@/lib/auth";
 import { getInviteByToken, markInviteAccepted } from "@/lib/invites";
 import { isInviteRole, normalizeRole } from "@/lib/roles";
@@ -69,13 +71,7 @@ async function verifyGoogleToken(credential: string): Promise<GoogleTokenInfo | 
 
 function respondWithToken(token: string, role: string, company: string) {
   const response = NextResponse.json({ ok: true, role, company });
-  response.cookies.set(sessionCookieName(), token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 6,
-  });
+  response.cookies.set(sessionCookieName(), token, sessionCookieOptions());
   return response;
 }
 
@@ -234,7 +230,7 @@ export async function POST(request: NextRequest) {
         role: nextRole,
         company: nextCompany,
         activeWorkspaceId: activeWsId,
-      });
+      }, SESSION_DURATION);
       await updateUserProfile(existing.id, name, avatar);
       return respondWithToken(token, nextRole, nextCompany);
     }
@@ -289,7 +285,7 @@ export async function POST(request: NextRequest) {
       role: normalizeRole(user.role),
       company: effectiveWsCompany,
       activeWorkspaceId: activeWsId,
-    });
+    }, SESSION_DURATION);
 
     return respondWithToken(token, user.role, user.company || "");
   } catch (error) {

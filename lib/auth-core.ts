@@ -299,7 +299,20 @@ export async function createSessionToken(
   return `${payload}.${signature}`;
 }
 
-const SESSION_DURATION = Number(process.env.SESSION_TTL_HOURS || 6) * 60 * 60 * 1000;
+export const DEFAULT_SESSION_HOURS = 24 * 30; // 30 days
+export const SESSION_DURATION = Number(process.env.SESSION_TTL_HOURS || DEFAULT_SESSION_HOURS) * 60 * 60 * 1000;
+export const DEFAULT_SESSION_MAX_AGE_SECONDS = Math.floor(SESSION_DURATION / 1000);
+
+export function sessionCookieOptions(maxAgeSeconds: number = DEFAULT_SESSION_MAX_AGE_SECONDS) {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: maxAgeSeconds,
+    expires: new Date(Date.now() + maxAgeSeconds * 1000),
+  };
+}
 
 export async function verifySessionToken(token: string | undefined | null) {
   const { secret } = getAuthConfig();
@@ -359,7 +372,8 @@ async function getCurrentUserUncached() {
       id?: number; uuid?: string; name?: string; role?: string; company?: string; activeWorkspaceId?: number | null; workspaceUuid?: string; locale?: string;
     };
     if (!decoded.email) return null;
-    if (decoded.ts && Date.now() - decoded.ts > SESSION_DURATION) return null;
+    const maxTokenAge = (decoded as { ttl?: number }).ttl || SESSION_DURATION;
+    if (decoded.ts && Date.now() - decoded.ts > maxTokenAge) return null;
 
     // Fast path: user data embedded in token (new tokens after login)
     if (decoded.id && decoded.name !== undefined && decoded.role !== undefined && decoded.company !== undefined) {

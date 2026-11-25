@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, type FormEvent, useState } from "react";
+import { Suspense, type FormEvent, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, ShieldCheck } from "@phosphor-icons/react";
@@ -35,6 +35,18 @@ export function LoginContent() {
   const [mfaTotpCode, setMfaTotpCode] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) {
+          const isPlatformSuperAdmin = data.user.role === "superadmin" && !String(data.user.company || "").trim();
+          router.replace(isPlatformSuperAdmin ? "/admin/overview" : nextUrl);
+        }
+      })
+      .catch(() => {});
+  }, [nextUrl, router]);
 
   const handleMfaSubmit = async (e: FormEvent) => {
     e.preventDefault();

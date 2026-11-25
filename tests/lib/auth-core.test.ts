@@ -22,6 +22,7 @@ import {
   isPlatformSuperAdmin,
   normalizeRole,
   registerUser,
+  SESSION_DURATION,
   sessionCookieName,
   validateCredentials,
   verifyPassword,
@@ -100,7 +101,7 @@ describe("auth-core", () => {
     expect(await verifySessionToken(token)).toBe(true);
     expect(mocks.db.get).not.toHaveBeenCalled();
 
-    vi.spyOn(Date, "now").mockReturnValue(Date.now() + 6 * 60 * 60 * 1000 + 1);
+    vi.spyOn(Date, "now").mockReturnValue(Date.now() + SESSION_DURATION + 1);
     expect(await verifySessionToken(token)).toBe(false);
     vi.restoreAllMocks();
   });

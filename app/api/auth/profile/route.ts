@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser, createSessionToken, sessionCookieName } from "@/lib/auth";
+import { getCurrentUser, createSessionToken, sessionCookieName, sessionCookieOptions, SESSION_DURATION } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { syncAssigneeFromUser, propagateNameChange } from "@/lib/user-assignee-sync";
 import { INVITE_ROLES, normalizeRole } from "@/lib/roles";
@@ -127,13 +127,7 @@ export async function PATCH(request: NextRequest) {
       locale: nextLocale,
     };
     const response = NextResponse.json({ success: true, user: updatedUser });
-    response.cookies.set(sessionCookieName(), await createSessionToken(user.email, updatedUser), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 6,
-    });
+    response.cookies.set(sessionCookieName(), await createSessionToken(user.email, updatedUser, SESSION_DURATION), sessionCookieOptions());
     response.cookies.set("locale", nextLocale, {
       path: "/",
       maxAge: 60 * 60 * 24 * 365,

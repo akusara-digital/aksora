@@ -47,7 +47,7 @@ export async function GET() {
 
   // Self-healing: automatically refresh cookie with hydrated active workspace & company
   try {
-    const { createSessionToken, sessionCookieName } = await import("@/lib/auth-core");
+    const { createSessionToken, sessionCookieName, sessionCookieOptions, SESSION_DURATION } = await import("@/lib/auth-core");
     const token = await createSessionToken(user.email, {
       id: user.id,
       name: user.name,
@@ -55,15 +55,8 @@ export async function GET() {
       company: user.company,
       activeWorkspaceId: user.activeWorkspaceId,
       locale: user.locale,
-    });
-    const maxAge = Number(process.env.SESSION_TTL_HOURS || 6) * 60 * 60;
-    response.cookies.set(sessionCookieName(), token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge,
-    });
+    }, SESSION_DURATION);
+    response.cookies.set(sessionCookieName(), token, sessionCookieOptions());
   } catch {
     /* non-blocking session refresh */
   }

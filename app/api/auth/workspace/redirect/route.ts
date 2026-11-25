@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSessionToken, getCurrentUser, sessionCookieName } from "@/lib/auth";
+import { createSessionToken, getCurrentUser, sessionCookieName, sessionCookieOptions, SESSION_DURATION } from "@/lib/auth";
 import { getWorkspaceMembershipsForUser } from "@/lib/workspace-memberships";
 
 // Only ever redirect to a same-origin relative path — "to" is attacker-
@@ -40,14 +40,8 @@ export async function GET(request: NextRequest) {
       company: membership.name,
       activeWorkspaceId: membership.workspaceId,
       workspaceUuid: membership.uuid,
-    }),
-    {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 6,
-    },
+    }, SESSION_DURATION),
+    sessionCookieOptions(),
   );
   return response;
 }

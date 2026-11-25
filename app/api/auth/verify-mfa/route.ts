@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authEnabled, createSessionToken, sessionCookieName, verifyTempMfaToken } from "@/lib/auth";
+import { authEnabled, createSessionToken, sessionCookieName, sessionCookieOptions, SESSION_DURATION, verifyTempMfaToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { verifyTotpCode } from "@/lib/totp";
 import { isRateLimited, recordFailedAttempt, clearRateLimit } from "@/lib/rate-limit";
@@ -68,15 +68,9 @@ export async function POST(request: NextRequest) {
 
     await clearRateLimit(rateLimitKey);
 
-    const token = await createSessionToken(user.email, user);
+    const token = await createSessionToken(user.email, user, SESSION_DURATION);
     const response = NextResponse.json({ ok: true, role: user.role, company: user.company });
-    response.cookies.set(sessionCookieName(), token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 6,
-    });
+    response.cookies.set(sessionCookieName(), token, sessionCookieOptions());
 
     return response;
   } catch (error) {

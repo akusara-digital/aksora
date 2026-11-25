@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authEnabled, createSessionToken, validateCredentials, sessionCookieName, createTempMfaToken } from "@/lib/auth";
+import { authEnabled, createSessionToken, validateCredentials, sessionCookieName, sessionCookieOptions, DEFAULT_SESSION_MAX_AGE_SECONDS, createTempMfaToken } from "@/lib/auth";
 import { rateLimitKey, isRateLimited, recordFailedAttempt, clearRateLimit, getClientIp } from "@/lib/rate-limit";
 
 function validateEmail(email: string): boolean {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 6; // 30 days if rememberMe, else 6 hours
+    const maxAge = body?.rememberMe === false ? 60 * 60 * 6 : DEFAULT_SESSION_MAX_AGE_SECONDS;
     const token = await createSessionToken(email, user, maxAge * 1000);
     const response = NextResponse.json({
       ok: true,
@@ -72,13 +72,7 @@ export async function POST(request: NextRequest) {
       workspaceId: user.activeWorkspaceId,
       workspaceUuid: user.workspaceUuid,
     });
-    response.cookies.set(sessionCookieName(), token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge,
-    });
+    response.cookies.set(sessionCookieName(), token, sessionCookieOptions(maxAge));
     return response;
   } catch (error) {
     console.error("Login Error:", error);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSessionToken, getCurrentUser, sessionCookieName } from "@/lib/auth";
+import { createSessionToken, getCurrentUser, sessionCookieName, sessionCookieOptions, SESSION_DURATION } from "@/lib/auth";
 import { ensureWorkspace, ensureWorkspaceMembership, getWorkspaceMembershipsForUser } from "@/lib/workspace-memberships";
 
 export async function POST(request: NextRequest) {
@@ -31,14 +31,8 @@ export async function POST(request: NextRequest) {
       company: workspace.name,
       activeWorkspaceId: workspace.id,
       workspaceUuid: workspace.uuid,
-    }),
-    {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 6,
-    },
+    }, SESSION_DURATION),
+    sessionCookieOptions(),
   );
 
   return response;

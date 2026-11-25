@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import { MarketingHeader } from "@/components/landing/marketing-header";
 import { MarketingFooter } from "@/components/landing/marketing-footer";
 import { HeroSearchBar } from "@/components/landing/hero-search-bar";
@@ -18,6 +20,12 @@ export const metadata: Metadata = {
 };
 
 export default async function LandingPage() {
+  const user = await getCurrentUser();
+  if (user) {
+    const isPlatformSuperAdmin = user.role === "superadmin" && !String(user.company || "").trim();
+    redirect(isPlatformSuperAdmin ? "/admin/overview" : "/dashboard");
+  }
+
   const dict = getDictionary(await getLocale());
   const t = dict.landing;
 

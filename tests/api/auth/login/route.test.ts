@@ -12,6 +12,15 @@ vi.mock("@/lib/auth", () => ({
   validateCredentials: mocks.validateCredentials,
   createSessionToken: mocks.createSessionToken,
   sessionCookieName: () => "aksora_token",
+  sessionCookieOptions: (maxAge = 2592000) => ({
+    httpOnly: true,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge,
+    expires: new Date(Date.now() + maxAge * 1000),
+  }),
+  DEFAULT_SESSION_MAX_AGE_SECONDS: 2592000,
+  SESSION_DURATION: 30 * 24 * 60 * 60 * 1000,
 }));
 
 vi.mock("@/lib/rate-limit", () => ({
@@ -74,7 +83,7 @@ describe("auth login route", () => {
         email: "user@example.com",
         emailVerified: 1,
       },
-      21600000,
+      2592000000,
     );
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ ok: true });

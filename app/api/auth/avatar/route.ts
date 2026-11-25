@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser, createSessionToken, sessionCookieName } from "@/lib/auth";
+import { getCurrentUser, createSessionToken, sessionCookieName, sessionCookieOptions, SESSION_DURATION } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 // Max avatar size: 32KB base64 (results in ~24KB actual image)
@@ -37,13 +37,7 @@ export async function POST(request: NextRequest) {
     // Refresh session token with updated data
     const updatedUser = { id: user.id, name: user.name || "", role: user.role || "qa", company: user.company || "" };
     const response = NextResponse.json({ success: true, avatar });
-    response.cookies.set(sessionCookieName(), await createSessionToken(user.email, updatedUser), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 6,
-    });
+    response.cookies.set(sessionCookieName(), await createSessionToken(user.email, updatedUser, SESSION_DURATION), sessionCookieOptions());
     return response;
   } catch (error) {
     console.error("Avatar Upload Error:", error);

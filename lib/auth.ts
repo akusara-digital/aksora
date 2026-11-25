@@ -1,3 +1,31 @@
-import { authEnabled, createSessionToken, sessionCookieName, validateCredentials, verifySessionToken, registerUser, getCurrentUser, createTempMfaToken, verifyTempMfaToken, verifySharedSecret } from "@/lib/auth-core";
+import {
+  authEnabled,
+  createSessionToken,
+  sessionCookieName,
+  sessionCookieOptions,
+  DEFAULT_SESSION_MAX_AGE_SECONDS,
+  SESSION_DURATION,
+  validateCredentials,
+  verifySessionToken,
+  registerUser,
+  getCurrentUser,
+  createTempMfaToken,
+  verifyTempMfaToken,
+  verifySharedSecret,
+} from "@/lib/auth-core";
 
-export { authEnabled, createSessionToken, sessionCookieName, validateCredentials, verifySessionToken, registerUser, getCurrentUser, createTempMfaToken, verifyTempMfaToken, verifySharedSecret };
+export {
+  authEnabled,
+  createSessionToken,
+  sessionCookieName,
+  sessionCookieOptions,
+  DEFAULT_SESSION_MAX_AGE_SECONDS,
+  SESSION_DURATION,
+  validateCredentials,
+  verifySessionToken,
+  registerUser,
+  getCurrentUser,
+  createTempMfaToken,
+  verifyTempMfaToken,
+  verifySharedSecret,
+};
