@@ -75,10 +75,17 @@ export function TestPlanLibrary({
     return Array.from(set).sort();
   }, [plans, projectOptions]);
 
+  const handleOpenPlanModal = (plan?: TestPlanItem | null) => {
+    if (allProjects.length === 0) {
+      toast("No projects found in this workspace. You must create a project first before creating a test plan.", "warning");
+    }
+    setEditingPlan(plan ?? null);
+    setShowModal(true);
+  };
+
   useEffect(() => {
     const handleOpenPlan = () => {
-      setEditingPlan(null);
-      setShowModal(true);
+      handleOpenPlanModal(null);
     };
     window.addEventListener("qa:open-new-plan", handleOpenPlan);
     window.addEventListener("qa:open-form", handleOpenPlan);
@@ -86,7 +93,7 @@ export function TestPlanLibrary({
       window.removeEventListener("qa:open-new-plan", handleOpenPlan);
       window.removeEventListener("qa:open-form", handleOpenPlan);
     };
-  }, []);
+  }, [allProjects]);
 
   const handleStatusChange = async (planId: number, nextStatus: string) => {
     try {
@@ -271,10 +278,7 @@ export function TestPlanLibrary({
           {!hideToolbarAction && (
             <button
               type="button"
-              onClick={() => {
-                setEditingPlan(null);
-                setShowModal(true);
-              }}
+              onClick={() => handleOpenPlanModal(null)}
               className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3 text-xs font-bold text-white transition hover:bg-blue-700 shadow-2xs"
             >
               <Plus size={14} weight="bold" />
@@ -290,15 +294,9 @@ export function TestPlanLibrary({
           <TestPlanKanbanBoard
             plans={filteredPlans}
             onSelectPlan={(plan) => router.push(`/test-plans/${plan.publicToken || plan.id}`)}
-            onEditPlan={(plan) => {
-              setEditingPlan(plan);
-              setShowModal(true);
-            }}
+            onEditPlan={(plan) => handleOpenPlanModal(plan)}
             onDeletePlan={handleDeletePlan}
-            onAddPlan={() => {
-              setEditingPlan(null);
-              setShowModal(true);
-            }}
+            onAddPlan={() => handleOpenPlanModal(null)}
             onStatusChange={handleStatusChange}
             onRunPlan={handleRunPlan}
           />
@@ -307,10 +305,7 @@ export function TestPlanLibrary({
         <TestPlanTable
           plans={filteredPlans}
           onSelectPlan={(plan) => router.push(`/test-plans/${plan.publicToken || plan.id}`)}
-          onEditPlan={(plan) => {
-            setEditingPlan(plan);
-            setShowModal(true);
-          }}
+          onEditPlan={(plan) => handleOpenPlanModal(plan)}
           onDeletePlan={handleDeletePlan}
           onRunPlan={handleRunPlan}
         />

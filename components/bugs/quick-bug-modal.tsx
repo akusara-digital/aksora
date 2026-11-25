@@ -76,6 +76,12 @@ export function QuickBugModal({
   ].filter(Boolean).join("\n\n");
 
   const handleAnalyze = async (textOverride?: string) => {
+    const proj = project.trim() || defaultProject.trim();
+    if (!proj) {
+      toast("Please specify a project before proceeding. Create a project first if none exist.", "warning");
+      return;
+    }
+
     if (!isAiConfigured()) {
       setShowUnconfigured(true);
       return;
@@ -245,7 +251,11 @@ export function QuickBugModal({
   };
 
   const handleSaveBug = () => {
-    const proj = project.trim() || defaultProject.trim() || "General";
+    const proj = project.trim() || defaultProject.trim();
+    if (!proj) {
+      toast("Please specify a project before saving. Create a project first if none exist.", "warning");
+      return;
+    }
     if (!title.trim()) {
       toast("Bug title is required.", "warning");
       return;

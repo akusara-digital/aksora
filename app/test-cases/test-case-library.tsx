@@ -44,11 +44,13 @@ export function TestCaseLibrary({
   cases,
   suites = [],
   plans = [],
+  workspaceProjects = [],
   initialSearch = "",
 }: {
   cases: TestCase[];
   suites?: SuiteItem[];
   plans?: PlanOption[];
+  workspaceProjects?: string[];
   initialSearch?: string;
 }) {
   const router = useRouter();
@@ -107,7 +109,7 @@ export function TestCaseLibrary({
   };
 
   const projectOptions = useMemo(() => {
-    const set = new Set<string>();
+    const set = new Set<string>(workspaceProjects || []);
     suites.forEach((s) => {
       if (s.planProject) set.add(s.planProject);
     });
@@ -115,7 +117,7 @@ export function TestCaseLibrary({
       if (c.planProject) set.add(c.planProject);
     });
     return Array.from(set).sort();
-  }, [cases, suites]);
+  }, [cases, suites, workspaceProjects]);
 
   const suiteOptions = useMemo(() => {
     return suites.map((s) => ({
@@ -313,6 +315,21 @@ export function TestCaseLibrary({
     }
   };
 
+  const handleOpenSuiteModal = () => {
+    if (projectOptions.length === 0) {
+      toast("No projects found in this workspace. You must create a project first before creating a suite.", "warning");
+    }
+    setShowNewSuiteModal(true);
+  };
+
+  const handleOpenCaseModal = (tc?: TestCase | null) => {
+    if (projectOptions.length === 0) {
+      toast("No projects found in this workspace. You must create a project first before creating a test case.", "warning");
+    }
+    setEditingCase(tc ?? null);
+    setShowNewCaseModal(true);
+  };
+
   return (
     <div className="space-y-3 pb-6">
       <TestCaseFilters
@@ -322,11 +339,8 @@ export function TestCaseLibrary({
         filterStatus={filterStatus}
         setFilterStatus={setFilterStatus}
         suitesCount={filteredGroups.length}
-        onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
-        onOpenNewCaseModal={() => {
-          setEditingCase(null);
-          setShowNewCaseModal(true);
-        }}
+        onOpenNewSuiteModal={handleOpenSuiteModal}
+        onOpenNewCaseModal={() => handleOpenCaseModal(null)}
         viewMode={viewMode}
         onSetViewMode={setViewMode}
         allConstant={ALL}
@@ -336,14 +350,8 @@ export function TestCaseLibrary({
         <div className="flex-1 overflow-auto rounded-lg border border-gray-200/80 bg-gray-50/50 p-4 min-h-[550px]">
           <TestCaseKanbanBoard
             cases={allVisibleCases}
-            onSelectCase={(tc: TestCase) => {
-              setEditingCase(tc);
-              setShowNewCaseModal(true);
-            }}
-            onAddCase={() => {
-              setEditingCase(null);
-              setShowNewCaseModal(true);
-            }}
+            onSelectCase={(tc: TestCase) => handleOpenCaseModal(tc)}
+            onAddCase={() => handleOpenCaseModal(null)}
             onStatusChange={handleKanbanStatusChange}
           />
         </div>
@@ -356,7 +364,7 @@ export function TestCaseLibrary({
               allGroupsCount={groups.length}
               selectedKey={selectedKey}
               onSelectKey={(key) => setSelectedKey(key)}
-              onOpenNewSuiteModal={() => setShowNewSuiteModal(true)}
+              onOpenNewSuiteModal={handleOpenSuiteModal}
               onRunSuite={handleRunSuite}
               collapsed={!showSidebar}
               onToggleCollapsed={toggleSidebar}
@@ -385,7 +393,7 @@ export function TestCaseLibrary({
                     <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
                       <button
                         type="button"
-                        onClick={() => setShowNewSuiteModal(true)}
+                        onClick={handleOpenSuiteModal}
                         className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition shadow-2xs"
                       >
                         <FolderPlus size={15} weight="bold" className="text-gray-500" />
@@ -393,10 +401,7 @@ export function TestCaseLibrary({
                       </button>
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditingCase(null);
-                          setShowNewCaseModal(true);
-                        }}
+                        onClick={() => handleOpenCaseModal(null)}
                         className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-bold text-white transition hover:bg-blue-700 shadow-2xs"
                       >
                         <Plus size={15} weight="bold" />
@@ -409,10 +414,7 @@ export function TestCaseLibrary({
                 <>
                   <TestCaseSuiteHeader
                     selected={selected}
-                    onAddCase={() => {
-                      setEditingCase(null);
-                      setShowNewCaseModal(true);
-                    }}
+                    onAddCase={() => handleOpenCaseModal(null)}
                     onRunSuite={() => handleRunSuite(selected)}
                     startingRun={startingRun}
                   />
@@ -428,10 +430,7 @@ export function TestCaseLibrary({
                       {selected.cases.length === 0 && (
                         <button
                           type="button"
-                          onClick={() => {
-                            setEditingCase(null);
-                            setShowNewCaseModal(true);
-                          }}
+                          onClick={() => handleOpenCaseModal(null)}
                           className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 shadow-sm"
                         >
                           <Plus size={14} weight="bold" />

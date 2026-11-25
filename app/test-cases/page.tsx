@@ -2,6 +2,7 @@ import {
   getAllTestCasesWithSuite,
   getAllTestSuitesWithPlan,
   getTestPlansSummary,
+  getProjectOptions,
 } from "@/lib/data";
 import { PageShell } from "@/components/layout/page-shell";
 import { TestCaseLibrary } from "./test-case-library";
@@ -15,14 +16,16 @@ export default async function TestCasesPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [rawCases, rawSuites, rawPlans] = await Promise.all([
+  const [rawCases, rawSuites, rawPlans, rawProjectOptions] = await Promise.all([
     getAllTestCasesWithSuite(),
     typeof getAllTestSuitesWithPlan === "function" ? getAllTestSuitesWithPlan() : Promise.resolve([]),
     typeof getTestPlansSummary === "function" ? getTestPlansSummary() : Promise.resolve([]),
+    typeof getProjectOptions === "function" ? getProjectOptions() : Promise.resolve([]),
   ]);
   const cases = JSON.parse(JSON.stringify(rawCases));
   const suites = JSON.parse(JSON.stringify(rawSuites));
   const plans = JSON.parse(JSON.stringify(rawPlans));
+  const projectOptions = (rawProjectOptions || []).map((p: { label: string; value: string }) => p.value || p.label);
   const query = searchParams ? await searchParams : {};
   const initialSearch = typeof query.q === "string" ? query.q : Array.isArray(query.q) ? query.q[0] : "";
 
@@ -46,6 +49,7 @@ export default async function TestCasesPage({
         cases={cases}
         suites={suites}
         plans={plans}
+        workspaceProjects={projectOptions}
         initialSearch={initialSearch}
       />
     </PageShell>

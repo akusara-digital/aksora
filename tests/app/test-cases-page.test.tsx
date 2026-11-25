@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   getAllTestCasesWithSuite: vi.fn(),
   getAllTestSuitesWithPlan: vi.fn(),
   getTestPlansSummary: vi.fn(),
+  getProjectOptions: vi.fn(),
 }));
 
 vi.mock("@/components/layout/page-shell", () => ({
@@ -17,6 +18,7 @@ vi.mock("@/lib/data", () => ({
   getAllTestCasesWithSuite: mocks.getAllTestCasesWithSuite,
   getAllTestSuitesWithPlan: mocks.getAllTestSuitesWithPlan,
   getTestPlansSummary: mocks.getTestPlansSummary,
+  getProjectOptions: mocks.getProjectOptions,
 }));
 
 vi.mock("@/app/test-cases/test-case-library", () => ({
@@ -37,6 +39,7 @@ describe("test cases page", () => {
     ]);
     mocks.getAllTestSuitesWithPlan.mockResolvedValueOnce([]);
     mocks.getTestPlansSummary.mockResolvedValueOnce([]);
+    mocks.getProjectOptions.mockResolvedValueOnce([]);
 
     const element = await (TestCasesPage as unknown as (args: {
       searchParams: Promise<Record<string, string | string[] | undefined>>;
