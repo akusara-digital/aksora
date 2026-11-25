@@ -33,8 +33,8 @@ describe("TopBreadcrumbs", () => {
         <TopBreadcrumbs />
       </BreadcrumbProvider>
     );
-    expect(html).toContain("Work Items");
     expect(html).toContain("Daily Work");
+    expect(html).toContain("Work Logs");
   });
 
   it("derives default breadcrumbs for /reports/test-coverage at the top", () => {
@@ -80,18 +80,19 @@ describe("TopBreadcrumbs", () => {
       { label: "Test Runs", href: "/test-execution" },
       { label: "Execution Run" },
     ]);
+    expect(getDefaultCrumbsForPath("/work-logs")).toEqual([
+      { label: "Daily Work", href: "/work-logs" },
+      { label: "Work Logs" },
+    ]);
     expect(getDefaultCrumbsForPath("/notes")).toEqual([
-      { label: "Work Items", href: "/tasks" },
       { label: "Daily Work", href: "/work-logs" },
       { label: "Personal Notes" },
     ]);
     expect(getDefaultCrumbsForPath("/meeting-notes")).toEqual([
-      { label: "Work Items", href: "/tasks" },
       { label: "Daily Work", href: "/work-logs" },
       { label: "Meeting Notes" },
     ]);
     expect(getDefaultCrumbsForPath("/vault")).toEqual([
-      { label: "Work Items", href: "/tasks" },
       { label: "Daily Work", href: "/work-logs" },
       { label: "Password Vault" },
     ]);

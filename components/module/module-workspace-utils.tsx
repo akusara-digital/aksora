@@ -69,14 +69,11 @@ export function getModuleWorkspaceCrumbs(module: ModuleKey, title: string) {
     rootCrumb = { label: "Test Management", href: "/test-execution" };
     leafLabel = "Test Runs";
   } else if (module === "meeting-notes") {
-    return [
-      { label: "Work Items", href: "/tasks" },
-      { label: "Daily Work", href: "/work-logs" },
-      { label: "Meeting Notes" },
-    ];
+    rootCrumb = { label: "Daily Work", href: "/work-logs" };
+    leafLabel = "Meeting Notes";
   } else if (module === "work-logs") {
-    rootCrumb = { label: "Work Items", href: "/tasks" };
-    leafLabel = "Daily Work";
+    rootCrumb = { label: "Daily Work", href: "/work-logs" };
+    leafLabel = "Work Logs";
   } else if (module === "assignees" || module === "users") {
     rootCrumb = { label: "Settings", href: "/settings" };
   } else if (module === "deployments") {
