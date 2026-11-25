@@ -449,7 +449,7 @@ export function ModuleWorkspaceShell({
  {/* Form Drawer */}
  <FormDrawer
  open={showForm}
- size={module === "tasks" ? "lg" : "xl"}
+ size="lg"
  title={editingRow ? `Edit ${config.shortTitle.replace(/s$/i, "")}` : `Create ${config.shortTitle.replace(/s$/i, "")}`}
  subtitle={
   editingRow
