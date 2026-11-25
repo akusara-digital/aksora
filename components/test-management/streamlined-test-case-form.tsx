@@ -12,6 +12,8 @@ import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { toast } from "@/components/ui/toast";
 import { formatStepScenario, handleStepKeyDown } from "@/lib/test-step-utils";
 import { cn } from "@/lib/utils";
+import { validateProjectSelection } from "@/lib/project-utils";
+import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
 import { TestCaseCollapsibleDetails } from "./test-case-collapsible-details";
 
 export interface TestCaseSubmitEntry {
@@ -140,6 +142,13 @@ export function StreamlinedTestCaseForm({
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
+    const projectValidation = validateProjectSelection(project, projectOptions);
+    if (!projectValidation.valid) {
+      toast(projectValidation.message, "error");
+      return;
+    }
+
     if (!caseName.trim()) {
       toast("Test case name is required.", "error");
       return;
@@ -192,6 +201,12 @@ export function StreamlinedTestCaseForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col justify-between overflow-y-auto p-4 sm:p-5 text-xs text-slate-800">
       <div className="space-y-3.5">
+        {/* Project Validation Banner */}
+        <ProjectRequiredBanner
+          hasProjects={projectOptions.length > 0}
+          selectedProject={project}
+        />
+
         {/* Test Case Name */}
         <div>
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
@@ -204,7 +219,7 @@ export function StreamlinedTestCaseForm({
             value={caseName}
             onChange={(e) => setCaseName(e.target.value)}
             placeholder="e.g. Verify user can sign in with valid email and password"
-            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+            className="h-9 w-full rounded-none border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
           />
         </div>
 
@@ -288,7 +303,7 @@ export function StreamlinedTestCaseForm({
             onChange={(e) => setTestStep(e.target.value)}
             onKeyDown={(e) => handleStepKeyDown(e, testStep, setTestStep)}
             placeholder={"1. Open browser in incognito mode.\n2. Navigate to login page.\n3. Enter valid email and password..."}
-            className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+            className="w-full rounded-none border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
           />
         </div>
 
@@ -302,12 +317,12 @@ export function StreamlinedTestCaseForm({
             value={expectedResult}
             onChange={(e) => setExpectedResult(e.target.value)}
             placeholder="User is redirected to /dashboard and welcome banner is displayed"
-            className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+            className="w-full rounded-none border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
           />
         </div>
 
         {/* Collapsible Details */}
-        <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+        <div className="rounded-none border border-slate-200 bg-slate-50/50 p-3">
           <button
             type="button"
             onClick={() => setShowOptional((prev) => !prev)}

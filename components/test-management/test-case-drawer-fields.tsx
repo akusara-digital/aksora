@@ -43,7 +43,7 @@ export function TestCaseMetadataBar({
         <select
           value={status}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="h-8 w-full text-xs font-semibold rounded border border-slate-200 bg-white px-2 text-slate-800 outline-none focus:border-blue-500 cursor-pointer"
+          className="h-8 w-full text-xs font-semibold rounded-none border border-slate-200 bg-white px-2 text-slate-800 outline-none focus:border-blue-500 cursor-pointer"
         >
           <option value="Pending">NOT YET STARTED</option>
           <option value="Passed">PASSED</option>
@@ -189,7 +189,7 @@ export function TestCaseDetailFields({
             rows={2}
             value={preCondition}
             onChange={(e) => onPreConditionChange(e.target.value)}
-            className="w-full text-xs rounded border border-slate-200 p-2.5 outline-none focus:border-blue-500 bg-white leading-relaxed"
+            className="w-full text-xs rounded-none border border-slate-200 p-2.5 outline-none focus:border-blue-500 bg-white leading-relaxed"
             placeholder="e.g. Browser in unauthenticated (guest) incognito session on Landing page"
           />
         ) : (
@@ -223,7 +223,7 @@ export function TestCaseDetailFields({
             value={testStep}
             onChange={(e) => onTestStepChange(e.target.value)}
             onKeyDown={(e) => handleStepKeyDown(e, testStep, onTestStepChange)}
-            className="w-full text-xs rounded border border-slate-200 p-3 outline-none focus:border-blue-500 font-sans bg-white leading-relaxed"
+            className="w-full text-xs rounded-none border border-slate-200 p-3 outline-none focus:border-blue-500 font-sans bg-white leading-relaxed"
             placeholder={"1. Open browser in incognito mode (unauthenticated).\n2. Navigate to Landing page.\n3. Locate promotional Hero Banner..."}
           />
         ) : (
@@ -251,7 +251,7 @@ export function TestCaseDetailFields({
             rows={3}
             value={expectedResult}
             onChange={(e) => onExpectedResultChange(e.target.value)}
-            className="w-full text-xs rounded border border-slate-200 p-2.5 outline-none focus:border-blue-500 bg-white leading-relaxed"
+            className="w-full text-xs rounded-none border border-slate-200 p-2.5 outline-none focus:border-blue-500 bg-white leading-relaxed"
             placeholder="Expected outcome..."
           />
         ) : (
@@ -272,7 +272,7 @@ export function TestCaseDetailFields({
               rows={2}
               value={actualResult}
               onChange={(e) => onActualResultChange(e.target.value)}
-              className="w-full text-xs rounded border border-slate-200 p-2.5 outline-none focus:border-blue-500 bg-white leading-relaxed"
+              className="w-full text-xs rounded-none border border-slate-200 p-2.5 outline-none focus:border-blue-500 bg-white leading-relaxed"
               placeholder="Actual outcome observed during execution..."
             />
           ) : (

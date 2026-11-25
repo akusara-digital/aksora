@@ -13,6 +13,8 @@ import {
 import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { validateProjectSelection } from "@/lib/project-utils";
+import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
 import type { TestCase } from "@/components/test-management/test-case-table";
 
 interface CreatePlanFromCasesModalProps {
@@ -92,12 +94,13 @@ export function CreatePlanFromCasesModal({
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      toast("Please enter a Test Plan name.", "error");
+    const projectVal = validateProjectSelection(project, projectOptions);
+    if (!projectVal.valid) {
+      toast(projectVal.message, "error");
       return;
     }
-    if (!project.trim()) {
-      toast("Please specify a project for this Test Plan.", "error");
+    if (!title.trim()) {
+      toast("Please enter a Test Plan name.", "error");
       return;
     }
     if (checkedCaseIds.size === 0) {
@@ -189,7 +192,7 @@ export function CreatePlanFromCasesModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Release v2.4 Regression Plan"
-              className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="h-9 w-full rounded-none border border-slate-200 bg-white px-3 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
@@ -208,7 +211,7 @@ export function CreatePlanFromCasesModal({
                     onChange={(e) => setProject(e.target.value)}
                     list="create-plan-project-options"
                     placeholder="e.g. Core App"
-                    className="h-9 w-full rounded-md border border-slate-200 bg-white pl-8 pr-3 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="h-9 w-full rounded-none border border-slate-200 bg-white pl-8 pr-3 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
                   <datalist id="create-plan-project-options">
                     {projectOptions.map((opt) => (
@@ -223,7 +226,7 @@ export function CreatePlanFromCasesModal({
                   value={project}
                   onChange={(e) => setProject(e.target.value)}
                   placeholder="e.g. Core App"
-                  className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="h-9 w-full rounded-none border border-slate-200 bg-white px-3 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               )}
             </div>
@@ -239,7 +242,7 @@ export function CreatePlanFromCasesModal({
                   value={sprint}
                   onChange={(e) => setSprint(e.target.value)}
                   placeholder="e.g. Sprint 14"
-                  className="h-9 w-full rounded-md border border-slate-200 bg-white pl-8 pr-3 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="h-9 w-full rounded-none border border-slate-200 bg-white pl-8 pr-3 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>

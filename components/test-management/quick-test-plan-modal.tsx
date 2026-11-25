@@ -18,6 +18,8 @@ import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { ProjectDropdownContent } from "@/components/projects/project-dropdown-content";
 import { getActiveAiConfig } from "@/lib/ai-keys";
+import { validateProjectSelection } from "@/lib/project-utils";
+import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
 
 export interface QuickTestPlanModalProps {
   isOpen: boolean;
@@ -132,9 +134,13 @@ export function QuickTestPlanModal({
   const currentProjectOption = normalizedProjects.find(
     (o) => o.value === project || o.label === project
   );
+  const hasNoProjects = normalizedProjects.length === 0;
+  const isMissingProject = !project || project === "Select Project" || project === "Choose project";
   const displayProjectLabel = currentProjectOption
     ? currentProjectOption.label
-    : project || "Select Project";
+    : hasNoProjects
+    ? "Create Project First *"
+    : "Select Project *";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -172,6 +178,12 @@ export function QuickTestPlanModal({
   const isEditing = Boolean(initialData?.id);
 
   const handleStructureWithAi = async () => {
+    const projectVal = validateProjectSelection(project, normalizedProjects);
+    if (!projectVal.valid) {
+      toast(projectVal.message, "error");
+      return;
+    }
+
     if (!aiPrompt.trim()) {
       toast("Please enter a description or paste testing requirements.", "info");
       return;
@@ -210,15 +222,14 @@ export function QuickTestPlanModal({
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
+    const projectVal = validateProjectSelection(project, normalizedProjects);
+    if (!projectVal.valid) {
+      toast(projectVal.message, "error");
+      return;
+    }
+
     const planTitle = title.trim() || aiPrompt.trim().slice(0, 50) || "Untitled Test Plan";
-    const planProject =
-      project.trim() ||
-      defaultProject ||
-      (projectOptions[0]
-        ? typeof projectOptions[0] === "string"
-          ? projectOptions[0]
-          : projectOptions[0].value
-        : "General");
+    const planProject = project.trim();
 
     setPending(true);
     try {
@@ -280,12 +291,23 @@ export function QuickTestPlanModal({
               <button
                 type="button"
                 onClick={() => setHeaderProjectDropdownOpen((v) => !v)}
-                className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-800 hover:border-slate-300 hover:bg-slate-50/80 transition cursor-pointer shadow-2xs max-w-full"
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition cursor-pointer shadow-2xs max-w-full",
+                  hasNoProjects
+                    ? "border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 ring-1 ring-amber-300/40"
+                    : isMissingProject
+                    ? "border-blue-300 bg-blue-50/70 text-blue-900 hover:bg-blue-100/70 ring-1 ring-blue-300/30"
+                    : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/80"
+                )}
                 title="Select project from /projects"
               >
-                <SquaresFour size={14} weight="bold" className="text-slate-500 shrink-0" />
+                <SquaresFour
+                  size={14}
+                  weight="bold"
+                  className={hasNoProjects ? "text-amber-600 shrink-0" : isMissingProject ? "text-blue-600 shrink-0" : "text-slate-500 shrink-0"}
+                />
                 <span className="max-w-[150px] sm:max-w-[220px] truncate">{displayProjectLabel}</span>
-                <CaretDown size={12} weight="bold" className="text-slate-400 shrink-0" />
+                <CaretDown size={12} weight="bold" className={hasNoProjects ? "text-amber-500 shrink-0" : "text-slate-400 shrink-0"} />
               </button>
 
               {headerProjectDropdownOpen && (
@@ -350,11 +372,17 @@ export function QuickTestPlanModal({
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Project Required Banner */}
+          <ProjectRequiredBanner
+            hasProjects={normalizedProjects.length > 0}
+            selectedProject={project}
+          />
+
           {mode === "ai" && !isEditing ? (
             <div className="flex flex-col h-full justify-between space-y-4 min-h-[420px]">
               <div className="space-y-3.5">
                 {/* Central AI Prompt Card Container */}
-                <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs transition-all hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">
+                <div className="flex flex-col rounded-none border border-slate-200 bg-white p-3.5 sm:p-4 shadow-2xs transition-all hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                     Describe what you want to plan and test
                   </label>
@@ -363,7 +391,7 @@ export function QuickTestPlanModal({
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     placeholder="Paste your PRD, feature specifications, sprint goals, or target release acceptance criteria..."
-                    className="w-full min-h-[260px] sm:min-h-[290px] text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
+                    className="w-full min-h-[260px] sm:min-h-[290px] rounded-none text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
                   />
 
                   {/* Inner Action Bar */}

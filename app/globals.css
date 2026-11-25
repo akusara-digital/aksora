@@ -566,3 +566,11 @@ input.border-none:focus-visible {
   );
   animation: shimmer 1.6s infinite ease-in-out;
 }
+
+/* ── Global Input Hygiene (Unrounded to prevent text clipping) ── */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+textarea,
+select {
+  border-radius: 0 !important;
+}
+

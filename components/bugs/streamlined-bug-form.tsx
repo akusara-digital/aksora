@@ -12,6 +12,8 @@ import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { toast } from "@/components/ui/toast";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { cn } from "@/lib/utils";
+import { validateProjectSelection } from "@/lib/project-utils";
+import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
 import { BugCollapsibleDetails } from "./bug-collapsible-details";
 import { PushToJiraModal } from "./push-to-jira-modal";
 
@@ -145,8 +147,9 @@ export function StreamlinedBugForm({
 
   const triggerSubmit = () => {
     const effectiveProject = selectedProject || project;
-    if (!effectiveProject.trim()) {
-      toast("Please select or enter a Project Name.", "error");
+    const projectValidation = validateProjectSelection(effectiveProject, projectOptions);
+    if (!projectValidation.valid) {
+      toast(projectValidation.message, "error");
       return;
     }
     if (!title.trim()) {
@@ -233,6 +236,12 @@ export function StreamlinedBugForm({
       className="flex flex-col justify-between min-h-[480px] sm:min-h-[510px] p-4 sm:p-5 text-xs text-slate-800"
     >
       <div className="space-y-3.5">
+        {/* Project Validation Banner */}
+        <ProjectRequiredBanner
+          hasProjects={projectOptions.length > 0}
+          selectedProject={selectedProject || project}
+        />
+
         {/* Row 0 (Fallback only if project not selected in header) */}
         {showProjectInBody && (
           <div>
@@ -244,7 +253,7 @@ export function StreamlinedBugForm({
               onChange={setProject}
               options={projectOptions}
               placeholder="Select Project..."
-              className="h-9 w-full rounded-md py-1.5"
+              className="h-9 w-full rounded-none py-1.5"
             />
           </div>
         )}
@@ -260,7 +269,7 @@ export function StreamlinedBugForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Checkout button unresponsive on mobile Safari"
-            className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+            className="h-9 w-full rounded-none border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
           />
         </div>
 
@@ -347,7 +356,7 @@ export function StreamlinedBugForm({
             placeholder={
               "Description:\nBrief yang diisi pengguna hilang setelah generate...\n\nAcceptance Criteria:\n☐ Setelah pengguna mengisi brief lalu generate, isi brief tetap tersimpan..."
             }
-            className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed font-sans"
+            className="w-full rounded-none border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed font-sans"
           />
         </div>
 
@@ -362,7 +371,7 @@ export function StreamlinedBugForm({
               onChange={(e) => setExpectedResult(e.target.value)}
               rows={2}
               placeholder="Order placed with confirmation screen"
-              className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
+              className="w-full rounded-none border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
             />
           </div>
 
@@ -375,13 +384,13 @@ export function StreamlinedBugForm({
               onChange={(e) => setActualResult(e.target.value)}
               rows={2}
               placeholder="Page crashes with 500 error toast"
-              className="w-full rounded-md border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
+              className="w-full rounded-none border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
             />
           </div>
         </div>
 
         {/* Row 5: Collapsible Section: Additional Details */}
-        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-2xs">
+        <div className="rounded-none border border-slate-200 bg-white overflow-hidden shadow-2xs">
           <button
             type="button"
             onClick={() => setShowOptional(!showOptional)}

@@ -581,7 +581,13 @@ export function ModuleWorkspace({
     });
   }, [reopenId, reopenReason, refreshPage]);
   const handleFormChange = useCallback(() => setFormDirty(true), []);
-  const handleAdd = useCallback(() => openFormEditor(), [openFormEditor]);
+  const handleAdd = useCallback(() => {
+    const hasProjectField = resolvedConfig.fields.some((f) => f.name === "project");
+    if (hasProjectField && (!relatedOptions.project || relatedOptions.project.length === 0)) {
+      toast("No project found. Please create a project first before creating items.", "error");
+    }
+    openFormEditor();
+  }, [openFormEditor, relatedOptions.project, resolvedConfig.fields]);
 
   return (
     <div className="space-y-6">

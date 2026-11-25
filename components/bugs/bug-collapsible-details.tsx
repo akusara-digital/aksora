@@ -43,7 +43,7 @@ export function BugCollapsibleDetails({
               onChange={setSuggestedDev}
               options={[{ value: "", label: "Unassigned" }, ...devOptions]}
               placeholder="Unassigned"
-              className="h-8 rounded-xl py-1 text-xs"
+              className="h-8 rounded-none py-1 text-xs"
             />
           ) : (
             <input
@@ -51,7 +51,7 @@ export function BugCollapsibleDetails({
               value={suggestedDev}
               onChange={(e) => setSuggestedDev(e.target.value)}
               placeholder="e.g. dev@company.com"
-              className="h-8 w-full rounded-xl border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
+              className="h-8 w-full rounded-none border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
             />
           )}
         </div>
@@ -65,7 +65,7 @@ export function BugCollapsibleDetails({
             value={moduleName}
             onChange={(e) => setModuleName(e.target.value)}
             placeholder="e.g. Checkout flow"
-            className="h-8 w-full rounded-xl border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
+            className="h-8 w-full rounded-none border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
           />
         </div>
       </div>
@@ -76,11 +76,11 @@ export function BugCollapsibleDetails({
             Evidence URL / Screenshot Link
           </label>
           {evidence.startsWith("data:image/") ? (
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1 h-8">
+            <div className="flex items-center gap-2 rounded-none border border-slate-200 bg-white p-1 h-8">
               <img
                 src={evidence}
                 alt="Evidence preview"
-                className="h-6 w-10 rounded-lg object-cover border border-slate-100"
+                className="h-6 w-10 rounded-none object-cover border border-slate-100"
               />
               <span className="text-[11px] text-slate-600 font-medium truncate flex-1">
                 Screenshot attached
@@ -88,7 +88,7 @@ export function BugCollapsibleDetails({
               <button
                 type="button"
                 onClick={() => setEvidence("")}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-rose-600 cursor-pointer"
+                className="rounded-none p-1 text-slate-400 hover:bg-slate-100 hover:text-rose-600 cursor-pointer"
                 title="Remove attached image"
               >
                 <X size={12} weight="bold" />
@@ -102,7 +102,7 @@ export function BugCollapsibleDetails({
                 value={evidence}
                 onChange={(e) => setEvidence(e.target.value)}
                 placeholder="https://..."
-                className="h-8 w-full rounded-xl border border-slate-200 bg-white pl-7 pr-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
+                className="h-8 w-full rounded-none border border-slate-200 bg-white pl-7 pr-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
               />
             </div>
           )}
@@ -117,7 +117,7 @@ export function BugCollapsibleDetails({
             value={preconditions}
             onChange={(e) => setPreconditions(e.target.value)}
             placeholder="e.g. User logged in with standard account"
-            className="h-8 w-full rounded-xl border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
+            className="h-8 w-full rounded-none border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
           />
         </div>
       </div>
@@ -131,7 +131,7 @@ export function BugCollapsibleDetails({
           value={relatedItems}
           onChange={(e) => setRelatedItems(e.target.value)}
           placeholder="e.g. TC-042, Task #12"
-          className="h-8 w-full rounded-xl border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
+          className="h-8 w-full rounded-none border border-slate-200 bg-white px-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
         />
       </div>
     </div>

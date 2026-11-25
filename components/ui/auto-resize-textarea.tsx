@@ -83,7 +83,7 @@ export const AutoResizeTextarea = forwardRef<
       ref={innerRef}
       rows={rows}
       className={cn(
-        "w-full resize-none rounded-lg border bg-white px-3.5 py-2.5 text-sm leading-5 text-slate-800 placeholder:text-slate-400 outline-none transition-[border-color,box-shadow,background-color] dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500",
+        "w-full resize-none rounded-none border bg-white px-3.5 py-2.5 text-sm leading-5 text-slate-800 placeholder:text-slate-400 outline-none transition-[border-color,box-shadow,background-color] dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500",
         error
           ? "border-rose-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/15"
           : "border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 dark:border-zinc-800 dark:hover:border-zinc-700 dark:focus:border-blue-400 dark:focus:ring-blue-400/20",

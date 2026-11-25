@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import { ModuleWorkspaceFormField, type FieldOption, type FormField } from "@/components/module/module-workspace-form-field";
 import type { ModuleKey } from "@/lib/modules";
 import { getRequiredFieldErrors } from "@/lib/form-validation";
+import { validateProjectSelection } from "@/lib/project-utils";
+import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
+import { toast } from "@/components/ui/toast";
 import { AiEnhanceBugButton } from "@/components/bugs/ai-enhance-bug-button";
 import { CaretRight, CheckCircle } from "@phosphor-icons/react";
 
@@ -141,6 +144,19 @@ export function ModuleWorkspaceForm({
           const visibleFields = fields
             .filter((field) => !(module === "test-plans" && field.name === "assignee"))
             .filter((field) => !hiddenFields.includes(field.name));
+
+          const hasProjectField = visibleFields.some((field) => field.name === "project");
+          if (hasProjectField) {
+            const projectVal = String(formData.get("project") ?? selectValues.project ?? "").trim();
+            const projectOpts = relatedOptions.project || [];
+            const val = validateProjectSelection(projectVal, projectOpts);
+            if (!val.valid) {
+              setFieldErrors((prev) => ({ ...prev, project: val.message }));
+              toast(val.message, "error");
+              return;
+            }
+          }
+
           const requiredErrors = getRequiredFieldErrors(visibleFields, formData);
           if (Object.keys(requiredErrors).length > 0) {
             setFieldErrors(requiredErrors);
@@ -150,6 +166,11 @@ export function ModuleWorkspaceForm({
           onSubmit(formData);
         }}
       >
+        {/* Project Required Banner if module needs a project and none exist */}
+        {fields.some((f) => f.name === "project") && (!relatedOptions.project || relatedOptions.project.length === 0) && (
+          <ProjectRequiredBanner hasProjects={false} />
+        )}
+
         {isBugModule ? (
           <div className="space-y-6">
             {/* Quick Triage Banner */}

@@ -242,7 +242,7 @@ export function ModuleWorkspaceFormText({
  }
  }}
  className={cn(
-   "h-10 w-full rounded-lg border border-slate-200 bg-white px-3.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 disabled:border-blue-200/80 disabled:bg-blue-50/60 disabled:text-blue-900 disabled:cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100",
+   "h-10 w-full rounded-none border border-slate-200 bg-white px-3.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 disabled:border-blue-200/80 disabled:bg-blue-50/60 disabled:text-blue-900 disabled:cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100",
    field.helperKind === "version-sequence" && "pr-10",
    module === "test-plans" &&
      field.name === "scope" &&

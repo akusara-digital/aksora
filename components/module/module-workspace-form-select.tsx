@@ -55,7 +55,7 @@ export function ModuleWorkspaceFormSelect({
           type="button"
           onClick={() => setOpenSelectField(openSelectField === field.name ? null : field.name)}
           className={cn(
-            "flex min-h-10 w-full items-center justify-between gap-3 rounded-lg border bg-white px-4 py-3 text-left text-sm text-gray-800 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10",
+            "flex min-h-10 w-full items-center justify-between gap-3 rounded-none border bg-white px-4 py-3 text-left text-sm text-gray-800 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10",
             fieldError ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/10" : "border-gray-200",
           )}
         >
@@ -71,7 +71,7 @@ export function ModuleWorkspaceFormSelect({
         {openSelectField === field.name && (
           <div
             className={cn(
-              "absolute left-0 top-full z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg",
+              "absolute left-0 top-full z-50 mt-1 w-full rounded-none border border-gray-200 bg-white shadow-lg",
               field.name === "project" ? "overflow-hidden" : "max-h-56 overflow-y-auto overscroll-contain"
             )}
           >

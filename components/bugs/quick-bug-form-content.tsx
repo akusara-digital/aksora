@@ -72,7 +72,7 @@ export function QuickBugFormContent({
           value={project}
           onChange={(e) => setProject(e.target.value)}
           placeholder="e.g. Mobile App, Web Dashboard"
-          className="h-9 w-full rounded-lg border border-slate-200 px-3 text-xs font-medium text-slate-900 outline-none transition focus:border-blue-500"
+          className="h-9 w-full rounded-none border border-slate-200 px-3 text-xs font-medium text-slate-900 outline-none transition focus:border-blue-500"
         />
       </div>
 
@@ -211,7 +211,7 @@ export function QuickBugFormContent({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-8 w-full rounded-md border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-900"
+              className="h-8 w-full rounded-none border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-900"
             />
           </div>
 
@@ -221,7 +221,7 @@ export function QuickBugFormContent({
               <select
                 value={severity}
                 onChange={(e) => setSeverity(e.target.value)}
-                className="h-8 w-full rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700"
+                className="h-8 w-full rounded-none border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700"
               >
                 {["Critical", "Major", "Minor", "Low"].map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -233,7 +233,7 @@ export function QuickBugFormContent({
               <select
                 value={bugType}
                 onChange={(e) => setBugType(e.target.value)}
-                className="h-8 w-full rounded-md border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700"
+                className="h-8 w-full rounded-none border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700"
               >
                 {["Functional", "UI", "Performance", "Security", "Crash"].map((b) => (
                   <option key={b} value={b}>{b}</option>

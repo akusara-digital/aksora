@@ -252,7 +252,7 @@ export function CustomSelect({
         aria-expanded={open}
         aria-label={ariaLabel}
         className={cn(
-          "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-2xs transition-all duration-150",
+          "w-full rounded-none border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-2xs transition-all duration-150",
           "hover:border-slate-300 hover:bg-slate-50/70 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500",
           "dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800/70",
           "flex items-center justify-between gap-2 text-left select-none",

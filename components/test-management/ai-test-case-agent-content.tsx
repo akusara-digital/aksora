@@ -14,6 +14,8 @@ import { AI_PROVIDER_LABELS, type SupportedProvider } from "@/lib/ai-types";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { toast } from "@/components/ui/toast";
 import { compressImageToWebp } from "@/lib/image-compress";
+import { validateProjectSelection } from "@/lib/project-utils";
+import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
 
 export interface TestCaseDraft {
   caseName?: string;
@@ -44,6 +46,7 @@ export interface AiTestCaseAgentContentProps {
 const STORAGE_AI_TC_MEMORY = "aksora_test_case_ai_prompt_memory";
 
 export function AiTestCaseAgentContent({
+  projectOptions = [],
   defaultProject = "",
   selectedProject = "",
   selectedSuiteId = "",
@@ -65,7 +68,9 @@ export function AiTestCaseAgentContent({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const activeProject = selectedProject || defaultProject || "General";
+  const effectiveProject = selectedProject || defaultProject;
+  const projectValidation = validateProjectSelection(effectiveProject, projectOptions);
+  const activeProject = effectiveProject;
 
   useEffect(() => {
     setActiveEngine(getActiveAiConfig());
@@ -115,6 +120,11 @@ export function AiTestCaseAgentContent({
   };
 
   const handleProcess = async () => {
+    if (!projectValidation.valid) {
+      toast(projectValidation.message, "error");
+      return;
+    }
+
     if (!inputNotes.trim() && !imageBase64) {
       toast("Please describe what to test or attach a screenshot.", "error");
       textareaRef.current?.focus();
@@ -212,15 +222,21 @@ export function AiTestCaseAgentContent({
   return (
     <div className="flex flex-col justify-between min-h-[480px] sm:min-h-[510px] p-4 sm:p-5 text-xs text-slate-800">
       <div className="flex flex-col gap-3">
+        {/* Project Validation Banner */}
+        <ProjectRequiredBanner
+          hasProjects={Boolean(projectOptions && projectOptions.length > 0)}
+          selectedProject={effectiveProject}
+        />
+
         {/* Central Input Card Container */}
-        <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs transition-all hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">
+        <div className="flex flex-col rounded-none border border-slate-200 bg-white p-3.5 sm:p-4 shadow-2xs transition-all hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">
           {/* Screenshot Attachment Preview */}
           {imagePreview && (
-            <div className="relative mb-2.5 inline-block rounded-md border border-slate-200 bg-slate-50 p-1">
+            <div className="relative mb-2.5 inline-block rounded-none border border-slate-200 bg-slate-50 p-1">
               <img
                 src={imagePreview}
                 alt="Screenshot attachment"
-                className="h-20 w-auto rounded object-contain border border-slate-200"
+                className="h-20 w-auto rounded-none object-contain border border-slate-200"
               />
               <button
                 type="button"
@@ -244,7 +260,7 @@ export function AiTestCaseAgentContent({
             onPaste={handlePaste}
             rows={10}
             placeholder="Describe what you want to test, paste acceptance criteria, user story, API schema, or press Ctrl+V to drop a UI screenshot..."
-            className="w-full min-h-[220px] text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
+            className="w-full min-h-[220px] rounded-none text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
             disabled={loading || pending}
           />
 
@@ -330,7 +346,13 @@ export function AiTestCaseAgentContent({
           type="button"
           onClick={() => void handleProcess()}
           disabled={loading || pending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
+          title={!projectValidation.valid ? projectValidation.message : undefined}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-md px-4 py-1.5 text-xs font-bold text-white shadow-xs transition cursor-pointer disabled:opacity-50",
+            !projectValidation.valid
+              ? "bg-slate-400 hover:bg-slate-500"
+              : "bg-blue-600 hover:bg-blue-700"
+          )}
         >
           {loading ? (
             <CircleNotch size={13} className="animate-spin text-white" />

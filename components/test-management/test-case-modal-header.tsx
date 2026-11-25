@@ -49,7 +49,11 @@ export function TestCaseModalHeader({
 
   const currentProjectOpt = projectOptions.find((o) => o.value === project || o.label === project);
   const currentSuiteOpt = suiteOptions.find((o) => o.value === suiteId || o.label === suiteTitle);
-  const projectDisplay = currentProjectOpt ? currentProjectOpt.label : project;
+  const hasNoProjects = projectOptions.length === 0;
+  const isMissingProject = !project || project === "Select Project" || project === "Choose project";
+  const projectDisplay = currentProjectOpt
+    ? currentProjectOpt.label
+    : project || (hasNoProjects ? "Create Project First *" : "Select Project *");
   const suiteDisplay = currentSuiteOpt ? currentSuiteOpt.label : suiteTitle;
 
   const displayContext = suiteDisplay
@@ -58,6 +62,8 @@ export function TestCaseModalHeader({
       : suiteDisplay
     : projectDisplay
     ? `${projectDisplay} / New Suite`
+    : hasNoProjects
+    ? "Create Project First *"
     : "New Suite (Auto-Created)";
 
   const hasContextOptions =
@@ -77,11 +83,22 @@ export function TestCaseModalHeader({
             <button
               type="button"
               onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-800 hover:border-slate-300 hover:bg-slate-50/80 transition cursor-pointer shadow-2xs max-w-full"
+              className={cn(
+                "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition cursor-pointer shadow-2xs max-w-full",
+                hasNoProjects
+                  ? "border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 ring-1 ring-amber-300/40"
+                  : isMissingProject
+                  ? "border-blue-300 bg-blue-50/70 text-blue-900 hover:bg-blue-100/70 ring-1 ring-blue-300/30"
+                  : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/80"
+              )}
             >
-              <SquaresFour size={14} weight="bold" className="text-slate-500 shrink-0" />
+              <SquaresFour
+                size={14}
+                weight="bold"
+                className={hasNoProjects ? "text-amber-600 shrink-0" : isMissingProject ? "text-blue-600 shrink-0" : "text-slate-500 shrink-0"}
+              />
               <span className="max-w-[160px] sm:max-w-[240px] truncate">{displayContext}</span>
-              <CaretDown size={12} weight="bold" className="text-slate-400 shrink-0" />
+              <CaretDown size={12} weight="bold" className={hasNoProjects ? "text-amber-500 shrink-0" : "text-slate-400 shrink-0"} />
             </button>
 
             {dropdownOpen && (

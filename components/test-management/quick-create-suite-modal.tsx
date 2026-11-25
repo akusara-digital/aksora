@@ -16,6 +16,8 @@ import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { cn } from "@/lib/utils";
+import { validateProjectSelection } from "@/lib/project-utils";
+import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
 import { SuiteModalHeader } from "./suite-modal-header";
 import { QuickCreateSuiteCaseRow } from "./quick-create-suite-case-row";
 import type { InitialCaseItem } from "./quick-create-suite-ai-section";
@@ -221,6 +223,12 @@ export function QuickCreateSuiteModal({
 
   // AI Mode Action: Structure & Review (fills manual form and switches mode)
   const handleAiStructureAndReview = async () => {
+    const projectVal = validateProjectSelection(selectedProject, normalizedProjects);
+    if (!projectVal.valid) {
+      toast(projectVal.message, "error");
+      return;
+    }
+
     setIsAiProcessing(true);
     try {
       const result = await fetchAiGeneratedCases(aiPrompt);
@@ -244,6 +252,12 @@ export function QuickCreateSuiteModal({
 
   // AI Mode Action: Direct Auto-Create Suite
   const handleAiAutoCreate = async () => {
+    const projectVal = validateProjectSelection(selectedProject, normalizedProjects);
+    if (!projectVal.valid) {
+      toast(projectVal.message, "error");
+      return;
+    }
+
     setIsAiProcessing(true);
     try {
       const result = await fetchAiGeneratedCases(aiPrompt);
@@ -261,6 +275,11 @@ export function QuickCreateSuiteModal({
   // Manual Mode Submit
   const handleManualSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    const projectVal = validateProjectSelection(selectedProject, normalizedProjects);
+    if (!projectVal.valid) {
+      toast(projectVal.message, "error");
+      return;
+    }
     if (!title.trim()) {
       toast("Suite name is required.", "error");
       return;
@@ -284,6 +303,7 @@ export function QuickCreateSuiteModal({
         body: JSON.stringify({
           title: suiteTitle,
           testPlanId: testPlanId || "",
+          project: selectedProject,
           status,
           notes: suiteNotes,
         }),
@@ -413,6 +433,14 @@ export function QuickCreateSuiteModal({
           onClose={onClose}
         />
 
+        {/* Project Validation Banner */}
+        <div className="px-4 pt-3 sm:px-5">
+          <ProjectRequiredBanner
+            hasProjects={normalizedProjects.length > 0}
+            selectedProject={selectedProject}
+          />
+        </div>
+
         {/* Modal Content */}
         <div className="overflow-y-auto">
           {mode === "ai" ? (
@@ -420,13 +448,13 @@ export function QuickCreateSuiteModal({
             <div className="flex flex-col justify-between min-h-[480px] sm:min-h-[510px] p-4 sm:p-5 text-xs text-slate-800">
               <div className="space-y-3.5">
                 {/* AI Input Container */}
-                <div className="rounded-xl border border-blue-500/30 bg-white p-3.5 sm:p-4 shadow-xs ring-2 ring-blue-500/10 focus-within:border-blue-500 transition">
+                <div className="rounded-none border border-blue-500/30 bg-white p-3.5 sm:p-4 shadow-xs ring-2 ring-blue-500/10 focus-within:border-blue-500 transition">
                   <textarea
                     ref={aiTextareaRef}
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     placeholder="Describe what you want to test, paste acceptance criteria, user story, or API schema..."
-                    className="w-full min-h-[140px] sm:min-h-[160px] border-0 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed"
+                    className="w-full min-h-[140px] sm:min-h-[160px] rounded-none border-0 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed"
                   />
 
                   {/* Actions & Coverage bar inside input box */}

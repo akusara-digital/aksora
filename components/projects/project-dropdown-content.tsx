@@ -92,19 +92,19 @@ export function ProjectDropdownContent({
           </div>
         </>
       ) : (
-        <div className="p-2.5 text-center">
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{emptyTitle}</p>
+        <div className="p-3 text-center">
+          <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{emptyTitle}</p>
           {emptySubtitle && (
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-snug">
               {emptySubtitle}
             </p>
           )}
           <Link
             href={projectsUrl}
             onClick={() => onClose?.()}
-            className="mt-2 inline-flex items-center justify-center gap-1.5 w-full rounded-md bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 px-2.5 py-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/80 transition"
+            className="mt-2.5 inline-flex items-center justify-center gap-1.5 w-full rounded-md bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-2xs transition"
           >
-            <span>Go to Projects</span>
+            <span>+ Create Project First</span>
             <ArrowRight size={11} weight="bold" />
           </Link>
         </div>

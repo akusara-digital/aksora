@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   X,
@@ -151,7 +152,11 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
       return;
     }
     if (!activeProject) {
-      setError("Please select or specify a project.");
+      const msg = projects.length === 0
+        ? "No project found. Please create a project first before continuing."
+        : "Please select a project before continuing.";
+      setError(msg);
+      toast(msg, "error");
       return;
     }
 
@@ -300,9 +305,21 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
               </div>
             ) : (
               <div className="space-y-1.5">
-                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
-                  <WarningCircle size={15} weight="bold" className="text-amber-600 shrink-0" />
-                  <span>No existing projects found in this workspace. Enter a name to proceed.</span>
+                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <WarningCircle size={15} weight="bold" className="text-amber-600 shrink-0" />
+                    <span className="font-semibold">No existing projects found in this workspace.</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-amber-800">
+                    <span>Enter a new project name below or:</span>
+                    <Link
+                      href="/projects"
+                      onClick={onClose}
+                      className="font-bold text-blue-600 hover:underline"
+                    >
+                      + Create in Projects page →
+                    </Link>
+                  </div>
                 </div>
                 <input
                   id="create-item-project"
