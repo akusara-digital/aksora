@@ -81,32 +81,31 @@ export function SuiteModalHeader({
 
       {/* Right: Mode Switcher & Close Button */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+        <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 text-xs font-semibold">
           <button
             type="button"
             onClick={() => onModeChange("ai")}
             className={cn(
-              "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition cursor-pointer",
+              "flex items-center gap-1.5 rounded-md px-3 py-1 transition cursor-pointer",
               mode === "ai"
-                ? "bg-blue-600 text-white shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900",
+                ? "bg-white text-blue-600 shadow-2xs font-bold"
+                : "text-slate-500 hover:text-slate-900",
             )}
           >
-            <Lightning size={13} weight="bold" />
+            <Lightning size={13} weight="bold" className={mode === "ai" ? "text-blue-600" : "text-slate-400"} />
             <span>Auto (AI)</span>
           </button>
-
           <button
             type="button"
             onClick={() => onModeChange("manual")}
             className={cn(
-              "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition cursor-pointer",
+              "flex items-center gap-1.5 rounded-md px-3 py-1 transition cursor-pointer",
               mode === "manual"
-                ? "bg-white text-slate-900 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900",
+                ? "bg-white text-slate-900 shadow-2xs font-bold"
+                : "text-slate-500 hover:text-slate-900",
             )}
           >
-            <ListBullets size={13} weight="bold" />
+            <ListBullets size={13} weight="bold" className={mode === "manual" ? "text-slate-900" : "text-slate-400"} />
             <span>Manual</span>
           </button>
         </div>
@@ -114,8 +113,8 @@ export function SuiteModalHeader({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
-          aria-label="Close modal"
+          className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+          aria-label="Close"
         >
           <X size={16} weight="bold" />
         </button>
