@@ -69,6 +69,11 @@ Next.js 16.2 (App Router, Turbopack) · Tailwind v4 · `@phosphor-icons/react` (
 - Schema changes: create tables → add columns → create indexes.
 - Database clean reset: use `pnpm db:reset` (automatically creates pre-wipe snapshot in `backups/`). Verify with `pnpm db:health`.
 
+## Test Management Flow (STRICT)
+- **Hierarchy & Auto-Suite Flow**: Alur pengujian di Aksora wajib mengikuti urutan hierarki: `Test Suite` → `Test Case` → `Test Execution (Test Runs)`.
+- **First Case Auto-Suite**: Saat membuat Test Case pertama kali (atau tanpa suite terpilih), sistem WAJIB otomatis membuat dan menghubungkan `TestSuite` induk (e.g. `<Project> Test Suite` atau `General Test Suite`) agar test case tidak hilang/orphan dan langsung terlihat di daftar library.
+- **Unified Views**: Halaman Test Cases (`/test-cases`) dan Test Runs (`/test-execution`) wajib memiliki mode tampilan yang selaras: Table view, Kanban view, dan Cards view.
+
 ## Worker & Code Hygiene Rules
 1. **Strict Scope**: Modify ONLY the files and logic requested. Do not perform drive-by refactorings, UI restyling, or touching unrequested files.
 2. **Preserve Character Encoding**: Dilarang merusak karakter non-ASCII (©, ·, —, é) atau menyisipkan BOM. Selalu gunakan internal edit tools atau `-Encoding utf8NoBOM`. Pastikan tidak ada mojibake setelah edit.

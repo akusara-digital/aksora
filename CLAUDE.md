@@ -34,6 +34,11 @@
    - `pre-commit` (block loose `.md`, flat `components/*`, `.env`, BOM, `tsc --noEmit`), `commit-msg` (block `Co-Authored-By`, enforce Conventional Commits), `pre-push` (block unauthorized push).
    - Untuk agen paralel bersamaan, gunakan `pnpm worktree:add <name>`.
 
+## Test Management Flow (STRICT)
+- **Hierarchy & Auto-Suite Flow**: Alur pengujian di Aksora wajib mengikuti urutan hierarki: `Test Suite` → `Test Case` → `Test Execution (Test Runs)`.
+- **First Case Auto-Suite**: Saat membuat Test Case pertama kali (atau tanpa suite terpilih), sistem WAJIB otomatis membuat dan menghubungkan `TestSuite` induk (e.g. `<Project> Test Suite` atau `General Test Suite`) agar test case tidak hilang/orphan dan langsung terlihat di daftar library.
+- **Unified Views**: Halaman Test Cases (`/test-cases`) dan Test Runs (`/test-execution`) wajib memiliki mode tampilan yang selaras: Table view, Kanban view, dan Cards view.
+
 ## Git & Pre-Push Rules (CRITICAL)
 - **Mandatory Pre-Push Routine**: Selalu jalankan `/graphify --update` atau `pnpm graphify:update` (`python -m graphify update . --force`) untuk menyegarkan knowledge graph (hapus history snapshot lama) dan bump `version` di `package.json` sebelum push.
 - **NEVER git push to remote origin** unless explicitly instructed with the exact word "push". Casual affirmations ("gas", "lanjut", "sip") are NOT permission to push. Local commit is required once task passes verification.
