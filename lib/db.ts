@@ -20,53 +20,107 @@ const globalForDb = globalThis as unknown as {
   schemaReady?: boolean;
 };
 
+async function refreshDevEnvironment(): Promise<string> {
+  if (process.env.NODE_ENV !== "production" && typeof window === "undefined") {
+    try {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      for (const envFile of [".env.local", ".env"]) {
+        const envPath = path.resolve(process.cwd(), envFile);
+        if (fs.existsSync(envPath)) {
+          const content = fs.readFileSync(envPath, "utf-8");
+          for (const line of content.split("\n")) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith("#")) continue;
+            const eqIdx = trimmed.indexOf("=");
+            if (eqIdx < 0) continue;
+            const key = trimmed.slice(0, eqIdx).trim();
+            const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
+            if ((key === "DATABASE_URL" || key === "POSTGRES_URL") && val) {
+              process.env[key] = val;
+            }
+          }
+        }
+      }
+    } catch {
+      // Safe fallback if fs is unavailable
+    }
+  }
+  return process.env.DATABASE_URL || process.env.POSTGRES_URL || databaseUrl;
+}
+
+export async function resetPostgresPool(): Promise<void> {
+  const oldPool = globalForDb.pgPool as { end?: () => Promise<void> } | undefined;
+  globalForDb.pgPool = undefined;
+  globalForDb.poolInitPromise = undefined;
+  if (oldPool?.end) {
+    try {
+      await oldPool.end();
+    } catch {
+      // Ignore cleanup error on closing stale pool
+    }
+  }
+}
+
 async function getPostgresPool() {
   if (globalForDb.pgPool) {
     return globalForDb.pgPool as PostgresPool;
   }
   if (!globalForDb.poolInitPromise) {
     globalForDb.poolInitPromise = (async () => {
-      const isNeon = databaseUrl.includes("neon.tech") || databaseUrl.includes("neon-");
-      let connectionString = databaseUrl;
+      try {
+        const activeUrl = await refreshDevEnvironment();
+        const isNeon = activeUrl.includes("neon.tech") || activeUrl.includes("neon-");
+        let connectionString = activeUrl;
 
-      // ponytail: auto-detect and switch to neon pooler host if neon.tech is used without -pooler
-      if (isNeon && !connectionString.includes("-pooler")) {
-        try {
-          const urlObj = new URL(connectionString);
-          if (urlObj.hostname.endsWith(".neon.tech") && !urlObj.hostname.includes("-pooler")) {
-            const parts = urlObj.hostname.split(".");
-            parts[0] = `${parts[0]}-pooler`;
-            urlObj.hostname = parts.join(".");
-            connectionString = urlObj.toString();
+        // auto-detect and switch to neon pooler host if neon.tech is used without -pooler
+        if (isNeon && !connectionString.includes("-pooler")) {
+          try {
+            const urlObj = new URL(connectionString);
+            if (urlObj.hostname.endsWith(".neon.tech") && !urlObj.hostname.includes("-pooler")) {
+              const parts = urlObj.hostname.split(".");
+              parts[0] = `${parts[0]}-pooler`;
+              urlObj.hostname = parts.join(".");
+              connectionString = urlObj.toString();
+            }
+          } catch {
+            // Fallback to original connection string if parsing fails
           }
-        } catch {
-          // Fallback to original connection string if parsing fails
         }
-      }
 
-      const isDev = process.env.NODE_ENV !== "production";
-      const poolConfig = {
-        connectionString,
-        max: isDev ? 15 : (isNeon ? 5 : 10),
-        min: isNeon ? 1 : 1,
-        idleTimeoutMillis: 60000,
-        connectionTimeoutMillis: isNeon ? 15000 : 10000,
-        allowExitOnIdle: true,
-        statement_timeout: isNeon ? 15000 : 10000,
-      };
-      let pool;
-      if (isNeon) {
-        const { Pool } = await import("@neondatabase/serverless");
-        pool = new Pool(poolConfig);
-      } else {
-        const { Pool } = await import("pg");
-        pool = new Pool(poolConfig);
+        const isDev = process.env.NODE_ENV !== "production";
+        const poolConfig = {
+          connectionString,
+          max: isDev ? 15 : (isNeon ? 5 : 10),
+          min: isNeon ? 1 : 1,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: isNeon ? 15000 : 10000,
+          allowExitOnIdle: true,
+          statement_timeout: isNeon ? 15000 : 10000,
+        };
+        let pool;
+        if (isNeon) {
+          const { Pool } = await import("@neondatabase/serverless");
+          pool = new Pool(poolConfig);
+        } else {
+          const { Pool } = await import("pg");
+          pool = new Pool(poolConfig);
+        }
+        pool.on("error", (err: Error) => {
+          const msg = err?.message || "";
+          if (!msg || msg.includes("idle") || msg.includes("Connection terminated") || msg.includes("ECONNRESET") || msg.includes("closed")) {
+            console.warn("[DB Pool] Idle client disconnected:", msg || "Connection closed by remote host");
+          } else {
+            console.error("[DB Pool] Unexpected error on idle client:", msg);
+          }
+        });
+        globalForDb.pgPool = pool;
+        return pool;
+      } catch (err) {
+        globalForDb.poolInitPromise = undefined;
+        globalForDb.pgPool = undefined;
+        throw err;
       }
-      pool.on("error", (err: Error) => {
-        console.error("[DB Pool] Unexpected error on idle client:", err.message);
-      });
-      globalForDb.pgPool = pool;
-      return pool;
     })();
   }
   return (await globalForDb.poolInitPromise) as PostgresPool;
@@ -96,13 +150,18 @@ function isTransientError(err: unknown): boolean {
     code === "57P01" ||
     code === "08006" ||
     code === "08001" ||
+    code === "28P01" ||
     message.includes("ECONNRESET") ||
     message.includes("ETIMEDOUT") ||
     message.includes("timeout exceeded") ||
     message.includes("pool timeout") ||
     message.includes("connection timeout") ||
     message.includes("terminated due to connection timeout") ||
-    message.includes("Connection terminated")
+    message.includes("Connection terminated") ||
+    message.includes("password authentication failed") ||
+    message.includes("WebSocket is closed") ||
+    message.includes("cannot send query after end") ||
+    message.includes("client was closed")
   );
 }
 
@@ -127,7 +186,8 @@ async function queryRaw<T>(queryStr: string, params: unknown[] = []): Promise<T[
     } catch (err) {
       attempts++;
       if (attempts <= 3 && isTransientError(err)) {
-        const backoff = Math.min(300, 100 * Math.pow(2, attempts - 1) + Math.random() * 50);
+        await resetPostgresPool();
+        const backoff = Math.min(500, 150 * Math.pow(2, attempts - 1) + Math.random() * 50);
         await sleep(backoff);
         continue;
       }
@@ -153,7 +213,8 @@ async function runRaw(queryStr: string, params: unknown[] = []): Promise<void> {
     } catch (err) {
       attempts++;
       if (attempts <= 3 && isTransientError(err)) {
-        const backoff = Math.min(300, 100 * Math.pow(2, attempts - 1) + Math.random() * 50);
+        await resetPostgresPool();
+        const backoff = Math.min(500, 150 * Math.pow(2, attempts - 1) + Math.random() * 50);
         await sleep(backoff);
         continue;
       }
@@ -203,12 +264,13 @@ export type ListenClient = {
 //     for a long-lived SSE stream starves the app's own queries of pool slots.
 // The caller owns the lifetime and MUST call release() when done.
 export async function acquireListenClient(): Promise<ListenClient> {
-  const isNeon = databaseUrl.includes("neon.tech") || databaseUrl.includes("neon-");
+  const activeUrl = await refreshDevEnvironment();
+  const isNeon = activeUrl.includes("neon.tech") || activeUrl.includes("neon-");
 
-  let connectionString = databaseUrl;
+  let connectionString = activeUrl;
   if (isNeon) {
     try {
-      const urlObj = new URL(databaseUrl);
+      const urlObj = new URL(activeUrl);
       if (urlObj.hostname.includes("-pooler")) {
         urlObj.hostname = urlObj.hostname.replace("-pooler", "");
         connectionString = urlObj.toString();
@@ -234,7 +296,11 @@ export async function acquireListenClient(): Promise<ListenClient> {
   // Prevent uncaughtException crashes if the socket terminates or gets disconnected unexpectedly
   client.on("error", (err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[ListenClient] Connection error:", msg);
+    if (!msg || msg.includes("idle") || msg.includes("closed") || msg.includes("ECONNRESET") || msg.includes("Connection terminated")) {
+      console.warn("[ListenClient] Connection closed:", msg || "Remote host closed connection");
+    } else {
+      console.error("[ListenClient] Connection error:", msg);
+    }
   });
 
   await client.connect();

@@ -1,24 +1,27 @@
 import { spawn } from "node:child_process";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, watch } from "node:fs";
 import { resolve } from "node:path";
 import net from "node:net";
 
-// Load .env and .env.local and validate DATABASE_URL
-for (const envFile of [".env.local", ".env"]) {
-  const envPath = resolve(".", envFile);
-  if (existsSync(envPath)) {
-    const envContent = readFileSync(envPath, "utf-8");
-    for (const line of envContent.split("\n")) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#")) continue;
-      const eqIdx = trimmed.indexOf("=");
-      if (eqIdx < 0) continue;
-      const key = trimmed.slice(0, eqIdx).trim();
-      const value = trimmed.slice(eqIdx + 1).trim();
-      if (!process.env[key]) process.env[key] = value;
+function loadEnvironmentFiles() {
+  for (const envFile of [".env.local", ".env"]) {
+    const envPath = resolve(".", envFile);
+    if (existsSync(envPath)) {
+      const envContent = readFileSync(envPath, "utf-8");
+      for (const line of envContent.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
+        const eqIdx = trimmed.indexOf("=");
+        if (eqIdx < 0) continue;
+        const key = trimmed.slice(0, eqIdx).trim();
+        const value = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
+        process.env[key] = value;
+      }
     }
   }
 }
+
+loadEnvironmentFiles();
 
 const dbUrl = process.env.DATABASE_URL || "";
 if (!dbUrl.startsWith("postgres")) {
@@ -67,16 +70,51 @@ async function findPort() {
 const port = await findPort();
 console.log(`Starting Next.js dev server on port ${port}...`);
 
-const child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "--port", String(port)], {
-  stdio: "inherit",
-  env: {
-    ...process.env,
-    PORT: String(port),
-    NODE_OPTIONS: `${process.env.NODE_OPTIONS ? `${process.env.NODE_OPTIONS} ` : ""}--no-warnings`,
-  },
-});
+let child = null;
+let isRestarting = false;
 
-child.on("exit", (code, signal) => {
-  if (signal) process.kill(process.pid, signal);
-  process.exit(code ?? 0);
-});
+function startServer() {
+  child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "--port", String(port)], {
+    stdio: "inherit",
+    env: {
+      ...process.env,
+      PORT: String(port),
+      NODE_OPTIONS: `${process.env.NODE_OPTIONS ? `${process.env.NODE_OPTIONS} ` : ""}--no-warnings`,
+    },
+  });
+
+  child.on("exit", (code, signal) => {
+    if (isRestarting) return;
+    if (signal) process.kill(process.pid, signal);
+    process.exit(code ?? 0);
+  });
+}
+
+startServer();
+
+// Watch .env and .env.local to reload credentials and restart dev server on change
+let debounceTimer = null;
+for (const envFile of [".env.local", ".env"]) {
+  const envPath = resolve(".", envFile);
+  if (existsSync(envPath)) {
+    try {
+      watch(envPath, () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          console.log(`\n\x1b[36mℹ ${envFile} changed. Reloading environment and restarting server...\x1b[0m`);
+          loadEnvironmentFiles();
+          isRestarting = true;
+          if (child) {
+            child.kill("SIGTERM");
+          }
+          setTimeout(() => {
+            isRestarting = false;
+            startServer();
+          }, 800);
+        }, 300);
+      });
+    } catch {
+      // Ignore watch failure
+    }
+  }
+}
