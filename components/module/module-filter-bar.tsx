@@ -50,7 +50,7 @@ function FilterDropdown({
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition touch-manipulation cursor-pointer",
+          "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition touch-manipulation cursor-pointer",
           activeValue
             ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
             : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
@@ -127,7 +127,7 @@ export function ModuleFilterBar({ filters, activeFilters, onFilterChange }: Modu
         <button
           type="button"
           onClick={clearAll}
-          className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+          className="inline-flex h-8 items-center gap-1 rounded-full bg-gray-100 px-3 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
         >
           <X size={11} weight="bold" />
           Clear
