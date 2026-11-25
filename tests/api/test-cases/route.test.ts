@@ -93,6 +93,27 @@ describe("test-cases route", () => {
     await expect(response.json()).resolves.toEqual({ message: "Test case added successfully." });
   });
 
+  it("creates a test case with only essential fields (suite, tcId, caseName)", async () => {
+    mocks.getCurrentUser.mockResolvedValueOnce({ id: 1, role: "pm", company: "acme" });
+    mocks.db.get.mockResolvedValueOnce({ company: "acme" });
+    mocks.getTestSuite.mockResolvedValueOnce({ publicToken: "suite-token" });
+
+    const response = await POST(
+      buildFormRequest({
+        testSuiteId: "7",
+        tcId: "TC-2",
+        caseName: "Minimal case title",
+      }),
+    );
+
+    expect(mocks.db.run).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO "TestCase"'),
+      expect.arrayContaining(["acme", "public-token", "7", "TC-2", "Positive", "", "Minimal case title", "", "", "Pending", "Medium"]),
+    );
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ message: "Test case added successfully." });
+  });
+
   it("rejects invalid delete ids", async () => {
     mocks.getCurrentUser.mockResolvedValueOnce({ id: 1, role: "admin", company: "" });
     mocks.isPlatformSuperAdmin.mockReturnValue(true);

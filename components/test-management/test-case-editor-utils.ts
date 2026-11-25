@@ -67,10 +67,10 @@ export function isFailedStatus(value: string) {
 }
 
 export function requiredEditReady(row: TestCaseRow | null) {
-  return Boolean(row?.tcId && row.caseName && row.typeCase && row.expectedResult && row.status && row.priority);
+  return Boolean(row?.tcId?.trim() && row?.caseName?.trim());
 }
 
-const REQUIRED_FIELDS: FieldKey[] = ["tcId", "caseName", "typeCase", "preCondition", "testStep", "expectedResult", "status", "priority"];
+const REQUIRED_FIELDS: FieldKey[] = ["tcId", "caseName"];
 
 export function getInvalidFields(row: TestCaseRow | null): FieldKey[] {
   if (!row) return REQUIRED_FIELDS;

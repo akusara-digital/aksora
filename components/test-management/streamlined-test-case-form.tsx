@@ -140,8 +140,8 @@ export function StreamlinedTestCaseForm({
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!caseName.trim() || !testStep.trim() || !expectedResult.trim()) {
-      toast("Test case name, steps, and expected result are required.", "error");
+    if (!caseName.trim()) {
+      toast("Test case name is required.", "error");
       return;
     }
 
@@ -270,7 +270,7 @@ export function StreamlinedTestCaseForm({
         <div>
           <div className="mb-1 flex items-center justify-between">
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700">
-              Step Scenario <span className="text-rose-500">*</span>
+              Step Scenario
             </label>
             <button
               type="button"
@@ -284,7 +284,6 @@ export function StreamlinedTestCaseForm({
           </div>
           <AutoResizeTextarea
             rows={3}
-            required
             value={testStep}
             onChange={(e) => setTestStep(e.target.value)}
             onKeyDown={(e) => handleStepKeyDown(e, testStep, setTestStep)}
@@ -296,11 +295,10 @@ export function StreamlinedTestCaseForm({
         {/* Expected Result */}
         <div>
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
-            Expected Result <span className="text-rose-500">*</span>
+            Expected Result
           </label>
           <AutoResizeTextarea
             rows={2}
-            required
             value={expectedResult}
             onChange={(e) => setExpectedResult(e.target.value)}
             placeholder="User is redirected to /dashboard and welcome banner is displayed"

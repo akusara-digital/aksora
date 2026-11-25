@@ -28,8 +28,9 @@ export async function POST(request: NextRequest) {
     const evidence = String(formData.get("evidence") || "");
     const priority = String(formData.get("priority") || "Medium");
 
-    if (!testSuiteId || !tcId || !typeCase || !caseName || !testStep || !expectedResult) {
-      return NextResponse.json({ error: "Please fill in all required fields." }, { status: 400 });
+    const finalTypeCase = typeCase || "Positive";
+    if (!testSuiteId || !tcId || !caseName) {
+      return NextResponse.json({ error: "Suite ID, Test Case ID, and Case Name are required." }, { status: 400 });
     }
 
     const workspaceId = user.activeWorkspaceId ?? null;
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     await db.run(
       `INSERT INTO "TestCase" ("uuid", "company", "workspaceId", "publicToken", "testSuiteId", "tcId", "typeCase", "preCondition", "caseName", "testStep", "expectedResult", "actualResult", "status", "evidence", "priority")
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [randomUUID(), company, workspaceId, makePublicToken(), testSuiteId, tcId, typeCase, preCondition, caseName, testStep, expectedResult, actualResult, status, evidence, priority]
+      [randomUUID(), company, workspaceId, makePublicToken(), testSuiteId, tcId, finalTypeCase, preCondition, caseName, testStep, expectedResult, actualResult, status, evidence, priority]
     );
 
     revalidatePath("/test-cases");

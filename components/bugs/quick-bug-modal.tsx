@@ -246,8 +246,8 @@ export function QuickBugModal({
 
   const handleSaveBug = () => {
     const proj = project.trim() || defaultProject.trim() || "General";
-    if (!title.trim() || !steps.trim() || !expected.trim() || !actual.trim()) {
-      toast("Please fill in required fields", "warning");
+    if (!title.trim()) {
+      toast("Bug title is required.", "warning");
       return;
     }
 

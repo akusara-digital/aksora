@@ -81,17 +81,24 @@ const HEADER_MAP: Record<string, keyof TestCaseRow> = {
   "tc id": "tcId",
   "tcid": "tcId",
   "test case id": "tcId",
+  "id scenario": "tcId",
+  "id": "tcId",
   "case name": "caseName",
   "casename": "caseName",
   "test case name": "caseName",
+  "test scenario": "caseName",
+  "scenario": "caseName",
+  "title": "caseName",
   "type case": "typeCase",
   "typecase": "typeCase",
+  "case type": "typeCase",
   "type": "typeCase",
   "pre-condition": "preCondition",
   "precondition": "preCondition",
   "pre condition": "preCondition",
   "test step": "testStep",
   "teststep": "testStep",
+  "step scenario": "testStep",
   "steps": "testStep",
   "expected result": "expectedResult",
   "expectedresult": "expectedResult",
@@ -130,27 +137,31 @@ export function mapCSVToTestCases(
     const row = rows[i];
     const errors: string[] = [];
 
-    const tcId = getField(row, columnMap, "tcId");
+    const rawTcId = getField(row, columnMap, "tcId");
     const caseName = getField(row, columnMap, "caseName");
-    const typeCase = capitalizeFirst(getField(row, columnMap, "typeCase"));
+    const rawTypeCase = capitalizeFirst(getField(row, columnMap, "typeCase"));
     const preCondition = getField(row, columnMap, "preCondition");
     const testStep = getField(row, columnMap, "testStep");
     const expectedResult = getField(row, columnMap, "expectedResult");
     const actualResult = getField(row, columnMap, "actualResult");
-    const status = capitalizeFirst(getField(row, columnMap, "status"));
-    const priority = capitalizeFirst(getField(row, columnMap, "priority"));
+    const rawStatus = capitalizeFirst(getField(row, columnMap, "status"));
+    const rawPriority = capitalizeFirst(getField(row, columnMap, "priority"));
 
-    if (!tcId) errors.push("TC ID is required");
+    const tcId = rawTcId || `TC-${String(i + 1).padStart(3, "0")}`;
+    const typeCase = rawTypeCase || "Positive";
+    const status = rawStatus || "Pending";
+    const priority = rawPriority || "Medium";
+
     if (!caseName) errors.push("Case Name is required");
-    if (!typeCase) errors.push("Type Case is required");
-    else if (!VALID_TYPE_CASE.includes(typeCase)) errors.push(`Type Case must be Positive or Negative, got "${typeCase}"`);
-    if (!preCondition) errors.push("Pre-condition is required");
-    if (!testStep) errors.push("Test Step is required");
-    if (!expectedResult) errors.push("Expected Result is required");
-    if (!status) errors.push("Status is required");
-    else if (!VALID_STATUS.includes(status)) errors.push(`Status must be Pending/Passed/Failed/Blocked, got "${status}"`);
-    if (!priority) errors.push("Priority is required");
-    else if (!VALID_PRIORITY.includes(priority)) errors.push(`Priority must be Critical/High/Medium/Low, got "${priority}"`);
+    if (rawTypeCase && !VALID_TYPE_CASE.includes(typeCase)) {
+      errors.push(`Type Case must be Positive or Negative, got "${typeCase}"`);
+    }
+    if (rawStatus && !VALID_STATUS.includes(status)) {
+      errors.push(`Status must be Pending/Passed/Failed/Blocked, got "${status}"`);
+    }
+    if (rawPriority && !VALID_PRIORITY.includes(priority)) {
+      errors.push(`Priority must be Critical/High/Medium/Low, got "${priority}"`);
+    }
 
     if (errors.length > 0) {
       invalid.push({ row: i + 1, errors });
@@ -160,9 +171,9 @@ export function mapCSVToTestCases(
         tcId,
         caseName,
         typeCase,
-        preCondition,
-        testStep,
-        expectedResult,
+        preCondition: preCondition || "",
+        testStep: testStep || "",
+        expectedResult: expectedResult || "",
         actualResult: actualResult || "",
         status,
         evidence: "",
