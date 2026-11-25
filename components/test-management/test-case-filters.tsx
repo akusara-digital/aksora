@@ -33,8 +33,46 @@ export function TestCaseFilters({
 }: TestCaseFiltersProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200/60 pb-3">
-      {/* Left: Filters and View Mode Switcher */}
+      {/* Left: View Mode Switcher */}
       <div className="flex flex-wrap items-center gap-2.5">
+        {onSetViewMode && (
+          <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
+            <button
+              type="button"
+              onClick={() => onSetViewMode("table")}
+              className={cn(
+                "h-full px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                viewMode === "table"
+                  ? "bg-gray-100 text-gray-900 font-semibold"
+                  : "text-gray-500 hover:bg-gray-50",
+              )}
+            >
+              <span className="inline-flex items-center gap-1">
+                <Table size={13} weight="bold" />
+                Table
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSetViewMode("kanban")}
+              className={cn(
+                "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                viewMode === "kanban"
+                  ? "bg-gray-100 text-gray-900 font-semibold"
+                  : "text-gray-500 hover:bg-gray-50",
+              )}
+            >
+              <span className="inline-flex items-center gap-1">
+                <Kanban size={13} weight="bold" />
+                Kanban
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Right: Filters and Actions */}
+      <div className="flex flex-wrap items-center gap-2.5 ml-auto">
         <span className="flex items-center gap-1 text-xs font-semibold text-gray-500">
           <Funnel size={13} weight="bold" />
           Filters
@@ -97,43 +135,8 @@ export function TestCaseFilters({
           </button>
         )}
 
-        {/* View Mode Toggle: Table | Kanban (matching Bugs) */}
-        {onSetViewMode && (
-          <div className="flex h-8 items-center rounded-md border border-gray-200 bg-gray-50/80 p-0.5 ml-1">
-            <button
-              type="button"
-              onClick={() => onSetViewMode("table")}
-              className={cn(
-                "flex h-7 items-center gap-1 rounded px-2.5 text-xs font-semibold transition cursor-pointer",
-                viewMode === "table"
-                  ? "bg-white text-gray-900 shadow-2xs font-bold"
-                  : "text-gray-500 hover:text-gray-900",
-              )}
-              title="Table View"
-            >
-              <Table size={13} weight="bold" />
-              <span className="hidden sm:inline">Table</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onSetViewMode("kanban")}
-              className={cn(
-                "flex h-7 items-center gap-1 rounded px-2.5 text-xs font-semibold transition cursor-pointer",
-                viewMode === "kanban"
-                  ? "bg-white text-gray-900 shadow-2xs font-bold"
-                  : "text-gray-500 hover:text-gray-900",
-              )}
-              title="Kanban Board"
-            >
-              <Kanban size={13} weight="bold" />
-              <span className="hidden sm:inline">Kanban</span>
-            </button>
-          </div>
-        )}
-      </div>
+        <div className="h-4 w-px bg-gray-200 hidden sm:block" />
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2">
         <span className="text-xs font-medium text-gray-400 hidden sm:inline">
           {suitesCount} suite{suitesCount === 1 ? "" : "s"}
         </span>

@@ -175,18 +175,6 @@ export function ModuleWorkspaceHeader({
                 </div>
               ) : null}
 
-              {hasKanban && filterOptions && filterOptions.length > 0 && (
-                <div className="h-4 w-px bg-gray-200 hidden sm:block" />
-              )}
-
-              {filterOptions && filterOptions.length > 0 && activeFilters && onFilterChange && (
-                <ModuleFilterBar
-                  filters={filterOptions}
-                  activeFilters={activeFilters}
-                  onFilterChange={onFilterChange}
-                />
-              )}
-
               {(pending || refreshing) && (
                 <span role="status" className="flex items-center gap-1.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
                   <span className="h-3 w-3 rounded-full border-2 border-blue-600 border-t-transparent animate-spin shrink-0" />
@@ -194,6 +182,16 @@ export function ModuleWorkspaceHeader({
                 </span>
               )}
             </div>
+
+            {filterOptions && filterOptions.length > 0 && activeFilters && onFilterChange && (
+              <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+                <ModuleFilterBar
+                  filters={filterOptions}
+                  activeFilters={activeFilters}
+                  onFilterChange={onFilterChange}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

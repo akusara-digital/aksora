@@ -315,7 +315,12 @@ export function ExecutionSuiteCards({
         </div>
 
         {/* Project Selector & Search */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 ml-auto">
+          <span className="flex items-center gap-1 text-xs font-semibold text-slate-500 mr-0.5">
+            <Funnel size={13} weight="bold" />
+            Filters
+          </span>
+
           {projects.length > 0 && (
             <div className="relative">
               <select
