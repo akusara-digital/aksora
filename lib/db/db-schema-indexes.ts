@@ -83,7 +83,6 @@ CREATE INDEX IF NOT EXISTS "idx_meetingnote_workspace_project" ON "MeetingNote"(
 CREATE INDEX IF NOT EXISTS "idx_meetingnote_project_active_date" ON "MeetingNote"("project", "date" DESC, "updatedAt" DESC) WHERE "deletedAt" IS NULL;
 CREATE INDEX IF NOT EXISTS "idx_meetingnote_workspace_active_date" ON "MeetingNote"("workspaceId", "date" DESC, "updatedAt" DESC) WHERE "deletedAt" IS NULL;
 CREATE INDEX IF NOT EXISTS "idx_invite_workspace" ON "Invite"("workspaceId");
-CREATE INDEX IF NOT EXISTS "idx_invite_token" ON "Invite"("token");
 CREATE INDEX IF NOT EXISTS "idx_invite_company_status" ON "Invite"("company", "status");
 CREATE INDEX IF NOT EXISTS "idx_project_workspace" ON "Project"("workspaceId");
 CREATE INDEX IF NOT EXISTS "idx_project_workspace_updated" ON "Project"("workspaceId", "updatedAt");
