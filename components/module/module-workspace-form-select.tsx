@@ -86,7 +86,7 @@ export function ModuleWorkspaceFormSelect({
                 onClose={() => setOpenSelectField(null)}
                 title=""
                 emptyTitle="No projects found"
-                emptySubtitle="Please create a project first on the Projects page."
+                emptySubtitle="Create a project first."
               />
             ) : options.length > 0 ? (
               options.map((option) => (

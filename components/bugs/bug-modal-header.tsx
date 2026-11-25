@@ -70,7 +70,7 @@ export function BugModalHeader({
                 onClose={() => setProjectOpen(false)}
                 title="Select Project"
                 emptyTitle="No projects found"
-                emptySubtitle="Please create a project first on the Projects page."
+                emptySubtitle="Create a project first."
               />
             </div>
           )}

@@ -38,7 +38,7 @@ export function ProjectDropdownContent({
   title = "Select Project",
   manageLabel = "Manage Projects",
   emptyTitle = "No projects found",
-  emptySubtitle = "Please create a project first on the Projects page.",
+  emptySubtitle = "Create a project first.",
 }: ProjectDropdownContentProps) {
   const projectsUrl = getProjectsPageUrl();
 
@@ -77,11 +77,11 @@ export function ProjectDropdownContent({
             })}
           </div>
 
-          <div className="border-t border-slate-100 dark:border-slate-800 p-1.5 bg-slate-50/80 dark:bg-slate-900/80">
+          <div className="border-t border-slate-100 dark:border-slate-800 p-1 bg-slate-50/80 dark:bg-slate-900/80">
             <Link
               href={projectsUrl}
               onClick={() => onClose?.()}
-              className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-800 transition"
+              className="flex w-full items-center justify-between rounded-md px-2 py-1 text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-800 transition"
             >
               <span className="flex items-center gap-1.5">
                 <FolderSimple size={13} weight="bold" />
@@ -92,18 +92,20 @@ export function ProjectDropdownContent({
           </div>
         </>
       ) : (
-        <div className="p-3.5 text-center">
+        <div className="p-2.5 text-center">
           <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{emptyTitle}</p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-            {emptySubtitle}
-          </p>
+          {emptySubtitle && (
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+              {emptySubtitle}
+            </p>
+          )}
           <Link
             href={projectsUrl}
             onClick={() => onClose?.()}
-            className="mt-3 inline-flex items-center justify-center gap-1.5 w-full rounded-md bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/80 transition"
+            className="mt-2 inline-flex items-center justify-center gap-1.5 w-full rounded-md bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 px-2.5 py-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/80 transition"
           >
             <span>Go to Projects</span>
-            <ArrowRight size={12} weight="bold" />
+            <ArrowRight size={11} weight="bold" />
           </Link>
         </div>
       )}
