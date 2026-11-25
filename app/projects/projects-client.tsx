@@ -26,7 +26,8 @@ import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
-import { formatDate } from "@/lib/utils";
+import { PageShell } from "@/components/layout/page-shell";
+import { formatDate, cn } from "@/lib/utils";
 
 interface ProjectItem {
   id: number;
@@ -141,79 +142,113 @@ export function ProjectsClient() {
   const archivedCount = projects.filter((p) => p.status === "archived").length;
 
   return (
-    <div className="space-y-6">
-      {/* Top Filter and Search Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Tabs */}
-          <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-semibold text-slate-600">
+    <PageShell
+      icon={<FolderSimple size={22} weight="bold" />}
+      title="Projects"
+      description="Projects, test plans, suites, tasks, and defects for your workspace."
+      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Projects" }]}
+      actions={
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
+          <div className="relative w-full min-w-0 md:w-56 lg:max-w-56">
+            <div className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-gray-400">
+              <MagnifyingGlass size={14} weight="bold" />
+            </div>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search projects..."
+              className="h-8 w-full border border-gray-200 bg-white pl-8 pr-7 text-[13px] outline-none transition-colors focus:border-blue-500"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                aria-label="Clear search"
+              >
+                <X size={12} weight="bold" />
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
+          >
+            <Plus size={14} weight="bold" className="shrink-0" />
+            <span>New Project</span>
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Toolbar Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200/80 pb-3">
+          {/* Left: Tabs */}
+          <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
             <button
               type="button"
               onClick={() => setTab("active")}
-              className={`rounded-md px-3 py-1.5 transition ${
-                tab === "active" ? "bg-white text-slate-900 shadow-xs" : "hover:text-slate-900"
-              }`}
+              className={cn(
+                "h-full px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                tab === "active"
+                  ? "bg-gray-100 text-gray-900 font-semibold"
+                  : "text-gray-500 hover:bg-gray-50",
+              )}
             >
               Active ({activeCount})
             </button>
             <button
               type="button"
               onClick={() => setTab("archived")}
-              className={`rounded-md px-3 py-1.5 transition ${
-                tab === "archived" ? "bg-white text-slate-900 shadow-xs" : "hover:text-slate-900"
-              }`}
+              className={cn(
+                "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                tab === "archived"
+                  ? "bg-gray-100 text-gray-900 font-semibold"
+                  : "text-gray-500 hover:bg-gray-50",
+              )}
             >
               Archived ({archivedCount})
             </button>
             <button
               type="button"
               onClick={() => setTab("all")}
-              className={`rounded-md px-3 py-1.5 transition ${
-                tab === "all" ? "bg-white text-slate-900 shadow-xs" : "hover:text-slate-900"
-              }`}
+              className={cn(
+                "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                tab === "all"
+                  ? "bg-gray-100 text-gray-900 font-semibold"
+                  : "text-gray-500 hover:bg-gray-50",
+              )}
             >
               All ({projects.length})
             </button>
           </div>
 
-          {/* Search Box */}
-          <div className="relative w-full sm:w-64">
-            <MagnifyingGlass
-              size={15}
-              weight="bold"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-            />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search projects..."
-              className="h-9 w-full rounded-md border border-slate-200 bg-white pl-9 pr-8 text-xs text-slate-900 placeholder:text-slate-400 shadow-xs focus:border-blue-500 focus:outline-none"
-            />
-            {search && (
+          {/* Right: Info & Clear */}
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            {(tab !== "active" || search) && (
               <button
                 type="button"
-                onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                aria-label="Clear search"
+                onClick={() => {
+                  setTab("active");
+                  setSearch("");
+                }}
+                className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
               >
-                <X size={13} weight="bold" />
+                <X size={11} weight="bold" />
+                Clear
               </button>
             )}
+
+            <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+
+            <span className="text-xs font-medium text-gray-400 hidden sm:inline">
+              {filtered.length} project{filtered.length === 1 ? "" : "s"}
+            </span>
           </div>
         </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700"
-          >
-            <Plus size={14} weight="bold" />
-            New Project
-          </button>
-        </div>
-      </div>
 
       {error && <InlineAlert variant="error" message={error} />}
 
@@ -456,5 +491,6 @@ export function ProjectsClient() {
         />
       )}
     </div>
+    </PageShell>
   );
 }

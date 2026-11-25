@@ -14,15 +14,8 @@ export const metadata: Metadata = {
 
 export default function ProjectsPage() {
   return (
-    <PageShell
-      icon={<FolderSimple size={22} weight="bold" />}
-      title="Projects"
-      description="Projects, test plans, suites, tasks, and defects for your workspace."
-      crumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Projects" }]}
-    >
-      <Suspense fallback={<Skeleton className="h-72 w-full" />}>
-        <ProjectsClient />
-      </Suspense>
-    </PageShell>
+    <Suspense fallback={<Skeleton className="h-72 w-full" />}>
+      <ProjectsClient />
+    </Suspense>
   );
 }

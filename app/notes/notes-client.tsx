@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MagnifyingGlass, NotePencil, Plus, PushPin, Trash, X } from "@phosphor-icons/react";
+import { MagnifyingGlass, NotePencil, Plus, PushPin, Trash, X, Funnel } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { FormDrawer } from "@/components/shared/form-drawer";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import { PageShell } from "@/components/layout/page-shell";
 import { cn } from "@/lib/utils";
 
 type Note = {
@@ -33,6 +34,8 @@ export function NotesClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [filterTab, setFilterTab] = useState<"all" | "pinned">("all");
+  const [filterColor, setFilterColor] = useState<string>("all");
 
   const [editing, setEditing] = useState<Note | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -142,6 +145,8 @@ export function NotesClient() {
   };
 
   const filteredNotes = notes.filter((n) => {
+    if (filterTab === "pinned" && !n.pinned) return false;
+    if (filterColor !== "all" && n.color !== filterColor) return false;
     if (!search.trim()) return true;
     const q = search.toLowerCase();
     return (
@@ -150,16 +155,18 @@ export function NotesClient() {
     );
   });
 
+  const pinnedCount = notes.filter((n) => Boolean(n.pinned)).length;
+
   return (
-    <div className="w-full space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-slate-500">
-          {filteredNotes.length} note{filteredNotes.length === 1 ? "" : "s"}
-          {search.trim() ? ` (filtered from ${notes.length})` : ""}
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative w-full min-w-0 sm:w-56">
-            <div className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-slate-400">
+    <PageShell
+      icon={<NotePencil size={22} weight="bold" />}
+      title="Personal Notes"
+      description="Your private notes. Only you can see these."
+      crumbs={[{ label: "Notes & Vault", href: "/notes" }, { label: "Personal Notes" }]}
+      actions={
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
+          <div className="relative w-full min-w-0 md:w-56 lg:max-w-56">
+            <div className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-gray-400">
               <MagnifyingGlass size={14} weight="bold" />
             </div>
             <input
@@ -167,28 +174,112 @@ export function NotesClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search notes..."
-              className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-8 pr-7 text-xs font-medium text-slate-700 placeholder:text-slate-400 shadow-xs outline-none transition focus:border-blue-500"
+              className="h-8 w-full border border-gray-200 bg-white pl-8 pr-7 text-[13px] outline-none transition-colors focus:border-blue-500"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600"
+                className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
                 aria-label="Clear search"
               >
                 <X size={12} weight="bold" />
               </button>
             )}
           </div>
+
           <button
+            type="button"
             onClick={openCreate}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700"
+            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
           >
-            <Plus size={15} weight="bold" />
-            New Note
+            <Plus size={14} weight="bold" className="shrink-0" />
+            <span>New Note</span>
           </button>
         </div>
-      </div>
+      }
+    >
+      <div className="w-full space-y-4">
+        {/* Toolbar Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200/80 pb-3">
+          {/* Left: View Tabs */}
+          <div className="flex h-8 items-center border border-gray-200 overflow-hidden shrink-0">
+            <button
+              type="button"
+              onClick={() => setFilterTab("all")}
+              className={cn(
+                "h-full px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                filterTab === "all"
+                  ? "bg-gray-100 text-gray-900 font-semibold"
+                  : "text-gray-500 hover:bg-gray-50",
+              )}
+            >
+              All Notes ({notes.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterTab("pinned")}
+              className={cn(
+                "h-full border-l border-gray-200 px-3 text-[12px] font-medium transition-colors cursor-pointer",
+                filterTab === "pinned"
+                  ? "bg-gray-100 text-gray-900 font-semibold"
+                  : "text-gray-500 hover:bg-gray-50",
+              )}
+            >
+              Pinned ({pinnedCount})
+            </button>
+          </div>
+
+          {/* Right: Filters & Info */}
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            <span className="flex items-center gap-1 text-xs font-semibold text-gray-500">
+              <Funnel size={13} weight="bold" />
+              Filters
+            </span>
+
+            <div className="relative">
+              <select
+                value={filterColor}
+                onChange={(e) => setFilterColor(e.target.value)}
+                aria-label="Filter by color"
+                className={cn(
+                  "h-8 rounded-md border px-2.5 text-xs font-semibold outline-none transition touch-manipulation cursor-pointer capitalize",
+                  filterColor !== "all"
+                    ? "border-blue-300 bg-blue-50 text-blue-700 font-bold"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300",
+                )}
+              >
+                <option value="all">All Colors</option>
+                {COLORS.map((c) => (
+                  <option key={c} value={c}>
+                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {(filterColor !== "all" || filterTab !== "all" || search) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterColor("all");
+                  setFilterTab("all");
+                  setSearch("");
+                }}
+                className="inline-flex h-8 items-center gap-1 rounded-md bg-gray-100 px-2.5 text-xs font-bold text-gray-600 transition hover:bg-gray-200 cursor-pointer"
+              >
+                <X size={11} weight="bold" />
+                Clear
+              </button>
+            )}
+
+            <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+
+            <span className="text-xs font-medium text-gray-400 hidden sm:inline">
+              {filteredNotes.length} note{filteredNotes.length === 1 ? "" : "s"}
+            </span>
+          </div>
+        </div>
 
       {error && <InlineAlert variant="error" message={error} />}
 
@@ -338,5 +429,6 @@ export function NotesClient() {
         onCancel={() => setDeleteTarget(null)}
       />
     </div>
+    </PageShell>
   );
 }
