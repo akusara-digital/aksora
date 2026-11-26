@@ -63,13 +63,14 @@ export async function validateCredentials(email: string, password: string) {
       role: string;
       company: string;
       password: string;
+      avatar?: string;
       mfaEnabled: number;
       mfaSecret: string | null;
       emailVerified: number;
       activeWorkspaceId: number | null;
       locale?: string;
     }>(
-      `SELECT u."id", u."uuid", u."name", u."email", COALESCE(wm."role", u."role") AS "role", u."company", u."password", u."mfaEnabled", u."mfaSecret", u."emailVerified", COALESCE(u."activeWorkspaceId", w."id") AS "activeWorkspaceId", u."locale"
+      `SELECT u."id", u."uuid", u."name", u."email", COALESCE(wm."role", u."role") AS "role", u."company", u."password", u."avatar", u."mfaEnabled", u."mfaSecret", u."emailVerified", COALESCE(u."activeWorkspaceId", w."id") AS "activeWorkspaceId", u."locale"
        FROM "User" u
        LEFT JOIN "Workspace" w ON w."name" = u."company"
        LEFT JOIN "WorkspaceMembership" wm ON wm."workspaceId" = COALESCE(u."activeWorkspaceId", w."id") AND wm."userId" = u."id"
@@ -136,6 +137,7 @@ export async function validateCredentials(email: string, password: string) {
       mfaSecret: user.mfaSecret || null,
       emailVerified: Boolean(user.emailVerified),
       locale: user.locale || "en",
+      avatar: user.avatar || "",
     };
   } catch (err) {
     console.error("Auth DB error:", err);
@@ -330,7 +332,7 @@ export async function verifySessionToken(token: string | undefined | null) {
   }
 }
 
-type CachedUserRow = { id: number; uuid?: string; password: string; company?: string; role?: string; workspaceId?: number | null; activeWorkspaceId?: number | null };
+type CachedUserRow = { id: number; uuid?: string; password: string; company?: string; role?: string; avatar?: string; workspaceId?: number | null; activeWorkspaceId?: number | null };
 const userDbRowCache = new Map<number, { row: CachedUserRow; exp: number }>();
 
 async function getCurrentUserUncached() {
@@ -378,7 +380,7 @@ async function getCurrentUserUncached() {
     // Fast path: user data embedded in token (new tokens after login)
     if (decoded.id && decoded.name !== undefined && decoded.role !== undefined && decoded.company !== undefined) {
       let validUserId = decoded.id;
-      let userDbRow: { id: number; uuid?: string; password: string; company?: string; role?: string; workspaceId?: number | null; activeWorkspaceId?: number | null } | undefined;
+      let userDbRow: { id: number; uuid?: string; password: string; company?: string; role?: string; avatar?: string; workspaceId?: number | null; activeWorkspaceId?: number | null } | undefined;
       // Verify session hasn't been revoked and user exists in current DB (with fast 15s in-memory TTL)
       try {
         const { db } = await import("./db");
@@ -387,7 +389,7 @@ async function getCurrentUserUncached() {
           userDbRow = cached.row;
         } else {
           userDbRow = await db.get<CachedUserRow>(
-            'SELECT "id", "uuid", "password", "company", "role", "workspaceId", "activeWorkspaceId" FROM "User" WHERE "id" = CAST(? AS INTEGER)',
+            'SELECT "id", "uuid", "password", "company", "role", "avatar", "workspaceId", "activeWorkspaceId" FROM "User" WHERE "id" = CAST(? AS INTEGER)',
             [decoded.id],
           );
           if (userDbRow) {
@@ -511,13 +513,14 @@ async function getCurrentUserUncached() {
         workspaceId: activeWorkspaceId,
         workspaceUuid,
         locale: decoded.locale || "en",
+        avatar: userDbRow?.avatar || (decoded as { avatar?: string }).avatar || "",
       };
     }
 
     // Fallback: old tokens without embedded user data - hit DB once
     const { db } = await import("./db");
-    const user = await db.get<{ id: number; uuid?: string; name: string; email: string; role: string; company: string; activeWorkspaceId: number | null; workspaceUuid?: string; locale?: string }>(
-      `SELECT u.id, u.uuid, u.name, u.email, COALESCE(wm.role, u.role) AS "role", u.company, COALESCE(u."activeWorkspaceId", w.id) AS "activeWorkspaceId", w.uuid AS "workspaceUuid", u.locale
+    const user = await db.get<{ id: number; uuid?: string; name: string; email: string; role: string; company: string; avatar?: string; activeWorkspaceId: number | null; workspaceUuid?: string; locale?: string }>(
+      `SELECT u.id, u.uuid, u.name, u.email, COALESCE(wm.role, u.role) AS "role", u.company, COALESCE(u.avatar, '') AS "avatar", COALESCE(u."activeWorkspaceId", w.id) AS "activeWorkspaceId", w.uuid AS "workspaceUuid", u.locale
        FROM "User" u
        LEFT JOIN "Workspace" w ON w.name = u.company
        LEFT JOIN "WorkspaceMembership" wm ON wm."workspaceId" = COALESCE(u."activeWorkspaceId", w."id") AND wm."userId" = u."id"

@@ -7,11 +7,33 @@ export const dynamic = "force-dynamic";
 
 const VALID_ACTIONS = ["created", "updated", "deleted"] as const;
 
+const EVENT_ALIASES: Record<string, string> = {
+  task: "tasks",
+  bug: "bugs",
+  testcase: "test-cases",
+  "test-case": "test-cases",
+  testplan: "test-plans",
+  "test-plan": "test-plans",
+  testsuite: "test-suites",
+  "test-suite": "test-suites",
+  sprint: "sprints",
+  deployment: "deployments",
+  user: "users",
+  assignee: "assignees",
+  worklog: "work-logs",
+  "work-log": "work-logs",
+};
+
 function buildValidEventKeys(): Set<string> {
   const keys = new Set<string>(["*"]);
   for (const moduleKey of moduleOrder) {
     for (const action of VALID_ACTIONS) {
       keys.add(`${moduleKey}.${action}`);
+    }
+  }
+  for (const alias of Object.keys(EVENT_ALIASES)) {
+    for (const action of VALID_ACTIONS) {
+      keys.add(`${alias}.${action}`);
     }
   }
   return keys;

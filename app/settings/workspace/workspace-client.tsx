@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Buildings, Users, ShieldCheck, WarningCircle, Info, CalendarBlank } from "@phosphor-icons/react";
+import { Buildings, Users, ShieldCheck, WarningCircle, Info, CalendarBlank, DownloadSimple, Lightning } from "@phosphor-icons/react";
 import { InlineAlert } from "@/components/ui/inline-alert";
+import { toast } from "@/components/ui/toast";
 import { CompanyLogoField } from "./company-logo-field";
+import { WorkspaceAccessMatrix } from "@/components/settings/workspace-access-matrix";
+import { WorkspaceDangerZone } from "@/components/settings/workspace-danger-zone";
 
 type WorkspaceData = {
   companyName: string;
@@ -19,6 +22,40 @@ export function WorkspaceClient() {
   const [data, setData] = useState<WorkspaceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  const handleExport = () => {
+    setExportLoading(true);
+    toast("Generating workspace data backup...", "info");
+    const link = document.createElement("a");
+    link.href = "/api/settings/workspace/export";
+    link.download = `workspace-data-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => setExportLoading(false), 2000);
+  };
+
+  const handleUpgrade = async (plan: "pro" | "enterprise") => {
+    setUpgradeLoading(true);
+    try {
+      const res = await fetch("/api/settings/workspace/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "Failed to start checkout");
+      if (json.url) {
+        window.open(json.url, "_blank");
+      }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to initiate upgrade", "error");
+    } finally {
+      setUpgradeLoading(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -142,6 +179,27 @@ export function WorkspaceClient() {
             </div>
           </div>
         </div>
+
+        <div className="flex items-center gap-2 self-start md:self-center">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exportLoading}
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition disabled:opacity-50"
+          >
+            <DownloadSimple size={14} weight="bold" />
+            <span>{exportLoading ? "Exporting..." : "Export Data"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleUpgrade("pro")}
+            disabled={upgradeLoading}
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            <Lightning size={14} weight="bold" />
+            <span>{upgradeLoading ? "Loading..." : "Upgrade Plan"}</span>
+          </button>
+        </div>
       </div>
 
       {isSuspended && (
@@ -172,7 +230,27 @@ export function WorkspaceClient() {
             <p className="text-sm font-semibold text-slate-700">{formatDate(data.planExpiry)}</p>
           </div>
 
-          <div className="mt-8 flex items-start gap-2 bg-slate-50 p-3 border border-slate-100">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleUpgrade("pro")}
+              disabled={upgradeLoading}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              <Lightning size={13} weight="bold" />
+              <span>Upgrade to Pro</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleUpgrade("enterprise")}
+              disabled={upgradeLoading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition disabled:opacity-50"
+            >
+              <span>Enterprise Custom</span>
+            </button>
+          </div>
+
+          <div className="mt-6 flex items-start gap-2 bg-slate-50 p-3 border border-slate-100">
             <Info size={16} className="text-blue-500 shrink-0 mt-0.5" />
             <p className="text-xs text-slate-600 leading-relaxed">
               Plan changes and billing management are handled centrally. Contact your administrator to change your plan or update billing details.
@@ -221,83 +299,8 @@ export function WorkspaceClient() {
 
       </div>
 
-      {/* Role-Based Module Access Matrix */}
-      <div className="border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">Role-Based Module Access Matrix</h3>
-            <p className="mt-0.5 text-xs text-slate-500">Default workspace permissions and operational scope across team roles</p>
-          </div>
-          <ShieldCheck size={20} className="text-blue-600" />
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold uppercase text-slate-500">
-                <th className="py-2.5 px-3">Role</th>
-                <th className="py-2.5 px-3">Test Management</th>
-                <th className="py-2.5 px-3">Bug Tracking</th>
-                <th className="py-2.5 px-3">Tasks & Sprints</th>
-                <th className="py-2.5 px-3">Deployments</th>
-                <th className="py-2.5 px-3">Settings & Admin</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-              <tr>
-                <td className="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-blue-600" /> Workspace Admin
-                </td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Full Access</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Full Access</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Full Access</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Full Access</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Full Access</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> QA Engineer
-                </td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Manage & Execute</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Report & Verify</td>
-                <td className="py-2.5 px-3 text-slate-600">Read & Link</td>
-                <td className="py-2.5 px-3 text-slate-600">View Release Notes</td>
-                <td className="py-2.5 px-3 text-slate-400">View Only</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-purple-500" /> Product Manager
-                </td>
-                <td className="py-2.5 px-3 text-slate-600">View & Review</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Triage & Prioritize</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Plan & Manage</td>
-                <td className="py-2.5 px-3 text-slate-600">Approve & View</td>
-                <td className="py-2.5 px-3 text-slate-400">View Only</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-amber-500" /> Engineer (FE / BE / Fullstack)
-                </td>
-                <td className="py-2.5 px-3 text-slate-600">View & Reference</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Resolve & Update</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Execute & Log</td>
-                <td className="py-2.5 px-3 text-emerald-600 font-semibold">Create & Deploy</td>
-                <td className="py-2.5 px-3 text-slate-400">No Access</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-indigo-500" /> AI Agent / Automation
-                </td>
-                <td className="py-2.5 px-3 text-slate-600">Run Automation</td>
-                <td className="py-2.5 px-3 text-slate-600">Duplicate Check</td>
-                <td className="py-2.5 px-3 text-slate-600">Git Link / PR Sync</td>
-                <td className="py-2.5 px-3 text-slate-400">No Access</td>
-                <td className="py-2.5 px-3 text-slate-400">API Key Scoped</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <WorkspaceAccessMatrix />
+      <WorkspaceDangerZone companyName={data.companyName} />
     </div>
   );
 }

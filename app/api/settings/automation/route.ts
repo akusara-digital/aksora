@@ -10,9 +10,13 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const scope = getAccessScope(user);
+  const wsId = scope.workspaceId ?? user.activeWorkspaceId ?? null;
   const rules = await db.query(
-    `SELECT * FROM "AutomationRule" WHERE "company" = ? OR "company" = '' ORDER BY "createdAt" DESC`,
-    [scope.company]
+    `SELECT * FROM "AutomationRule"
+     WHERE ("company" = ? OR "company" = '')
+     ${wsId ? `AND ("workspaceId" = ? OR "workspaceId" IS NULL)` : ""}
+     ORDER BY "createdAt" DESC`,
+    wsId ? [scope.company, wsId] : [scope.company]
   );
   return NextResponse.json({ rules });
 }
@@ -57,6 +61,31 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Automation rule POST error:", error);
     const msg = error instanceof Error ? error.message : "Failed to create automation rule.";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await req.json().catch(() => ({}));
+  const { id, active } = body;
+  if (!id || typeof active !== "number") {
+    return NextResponse.json({ error: "id and active are required" }, { status: 400 });
+  }
+
+  const scope = getAccessScope(user);
+  try {
+    await db.run(
+      `UPDATE "AutomationRule" SET "active" = ?, "updatedAt" = CURRENT_TIMESTAMP
+       WHERE "id" = CAST(? AS INTEGER) AND ("company" = ? OR "company" = '')`,
+      [active === 1 ? 1 : 0, id, scope.company]
+    );
+    return NextResponse.json({ ok: true, active: active === 1 ? 1 : 0 });
+  } catch (error) {
+    console.error("Automation rule PATCH error:", error);
+    const msg = error instanceof Error ? error.message : "Failed to update automation rule.";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

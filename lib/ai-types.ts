@@ -24,7 +24,6 @@ export type SupportedProvider = (typeof SUPPORTED_PROVIDERS)[number];
 
 export const DEFAULT_AI_MODELS: Record<SupportedProvider, string[]> = {
   google: [
-    "gemini-2.5-flash",
     "gemini-2.0-flash",
     "gemini-1.5-flash",
     "gemini-1.5-pro",

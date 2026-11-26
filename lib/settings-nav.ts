@@ -34,9 +34,11 @@ export type SettingsNavGroup = {
 export function getSettingsGroups({
   isAdmin,
   canConfigureQa,
+  canAccessAi = false,
 }: {
   isAdmin: boolean;
   canConfigureQa: boolean;
+  canAccessAi?: boolean;
 }): SettingsNavGroup[] {
   const groups: SettingsNavGroup[] = [
     {
@@ -115,78 +117,79 @@ export function getSettingsGroups({
   }
 
   if (isAdmin) {
-    groups.push(
-      {
-        id: "workspace-team",
-        title: "Workspace & Team",
-        description: "Manage subscription limits, workspace memberships, and access roles.",
-        items: [
-          {
-            title: "Workspace & Plan",
-            shortTitle: "Workspace",
-            description: "Review workspace details, plan subscription, and seat usage.",
-            href: "/settings/workspace",
-            icon: "buildings",
-          },
-          {
-            title: "Members & Workspaces",
-            shortTitle: "Members",
-            description: "Manage team members, pending invitations, and workspace access.",
-            href: "/settings/workspaces",
-            icon: "users-three",
-          },
-          {
-            title: "Custom Roles",
-            shortTitle: "Roles",
-            description: "Create custom roles and choose granular permissions per role.",
-            href: "/settings/roles",
-            icon: "shield-check",
-          },
-          {
-            title: "Assignees Directory",
-            shortTitle: "Assignees",
-            description: "Maintain the directory of people available for task and run assignments.",
-            href: "/assignees",
-            icon: "users",
-          },
-        ],
-      },
-      {
-        id: "ai-integrations",
-        title: "AI & Integrations",
-        description: "Connect AI providers, external issue trackers, and outgoing webhooks.",
-        items: [
-          {
-            title: "AI & Models",
-            shortTitle: "AI & Models",
-            description: "Configure AI provider keys (Gemini, Claude, OpenAI, Groq, DeepSeek).",
-            href: "/settings/ai",
-            icon: "robot",
-          },
-          {
-            title: "AI Usage & Tokens",
-            shortTitle: "AI Usage",
-            description: "Track AI calls and token consumption across features and models.",
-            href: "/settings/ai-usage",
-            icon: "chart-bar",
-          },
-          {
-            title: "Integrations",
-            shortTitle: "Integrations",
-            description: "Connect Jira, Trello, or Lark Base to sync defects and tasks.",
-            href: "/settings/integrations",
-            icon: "plugs-connected",
-          },
-          {
-            title: "Webhooks",
-            shortTitle: "Webhooks",
-            description: "Push real-time HTTP payloads to your endpoints when data changes.",
-            href: "/settings/webhooks",
-            icon: "webhooks",
-          },
-        ],
-      },
-    );
+    groups.push({
+      id: "workspace-team",
+      title: "Workspace & Team",
+      description: "Manage subscription limits, workspace memberships, and access roles.",
+      items: [
+        {
+          title: "Workspace & Plan",
+          shortTitle: "Workspace",
+          description: "Review workspace details, plan subscription, and seat usage.",
+          href: "/settings/workspace",
+          icon: "buildings",
+        },
+        {
+          title: "Members & Workspaces",
+          shortTitle: "Members",
+          description: "Manage team members, pending invitations, and workspace access.",
+          href: "/settings/workspaces",
+          icon: "users-three",
+        },
+        {
+          title: "Custom Roles",
+          shortTitle: "Roles",
+          description: "Create custom roles and choose granular permissions per role.",
+          href: "/settings/roles",
+          icon: "shield-check",
+        },
+        {
+          title: "Assignees Directory",
+          shortTitle: "Assignees",
+          description: "Maintain the directory of people available for task and run assignments.",
+          href: "/assignees",
+          icon: "users",
+        },
+      ],
+    });
+  }
+
+  if (isAdmin || canAccessAi) {
+    groups.push({
+      id: "ai-integrations",
+      title: "AI & Integrations",
+      description: "Connect AI providers, external issue trackers, and outgoing webhooks.",
+      items: [
+        {
+          title: "AI & Models",
+          shortTitle: "AI & Models",
+          description: "Configure AI provider keys (Gemini, Claude, OpenAI, Groq, DeepSeek).",
+          href: "/settings/ai",
+          icon: "robot",
+        },
+        {
+          title: "AI Usage & Tokens",
+          shortTitle: "AI Usage",
+          description: "Track AI calls and token consumption across features and models.",
+          href: "/settings/ai-usage",
+          icon: "chart-bar",
+        },
+        {
+          title: "Integrations",
+          shortTitle: "Integrations",
+          description: "Connect Jira, Trello, or Lark Base to sync defects and tasks.",
+          href: "/settings/integrations",
+          icon: "plugs-connected",
+        },
+        {
+          title: "Webhooks",
+          shortTitle: "Webhooks",
+          description: "Push real-time HTTP payloads to your endpoints when data changes.",
+          href: "/settings/webhooks",
+          icon: "webhooks",
+        },
+      ],
+    });
   }
 
   return groups;

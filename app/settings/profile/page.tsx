@@ -8,22 +8,23 @@ import { RestartTourButton } from"@/components/layout/restart-tour-button";
 export const dynamic ="force-dynamic";
 
 export default async function ProfilePage() {
- const user = await getCurrentUser();
+  const user = await getCurrentUser();
 
- if (!user) {
- redirect("/login");
- }
+  if (!user) {
+    redirect("/login");
+  }
 
- const { db } = await import("@/lib/db");
- const dbUser = await db.get<{ mfaEnabled: number }>(
-   'SELECT "mfaEnabled" FROM "User" WHERE "id" = CAST(? AS INTEGER)',
-   [user.id]
- );
+  const { db } = await import("@/lib/db");
+  const dbUser = await db.get<{ mfaEnabled: number; avatar: string | null }>(
+    'SELECT "mfaEnabled", "avatar" FROM "User" WHERE "id" = CAST(? AS INTEGER)',
+    [user.id]
+  );
 
- const userWithMfa = {
-   ...user,
-   mfaEnabled: Boolean(dbUser?.mfaEnabled),
- };
+  const userWithMfa = {
+    ...user,
+    avatar: dbUser?.avatar || (user as { avatar?: string }).avatar || "",
+    mfaEnabled: Boolean(dbUser?.mfaEnabled ?? (user as { mfaEnabled?: boolean }).mfaEnabled),
+  };
 
   const crumbs = [
     { label: "Dashboard", href: "/dashboard" },
@@ -31,53 +32,44 @@ export default async function ProfilePage() {
     { label: "Profile" },
   ];
 
- return (
- <PageShell 
- icon={<User size={22} weight="bold" />}
- title="My Profile" 
- description="View and update your personal information. Your email address is fixed for security."
- crumbs={crumbs}
- >
- <div className="w-full">
- <div className="glass-card overflow-hidden">
- {/* Header/Banner area */}
- <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-700 relative">
- <div className="absolute -bottom-10 left-8">
- <div className="h-20 w-20  bg-white border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
- <div className="h-full w-full bg-gray-50 flex items-center justify-center text-gray-400">
- <User size={40} weight="duotone" />
- </div>
- </div>
- </div>
- </div>
+  return (
+    <PageShell 
+      icon={<User size={22} weight="bold" />}
+      title="My Profile" 
+      description="View and update your personal information, avatar, password, and security preferences."
+      crumbs={crumbs}
+    >
+      <div className="w-full">
+        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">
+          <div className="p-6 sm:p-8">
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-slate-900">Account Details</h2>
+              <p className="text-xs text-slate-500">Manage your identity, profile picture, and credentials within the Aksora platform.</p>
+            </div>
 
- <div className="pt-14 p-8">
- <div className="mb-8">
- <h2 className="text-xl font-bold text-gray-900">Account Details</h2>
- <p className="text-sm text-gray-500">Manage your identity within the Aksora platform.</p>
- </div>
+            <ProfileForm user={JSON.parse(JSON.stringify(userWithMfa))} />
+            
+            <div className="mt-10 pt-6 border-t border-slate-100">
+              <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <ShieldCheck size={22} className="text-emerald-600 shrink-0 mt-0.5" weight="fill" />
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800">Security & Access Policy</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                    Your account is permanently linked to <strong>{user.email}</strong>. 
+                    Email modifications require administrator coordination to preserve engineering audit log integrity.
+                  </p>
+                </div>
+              </div>
+            </div>
 
- <ProfileForm user={JSON.parse(JSON.stringify(userWithMfa))} />
- 
- <div className="mt-12 pt-8 border-t border-gray-100">
- <div className="flex items-start gap-4 p-4  bg-gray-50 border border-gray-100">
- <ShieldCheck size={24} className="text-emerald-500 shrink-0" weight="fill" />
- <div>
- <h4 className="text-sm font-bold text-gray-800">Security & Access</h4>
- <p className="text-xs text-gray-500 leading-relaxed mt-1">
- Your account is linked to the <strong>{user.email}</strong> address. 
- Email updates are currently restricted to administrator-only actions to maintain audit log integrity.
- </p>
- </div>
- </div>
- </div>
-
- <RestartTourButton />
- </div>
- </div>
- </div>
- </PageShell>
- );
+            <div className="mt-6">
+              <RestartTourButton />
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageShell>
+  );
 }
 
 

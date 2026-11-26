@@ -56,8 +56,9 @@ export default async function SettingsPage() {
 
   const role = normalizeRole(user.role);
   const isAdmin = isManagementAdmin(user.role, user.company);
-  const canConfigureQa = isAdmin || role === "qa" || role === "fullstack" || role === "ai";
-  const settingsGroups = getSettingsGroups({ isAdmin, canConfigureQa });
+  const canConfigureQa = isAdmin || role === "qa" || role === "fullstack" || role === "ai" || role === "pm";
+  const canAccessAi = isAdmin || role === "pm" || role === "ai";
+  const settingsGroups = getSettingsGroups({ isAdmin, canConfigureQa, canAccessAi });
 
   return (
     <PageShell

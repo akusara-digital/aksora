@@ -16,8 +16,9 @@ export default async function SettingsLayout({
 
   const role = normalizeRole(user.role);
   const isAdmin = isManagementAdmin(user.role, user.company);
-  const canConfigureQa = isAdmin || role === "qa" || role === "fullstack" || role === "ai";
-  const groups = getSettingsGroups({ isAdmin, canConfigureQa });
+  const canConfigureQa = isAdmin || role === "qa" || role === "fullstack" || role === "ai" || role === "pm";
+  const canAccessAi = isAdmin || role === "pm" || role === "ai";
+  const groups = getSettingsGroups({ isAdmin, canConfigureQa, canAccessAi });
 
   return (
     <div className="flex flex-col lg:flex-row lg:items-start lg:gap-6">

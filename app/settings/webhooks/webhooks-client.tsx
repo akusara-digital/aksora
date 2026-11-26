@@ -31,8 +31,13 @@ const AVAILABLE_EVENTS = [
   { id: "task.updated", label: "Task updated" },
   { id: "bug.created", label: "Bug reported" },
   { id: "bug.updated", label: "Bug updated" },
-  { id: "sprint.created", label: "Sprint created" },
   { id: "testcase.created", label: "Test case created" },
+  { id: "testcase.updated", label: "Test case updated" },
+  { id: "testplan.created", label: "Test plan created" },
+  { id: "testplan.updated", label: "Test plan updated" },
+  { id: "testsuite.created", label: "Test suite created" },
+  { id: "sprint.created", label: "Sprint created" },
+  { id: "deployment.created", label: "Deployment logged" },
 ];
 
 export function WebhooksClient() {

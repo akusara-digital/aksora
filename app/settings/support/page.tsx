@@ -37,14 +37,11 @@ export default function SupportPage() {
 
   const load = useCallback(() => {
     fetch("/api/support-tickets")
-      .then((r) => {
-        if (r.status === 403) { router.push("/dashboard"); return null; }
-        return r.json();
-      })
+      .then((r) => r.json())
       .then((d) => { if (d?.data) setTickets(d.data); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [router]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 

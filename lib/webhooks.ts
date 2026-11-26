@@ -121,10 +121,21 @@ export async function deleteWebhook(userId: number, id: number) {
   return Boolean(deleted?.id);
 }
 
+function normalizeEventType(event: string): string {
+  const parts = event.toLowerCase().trim().split(".");
+  if (parts.length !== 2) return event.toLowerCase().trim();
+  let [entity, action] = parts;
+  entity = entity.replace(/-/g, "");
+  if (entity.endsWith("s")) entity = entity.slice(0, -1);
+  return `${entity}.${action}`;
+}
+
 function matchesEvent(subscribed: string, eventType: string): boolean {
   if (subscribed === "*") return true;
   const list = subscribed.split(",").map((e) => e.trim()).filter(Boolean);
-  return list.includes(eventType);
+  if (list.includes("*") || list.includes(eventType)) return true;
+  const normEvent = normalizeEventType(eventType);
+  return list.some((sub) => sub === normEvent || normalizeEventType(sub) === normEvent);
 }
 
 /**

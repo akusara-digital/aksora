@@ -6,11 +6,11 @@ import { createAdminNotification } from "@/lib/admin-notifications";
 
 export const dynamic = "force-dynamic";
 
-// Get tickets for the current company (admin only)
+// Get tickets for the current company (admins see all company tickets, members see their own)
 export async function GET() {
   const user = await getCurrentUser();
-  if (!user || !isWorkspaceAdmin(user.role)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const company = String(user.company || "").trim();
@@ -18,36 +18,59 @@ export async function GET() {
     return NextResponse.json({ data: [] });
   }
 
-  const tickets = await db.query<{
-    id: number;
-    subject: string;
-    message: string;
-    category: string;
-    status: string;
-    priority: string;
-    createdBy: string;
-    adminReply: string;
-    repliedAt: string | null;
-    closedAt: string | null;
-    createdAt: string;
-  }>(
-    `SELECT "id", "subject", "message", "category", "status", "priority",
-      "createdBy", "adminReply", "repliedAt", "closedAt", "createdAt"
-    FROM "SupportTicket"
-    WHERE "company" = ?
-    ORDER BY "createdAt" DESC
-    LIMIT 20`,
-    [company]
-  );
+  const isAdmin = isWorkspaceAdmin(user.role);
+  const tickets = isAdmin
+    ? await db.query<{
+        id: number;
+        subject: string;
+        message: string;
+        category: string;
+        status: string;
+        priority: string;
+        createdBy: string;
+        adminReply: string;
+        repliedAt: string | null;
+        closedAt: string | null;
+        createdAt: string;
+      }>(
+        `SELECT "id", "subject", "message", "category", "status", "priority",
+          "createdBy", "adminReply", "repliedAt", "closedAt", "createdAt"
+        FROM "SupportTicket"
+        WHERE "company" = ?
+        ORDER BY "createdAt" DESC
+        LIMIT 50`,
+        [company]
+      )
+    : await db.query<{
+        id: number;
+        subject: string;
+        message: string;
+        category: string;
+        status: string;
+        priority: string;
+        createdBy: string;
+        adminReply: string;
+        repliedAt: string | null;
+        closedAt: string | null;
+        createdAt: string;
+      }>(
+        `SELECT "id", "subject", "message", "category", "status", "priority",
+          "createdBy", "adminReply", "repliedAt", "closedAt", "createdAt"
+        FROM "SupportTicket"
+        WHERE "company" = ? AND ("createdBy" = ? OR "createdBy" = ?)
+        ORDER BY "createdAt" DESC
+        LIMIT 50`,
+        [company, user.name || "", user.email || ""]
+      );
 
   return NextResponse.json({ data: JSON.parse(JSON.stringify(tickets)) });
 }
 
-// Create a new ticket (admin only)
+// Create a new ticket (any workspace member can report issues or request support)
 export async function POST(request: NextRequest) {
   const user = await getCurrentUser();
-  if (!user || !isWorkspaceAdmin(user.role)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const company = String(user.company || "").trim();

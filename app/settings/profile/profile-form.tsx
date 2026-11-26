@@ -1,483 +1,381 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { EnvelopeSimple, Briefcase, User, CheckCircle, Warning, ShieldCheck, LockKey, QrCode, Copy, Check, Globe } from "@phosphor-icons/react";
+import React, { useEffect, useState, useRef } from "react";
+import { EnvelopeSimple, Briefcase, User, CheckCircle, Warning, Globe, Camera, Trash } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/toast";
 import { FormFieldError } from "@/components/shared/form-field-error";
 import { getRoleLabel } from "@/lib/roles";
 import { useTranslation } from "@/hooks/use-translation";
+import { ProfileTwoFactor } from "@/components/settings/profile-two-factor";
 
 interface UserProfile {
- id: number;
- name: string;
- email: string;
- role: string;
- locale?: string;
- mfaEnabled?: boolean;
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  locale?: string;
+  avatar?: string;
+  mfaEnabled?: boolean;
 }
 
 export function ProfileForm({ user }: { user: UserProfile }) {
- const [loading, setLoading] = useState(false);
- const router = useRouter();
- const { locale: currentLocale, setLocale } = useTranslation();
- const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
- const [mfaEnabled, setMfaEnabled] = useState(Boolean(user.mfaEnabled));
- const [mfaLoading, setMfaLoading] = useState(false);
- const [mfaSetupData, setMfaSetupData] = useState<{ secret: string; uri: string } | null>(null);
- const [mfaCode, setMfaCode] = useState("");
- const [showMfaModal, setShowMfaModal] = useState(false);
- const [showDisableModal, setShowDisableModal] = useState(false);
- const [disableMfaCode, setDisableMfaCode] = useState("");
- const handleInitiateMfa = async () => {
-   setMfaLoading(true);
-   try {
-     const res = await fetch("/api/settings/mfa", { method: "POST" });
-     const data = await res.json();
-     if (!res.ok) throw new Error(data.error || "Failed to initialize MFA");
-     setMfaSetupData(data);
-     setMfaCode("");
-     setShowMfaModal(true);
-   } catch (err: any) {
-     toast(err.message || "Failed to start 2FA setup", "error");
-   } finally {
-     setMfaLoading(false);
-   }
- };
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { locale: currentLocale, setLocale } = useTranslation();
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [avatar, setAvatar] = useState(user.avatar || "");
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
- const handleConfirmMfa = async (e: React.FormEvent) => {
-   e.preventDefault();
-   if (!mfaCode || mfaCode.length !== 6) {
-     toast("Please enter the 6-digit code from your authenticator app", "error");
-     return;
-   }
-   setMfaLoading(true);
-   try {
-     const res = await fetch("/api/settings/mfa", {
-       method: "PATCH",
-       headers: { "Content-Type": "application/json" },
-       body: JSON.stringify({ code: mfaCode }),
-     });
-     const data = await res.json();
-     if (!res.ok) throw new Error(data.error || "Invalid verification code");
-     setMfaEnabled(true);
-     setShowMfaModal(false);
-     setMfaSetupData(null);
-     toast("Two-factor authentication enabled successfully!", "success");
-     router.refresh();
-   } catch (err: any) {
-     toast(err.message || "Verification failed", "error");
-   } finally {
-     setMfaLoading(false);
-   }
- };
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
- const handleDisableMfa = async (e: React.FormEvent) => {
-   e.preventDefault();
-   if (!disableMfaCode || disableMfaCode.length !== 6) {
-     toast("Please enter your current 6-digit TOTP code to confirm", "error");
-     return;
-   }
-   setMfaLoading(true);
-   try {
-     const res = await fetch("/api/settings/mfa", {
-       method: "DELETE",
-       headers: { "Content-Type": "application/json" },
-       body: JSON.stringify({ code: disableMfaCode }),
-     });
-     const data = await res.json();
-     if (!res.ok) throw new Error(data.error || "Failed to disable 2FA");
-     setMfaEnabled(false);
-     setShowDisableModal(false);
-     setDisableMfaCode("");
-     toast("Two-factor authentication disabled", "info");
-     router.refresh();
-   } catch (err: any) {
-     toast(err.message || "Failed to disable 2FA", "error");
-   } finally {
-     setMfaLoading(false);
-   }
- };
- const [formData, setFormData] = useState({
- name: user.name ||"",
- role: user.role ||"",
- locale: (user.locale as "en" | "id") || currentLocale || "en",
- password:"",
- confirmPassword:"",
- });
+    if (!file.type.startsWith("image/")) {
+      toast("Please choose an image file (PNG or JPEG)", "error");
+      return;
+    }
 
- useEffect(() => {
- setFormData({
- name: user.name ||"",
- role: user.role ||"",
- locale: (user.locale as "en" | "id") || currentLocale || "en",
- password:"",
- confirmPassword:"",
- });
- }, [user.name, user.role, user.locale, currentLocale]);
+    setAvatarLoading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = async () => {
+          const canvas = document.createElement("canvas");
+          const size = 64;
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Could not initialize canvas");
 
- const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
 
- const nextErrors: Record<string, string> = {};
- if (!formData.name.trim()) nextErrors.name = "Name is required.";
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          const res = await fetch("/api/auth/avatar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ avatar: dataUrl }),
+          });
 
- if (formData.password && formData.password.length < 6) {
- nextErrors.password = "Password must be at least 6 characters.";
- }
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(json.error || "Failed to update profile picture");
 
- if (formData.password && formData.password !== formData.confirmPassword) {
- nextErrors.confirmPassword = "Passwords do not match.";
- }
+          setAvatar(dataUrl);
+          toast("Profile photo updated successfully", "success");
+          window.dispatchEvent(new Event("qa:profile-updated"));
+          router.refresh();
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to update photo", "error");
+    } finally {
+      setAvatarLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
- if (Object.keys(nextErrors).length > 0) {
- setFieldErrors(nextErrors);
- toast("Please fix the highlighted fields.","error");
- return;
- }
+  const handleAvatarDelete = async () => {
+    setAvatarLoading(true);
+    try {
+      const res = await fetch("/api/auth/avatar", { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to remove avatar");
+      setAvatar("");
+      toast("Profile photo removed", "info");
+      window.dispatchEvent(new Event("qa:profile-updated"));
+      router.refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to remove photo", "error");
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
 
- setFieldErrors({});
+  const [formData, setFormData] = useState({
+    name: user.name || "",
+    role: user.role || "",
+    locale: (user.locale as "en" | "id") || currentLocale || "en",
+    password: "",
+    confirmPassword: "",
+  });
 
- setLoading(true);
+  useEffect(() => {
+    setFormData({
+      name: user.name || "",
+      role: user.role || "",
+      locale: (user.locale as "en" | "id") || currentLocale || "en",
+      password: "",
+      confirmPassword: "",
+    });
+  }, [user, currentLocale]);
 
- try {
- const res = await fetch("/api/auth/profile", {
- method:"PATCH",
- headers: {"Content-Type":"application/json" },
- body: JSON.stringify({
- name: formData.name,
- role: formData.role,
- locale: formData.locale,
- password: formData.password || undefined,
- }),
- });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const nextErrors: Record<string, string> = {};
 
- const data = await res.json();
+    if (!formData.name.trim()) {
+      nextErrors.name = "Full name is required";
+    }
 
- if (res.ok) {
- setLocale(formData.locale as "en" | "id");
- toast("Profile updated successfully","success");
- window.dispatchEvent(new Event("qa:profile-updated"));
- router.refresh();
- } else {
- toast(data.error ||"Failed to update profile","error");
- }
- } catch {
- toast("An error occurred. Please try again.","error");
- } finally {
- setLoading(false);
- }
- };
+    if (formData.password && formData.password.length < 8) {
+      nextErrors.password = "Password must be at least 8 characters";
+    }
+
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      nextErrors.confirmPassword = "Passwords do not match";
+    }
+
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      const firstError = Object.values(nextErrors)[0];
+      toast(firstError, "error");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/settings/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || "Failed to update profile");
+      }
+
+      setLocale(formData.locale);
+      setFieldErrors({});
+      toast("Profile updated successfully!", "success");
+      setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }));
+      router.refresh();
+    } catch (err: unknown) {
+      toast(err instanceof Error ? err.message : "An error occurred", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-  <form noValidate onSubmit={handleSubmit} className="space-y-8">
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
- {/* Name Field */}
- <div className="space-y-2">
- <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
- <User size={12} weight="bold" /> Full Name
- </label>
-  <input
-  type="text"
-  value={formData.name}
-  onChange={(e) => {
-  setFormData({ ...formData, name: e.target.value });
-  setFieldErrors((current) => {
-  const next = { ...current };
-  delete next.name;
-  return next;
-  });
-  }}
-  className="w-full h-11 px-4  bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
-  placeholder="e.g. John Doe"
-  />
-  <FormFieldError message={fieldErrors.name} />
- </div>
+    <form noValidate onSubmit={handleSubmit} className="space-y-8">
+      {/* Avatar Picture Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-5 p-4 rounded-xl border border-slate-200/80 bg-slate-50/60">
+        <div className="relative h-16 w-16 shrink-0 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-200 flex items-center justify-center">
+          {avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatar} alt={user.name || "User Avatar"} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-blue-600 text-white font-black text-lg">
+              {(user.name || user.email || "U").charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
 
- {/* Role Field */}
- <div className="space-y-2">
- <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
- <Briefcase size={12} weight="bold" /> Role / Title
- </label>
- <input
- type="text"
- value={getRoleLabel(formData.role)}
- readOnly
- className="w-full h-11 px-4  bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
- placeholder="Role"
- />
- </div>
+        <div className="flex-1 min-w-0">
+          <h4 className="text-xs font-bold text-slate-900">Profile Photo</h4>
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            PNG, JPEG, or WebP. Auto-compressed and displayed across assignments, comments, and navbar.
+          </p>
 
- {/* Email (Read-only as per request) */}
- <div className="space-y-2">
- <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
- <EnvelopeSimple size={12} weight="bold" /> Email Address
- </label>
- <div className="w-full h-11 px-4  bg-gray-100 border border-gray-200 flex items-center text-sm font-bold text-gray-500 opacity-70 cursor-not-allowed justify-between">
- {user.email ||"No email linked"}
- <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-gray-200 text-[8px] font-bold uppercase tracking-wider text-gray-500">
- <Warning size={10} weight="bold" /> Locked
- </div>
- </div>
- </div>
+          <div className="flex items-center gap-2 mt-2.5">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="sr-only"
+              onChange={handleAvatarUpload}
+              disabled={avatarLoading}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={avatarLoading}
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-xs disabled:opacity-50"
+            >
+              <Camera size={13} weight="bold" />
+              <span>{avatarLoading ? "Uploading..." : avatar ? "Change Photo" : "Upload Photo"}</span>
+            </button>
 
- {/* Language Preference */}
- <div className="space-y-2">
- <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
- <Globe size={12} weight="bold" /> Language Preference
- </label>
- <select
- value={formData.locale}
- onChange={(e) => setFormData({ ...formData, locale: e.target.value as "en" | "id" })}
- className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
- >
- <option value="en">English (US)</option>
- <option value="id">Bahasa Indonesia (ID)</option>
- </select>
- </div>
- </div>
+            {avatar && (
+              <button
+                type="button"
+                onClick={handleAvatarDelete}
+                disabled={avatarLoading}
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-xs font-semibold transition disabled:opacity-50"
+              >
+                <Trash size={13} weight="bold" />
+                <span>Remove</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
- <div className="pt-8 border-t border-gray-100">
- <div className="mb-6">
- <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
- <CheckCircle size={16} className="text-blue-500" weight="bold" /> Security Update
- </h3>
-<p className="text-xs text-gray-500 mt-1">Leave password fields empty if you don&apos;t want to change it.</p>
- </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Name Field */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
+            <User size={14} weight="bold" />
+            Full Name
+          </label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => {
+              setFormData({ ...formData, name: e.target.value });
+              setFieldErrors((current) => {
+                const next = { ...current };
+                delete next.name;
+                return next;
+              });
+            }}
+            className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
+            placeholder="John Doe"
+          />
+          <FormFieldError message={fieldErrors.name} />
+        </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
- <div className="space-y-2">
- <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400">New Password</label>
-  <input
-  type="password"
-  value={formData.password}
-  onChange={(e) => {
-  setFormData({ ...formData, password: e.target.value });
-  setFieldErrors((current) => {
-  const next = { ...current };
-  delete next.password;
-  delete next.confirmPassword;
-  return next;
-  });
-  }}
-  className="w-full h-11 px-4  bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
-  placeholder="••••••••"
-  />
-  <FormFieldError message={fieldErrors.password} />
- </div>
- <div className="space-y-2">
- <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Confirm New Password</label>
-  <input
-  type="password"
-  value={formData.confirmPassword}
-  onChange={(e) => {
-  setFormData({ ...formData, confirmPassword: e.target.value });
-  setFieldErrors((current) => {
-  const next = { ...current };
-  delete next.confirmPassword;
-  return next;
-  });
-  }}
-  className="w-full h-11 px-4  bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
-  placeholder="••••••••"
-  />
-  <FormFieldError message={fieldErrors.confirmPassword} />
- </div>
- </div>
- </div>
+        {/* Email Field (Disabled) */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
+            <EnvelopeSimple size={14} weight="bold" />
+            Email Address
+          </label>
+          <div className="relative">
+            <input
+              type="email"
+              disabled
+              value={user.email}
+              className="w-full h-11 px-4 bg-gray-100 border border-gray-200 text-gray-400 font-bold text-sm cursor-not-allowed select-none"
+            />
+            <div className="absolute right-3 top-3 text-emerald-500 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-50 px-2 py-0.5 border border-emerald-200">
+              <CheckCircle size={12} weight="bold" /> Verified
+            </div>
+          </div>
+          <p className="text-[11px] text-gray-500 font-medium">Email address is managed by your organization</p>
+        </div>
 
-     <div className="pt-4 flex items-center justify-between">
-       <button
-         type="submit"
-         disabled={loading}
-         className="h-11 px-8 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-xs font-bold uppercase tracking-widest shadow-lg shadow-blue-500/20 transition flex items-center gap-2 rounded-lg"
-       >
-         {loading ? "Updating..." : "Save Changes"}
-       </button>
-     </div>
+        {/* Role Field (Read-only) */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
+            <Briefcase size={14} weight="bold" />
+            Workspace Role
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              disabled
+              value={getRoleLabel(user.role)}
+              className="w-full h-11 px-4 bg-gray-100 border border-gray-200 text-gray-500 font-bold text-sm cursor-not-allowed select-none"
+            />
+            <div className="absolute right-3 top-3 text-gray-400 text-[10px] font-bold uppercase tracking-wider bg-gray-200 px-2 py-0.5">
+              Fixed
+            </div>
+          </div>
+          <p className="text-[11px] text-gray-500 font-medium">Role assignment can only be changed by an administrator</p>
+        </div>
+      </div>
 
-     {/* Two-Factor Authentication Section */}
-     <div className="pt-8 border-t border-gray-100">
-       <div className="flex items-center justify-between mb-4">
-         <div>
-           <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-             <ShieldCheck size={16} className={mfaEnabled ? "text-emerald-500" : "text-gray-400"} weight="bold" />
-             Two-Factor Authentication (2FA / TOTP)
-           </h3>
-           <p className="text-xs text-gray-500 mt-1">
-             Protect your account by requiring a 6-digit TOTP code from Google Authenticator, 1Password, or Authy on login.
-           </p>
-         </div>
-         {mfaEnabled ? (
-           <span className="px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center gap-1.5">
-             <Check size={12} weight="bold" /> Active
-           </span>
-         ) : (
-           <span className="px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-semibold">
-             Disabled
-           </span>
-         )}
-       </div>
+      {/* Language / Locale Preference */}
+      <div className="pt-4 border-t border-gray-100">
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+          <Globe size={16} weight="bold" />
+          Language & Regional Settings
+        </h3>
+        <p className="text-xs text-gray-500 mb-4">
+          Choose your preferred display language for the Aksora workspace interface.
+        </p>
 
-       <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-         <div className="flex items-center gap-3.5">
-           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${mfaEnabled ? "bg-emerald-100 text-emerald-600" : "bg-slate-200 text-slate-600"}`}>
-             <LockKey size={20} weight="bold" />
-           </div>
-           <div>
-             <p className="text-xs font-bold text-slate-900">
-               {mfaEnabled ? "Authenticator App Configured" : "Authenticator App"}
-             </p>
-             <p className="text-[11px] text-slate-500">
-               {mfaEnabled ? "Your account requires 6-digit code verification on sign-in." : "Use an app on your phone or browser to generate time-based codes."}
-             </p>
-           </div>
-         </div>
+        <div className="max-w-xs space-y-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block">
+            Interface Language
+          </label>
+          <select
+            value={formData.locale}
+            onChange={(e) => setFormData({ ...formData, locale: e.target.value as "en" | "id" })}
+            className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
+          >
+            <option value="en">English (US)</option>
+            <option value="id">Bahasa Indonesia</option>
+          </select>
+          <p className="text-[11px] text-gray-500">Changes apply immediately across navigation, forms, and alerts.</p>
+        </div>
+      </div>
 
-         {mfaEnabled ? (
-           <button
-             type="button"
-             onClick={() => setShowDisableModal(true)}
-             className="px-4 py-2 bg-white hover:bg-rose-50 border border-rose-200 text-rose-600 hover:text-rose-700 text-xs font-semibold rounded-lg transition"
-           >
-             Disable 2FA
-           </button>
-         ) : (
-           <button
-             type="button"
-             onClick={handleInitiateMfa}
-             disabled={mfaLoading}
-             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition shadow-sm disabled:opacity-50 flex items-center gap-1.5"
-           >
-             <QrCode size={14} weight="bold" />
-             <span>{mfaLoading ? "Loading..." : "Set Up 2FA"}</span>
-           </button>
-         )}
-       </div>
-     </div>
+      {/* Password Change Section */}
+      <div className="pt-8 border-t border-gray-100">
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Security & Password</h3>
+        <p className="text-xs text-gray-500 mb-6">Leave blank if you don&apos;t want to change your password</p>
 
-     {/* Enable MFA Modal */}
-     {showMfaModal && mfaSetupData && (
-       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
-         <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 text-slate-900 animate-in fade-in zoom-in-95">
-           <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-             <div className="flex items-center gap-2">
-               <ShieldCheck size={20} weight="bold" className="text-blue-600" />
-               <h3 className="text-sm font-bold text-slate-900">Set Up Two-Factor Authentication</h3>
-             </div>
-             <button
-               type="button"
-               onClick={() => setShowMfaModal(false)}
-               className="text-slate-400 hover:text-slate-700 text-sm font-bold"
-             >
-               ✕
-             </button>
-           </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+              New Password
+            </label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) => {
+                setFormData({ ...formData, password: e.target.value });
+                setFieldErrors((current) => {
+                  const next = { ...current };
+                  delete next.password;
+                  return next;
+                });
+              }}
+              className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
+              placeholder="••••••••"
+            />
+            <FormFieldError message={fieldErrors.password} />
+            <div className="flex items-center gap-1.5 text-gray-500 text-[11px] font-medium pt-1">
+              <Warning size={12} weight="bold" />
+              Must be at least 8 characters
+            </div>
+          </div>
 
-           <div className="space-y-4">
-             <p className="text-xs text-slate-600 leading-relaxed">
-               1. Scan the QR code or manually enter the key into your authenticator app (Google Authenticator, 1Password, Authy):
-             </p>
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              value={formData.confirmPassword}
+              onChange={(e) => {
+                setFormData({ ...formData, confirmPassword: e.target.value });
+                setFieldErrors((current) => {
+                  const next = { ...current };
+                  delete next.confirmPassword;
+                  return next;
+                });
+              }}
+              className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
+              placeholder="••••••••"
+            />
+            <FormFieldError message={fieldErrors.confirmPassword} />
+          </div>
+        </div>
+      </div>
 
-             {/* Plain QR Code Rendering using QR API fallback or URI string */}
-             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center">
-               {/* eslint-disable-next-line @next/next/no-img-element */}
-               <img
-                 src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(mfaSetupData.uri)}`}
-                 alt="2FA QR Code"
-                 className="w-40 h-40 rounded-lg border border-slate-200 bg-white p-1"
-               />
-               <div className="mt-3 w-full">
-                 <div className="flex items-center justify-between text-[10px] text-slate-500 font-semibold mb-1">
-                   <span>Secret Key (Manual Entry):</span>
-                   <button
-                     type="button"
-                     onClick={() => {
-                       navigator.clipboard.writeText(mfaSetupData.secret);
-                       toast("Secret key copied", "success");
-                     }}
-                     className="text-blue-600 hover:underline flex items-center gap-0.5"
-                   >
-                     <Copy size={10} weight="bold" /> Copy
-                   </button>
-                 </div>
-                 <div className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-mono text-xs text-center font-bold text-slate-800 tracking-wider select-all">
-                   {mfaSetupData.secret}
-                 </div>
-               </div>
-             </div>
+      <div className="pt-4 flex items-center justify-between">
+        <button
+          type="submit"
+          disabled={loading}
+          className="h-11 px-8 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-xs font-bold uppercase tracking-widest shadow-lg shadow-blue-500/20 transition flex items-center gap-2 rounded-lg"
+        >
+          {loading ? "Updating..." : "Save Changes"}
+        </button>
+      </div>
 
-             <form onSubmit={handleConfirmMfa} className="space-y-3 pt-2">
-               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">
-                 2. Enter the 6-digit code to verify:
-               </label>
-               <input
-                 type="text"
-                 maxLength={6}
-                 value={mfaCode}
-                 onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
-                 placeholder="000000"
-                 className="w-full h-11 text-center font-mono text-lg font-bold tracking-widest bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none"
-               />
-               <div className="flex items-center justify-end gap-2 pt-2">
-                 <button
-                   type="button"
-                   onClick={() => setShowMfaModal(false)}
-                   className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
-                 >
-                   Cancel
-                 </button>
-                 <button
-                   type="submit"
-                   disabled={mfaLoading || mfaCode.length !== 6}
-                   className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50"
-                 >
-                   {mfaLoading ? "Verifying..." : "Verify & Enable"}
-                 </button>
-               </div>
-             </form>
-           </div>
-         </div>
-       </div>
-     )}
-
-     {/* Disable MFA Modal */}
-     {showDisableModal && (
-       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
-         <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 text-slate-900">
-           <h3 className="text-sm font-bold text-slate-900 mb-2">Disable Two-Factor Authentication</h3>
-           <p className="text-xs text-slate-500 mb-4">
-             Enter your current 6-digit authenticator code to confirm turning off 2FA.
-           </p>
-           <form onSubmit={handleDisableMfa} className="space-y-3">
-             <input
-               type="text"
-               maxLength={6}
-               value={disableMfaCode}
-               onChange={(e) => setDisableMfaCode(e.target.value.replace(/\D/g, ""))}
-               placeholder="000000"
-               className="w-full h-11 text-center font-mono text-lg font-bold tracking-widest bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 focus:outline-none"
-             />
-             <div className="flex items-center justify-end gap-2 pt-2">
-               <button
-                 type="button"
-                 onClick={() => setShowDisableModal(false)}
-                 className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
-               >
-                 Cancel
-               </button>
-               <button
-                 type="submit"
-                 disabled={mfaLoading || disableMfaCode.length !== 6}
-                 className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50"
-               >
-                 {mfaLoading ? "Disabling..." : "Confirm Disable"}
-               </button>
-             </div>
-           </form>
-         </div>
-       </div>
-     )}
-   </form>
- );
+      {/* Two-Factor Authentication Section Isolated in ProfileTwoFactor */}
+      <ProfileTwoFactor initialMfaEnabled={Boolean(user.mfaEnabled)} />
+    </form>
+  );
 }
