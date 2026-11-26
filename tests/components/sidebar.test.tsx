@@ -58,6 +58,8 @@ vi.mock("@/hooks/use-translation", () => ({
         passwordManager: "Password Manager",
         aiSettings: "AI & Models",
         support: "Support",
+        sisterApps: "Try Other Apps",
+        bugsnap: "BugSnap (Screen Recorder)",
         collapse: "Collapse",
         expand: "Expand",
       },

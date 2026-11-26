@@ -161,11 +161,16 @@ export function Sidebar({
           <div className="mt-auto border-t border-slate-200 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {/* Sister App (BugSnap) */}
             <div className="pb-1.5 mb-1.5 border-b border-slate-200">
+              {!collapsed && (
+                <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400 select-none">
+                  {t.sidebar?.sisterApps || "Try Other Apps"}
+                </div>
+              )}
               <a
                 href={bugsnapHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                onMouseEnter={(e) => showTooltip(e, t.sidebar.bugsnap)}
+                onMouseEnter={(e) => showTooltip(e, t.sidebar?.bugsnap || "BugSnap (Screen Recorder)")}
                 onMouseLeave={hideTooltip}
                 className={cn(
                   "flex h-8 cursor-pointer items-center text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors rounded-md group",
@@ -175,7 +180,7 @@ export function Sidebar({
                 <span className="flex items-center gap-2">
                   <BugSnapIcon size={16} />
                   <span className={cn("overflow-hidden whitespace-nowrap transition-all duration-150", collapsed ? "opacity-0 w-0" : "opacity-100 w-auto")}>
-                    {t.sidebar.bugsnap}
+                    {t.sidebar?.bugsnap || "BugSnap (Screen Recorder)"}
                   </span>
                 </span>
                 {!collapsed && <ArrowSquareOut size={12} className="text-slate-400 group-hover:text-slate-700" />}

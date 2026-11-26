@@ -67,7 +67,7 @@ const dict = {
     aiSettings: "AI & Models",
     apiKeys: "API Keys",
     support: "Support",
-    sisterApps: "Explore Our Apps",
+    sisterApps: "Try Other Apps",
     bugsnap: "BugSnap (Screen Recorder)",
     snaptest: "SnapTest (AI QA Automation)",
     collapse: "Collapse sidebar",
