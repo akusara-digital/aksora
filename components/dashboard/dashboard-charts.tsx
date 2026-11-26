@@ -44,7 +44,7 @@ export type ResultBreakdownData = {
   notRun: { count: number; percent: number };
 };
 
-// ─── 1. Left Card: Reports (Curved Area Chart) ──────────────────────────────────
+// 1. Left Card: Reports (Curved Area Chart)
 export function TestExecutionTrendChart({ data }: { data: ExecutionTrendPoint[] }) {
   const [metricKey, setMetricKey] = useState<"passed" | "total">("passed");
   const { theme } = useTheme();
@@ -169,7 +169,7 @@ export function TestExecutionTrendChart({ data }: { data: ExecutionTrendPoint[] 
   );
 }
 
-// ─── 2. Right Card: Analytics (Donut Chart) ─────────────────────────────────────
+// 2. Right Card: Analytics (Donut Chart)
 export function TestCaseBreakdownChart({ data }: { data: ResultBreakdownData }) {
   const sum = data.passed.count + data.notRun.count + (data.failed.count + data.blocked.count);
   const passRate = sum > 0 ? Math.round((data.passed.count / sum) * 100) : 0;

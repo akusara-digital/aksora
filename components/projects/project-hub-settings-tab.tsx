@@ -122,7 +122,7 @@ export function ProjectHubSettingsTab({
 
   return (
     <div className="max-w-3xl space-y-6">
-      {/* ── Project Details Card ── */}
+      {/* Project Details Card */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
         <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
           General Information
@@ -187,7 +187,7 @@ export function ProjectHubSettingsTab({
         </form>
       </div>
 
-      {/* ── Lifecycle Card ── */}
+      {/* Lifecycle Card */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
         <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
           Lifecycle & Status
@@ -223,7 +223,7 @@ export function ProjectHubSettingsTab({
         </div>
       </div>
 
-      {/* ── Danger Zone Card ── */}
+      {/* Danger Zone Card */}
       <div className="rounded-xl border border-rose-200 bg-rose-50/30 p-5 shadow-xs">
         <h3 className="text-sm font-bold text-rose-800 border-b border-rose-100 pb-3">
           Danger Zone

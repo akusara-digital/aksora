@@ -289,7 +289,7 @@ export function TestCaseSuiteHeader({
         )}
       </div>
 
-      {/* ── Edit / Rename Suite Modal ── */}
+      {/* Edit / Rename Suite Modal */}
       <ModalShell
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -359,7 +359,7 @@ export function TestCaseSuiteHeader({
         </form>
       </ModalShell>
 
-      {/* ── Delete Suite Confirmation ── */}
+      {/* Delete Suite Confirmation */}
       <ConfirmModal
         isOpen={showDeleteModal}
         title={`Delete Test Suite: ${selected.suiteTitle}`}

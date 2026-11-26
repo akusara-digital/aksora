@@ -218,7 +218,7 @@ export function NotificationPreferences() {
 
   return (
     <div className="space-y-8">
-      {/* ─── Personal Bot Configuration (Telegram & Discord) ────────────────── */}
+      {/* Personal Bot Configuration (Telegram & Discord) */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -372,7 +372,7 @@ export function NotificationPreferences() {
         </div>
       </div>
 
-      {/* ─── Realtime Event Toggles ────────────────────────────────────────── */}
+      {/* Realtime Event Toggles */}
       <div className="space-y-4">
         <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
           Realtime Notification Triggers
@@ -389,7 +389,7 @@ export function NotificationPreferences() {
         </div>
       </div>
 
-      {/* ─── Digest Summary ───────────────────────────────────────────────── */}
+      {/* Digest Summary */}
       <div className="space-y-4">
         <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
           Daily Summary & Digest

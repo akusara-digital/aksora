@@ -25,7 +25,7 @@ export function ProjectHubTestsTab({
 }: ProjectHubTestsTabProps) {
   return (
     <div className="space-y-6">
-      {/* ── Test Plans Section ── */}
+      {/* Test Plans Section */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div className="flex items-center gap-2">
@@ -110,7 +110,7 @@ export function ProjectHubTestsTab({
         )}
       </div>
 
-      {/* ── Test Suites Section ── */}
+      {/* Test Suites Section */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div className="flex items-center gap-2">

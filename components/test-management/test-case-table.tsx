@@ -106,7 +106,7 @@ export function compareSuiteGroups(a: SuiteGroup, b: SuiteGroup) {
   return compareTestCases(aCase, bCase) || a.suiteTitle.localeCompare(b.suiteTitle);
 }
 
-/* ─── QA Spreadsheet Test Case Table ─── */
+/* QA Spreadsheet Test Case Table */
 export function TestCaseTable({
   displayCases,
   suiteAssignee,

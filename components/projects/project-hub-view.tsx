@@ -99,7 +99,7 @@ export function ProjectHubView({
 
   return (
     <div className="space-y-6">
-      {/* ── Header Section ── */}
+      {/* Header Section */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1">
@@ -166,7 +166,7 @@ export function ProjectHubView({
         </div>
       </div>
 
-      {/* ── Interactive Navigation Tabs ── */}
+      {/* Interactive Navigation Tabs */}
       <div className="flex items-center gap-1 border-b border-slate-200 overflow-x-auto no-scrollbar">
         <button
           type="button"
@@ -243,7 +243,7 @@ export function ProjectHubView({
         </button>
       </div>
 
-      {/* ── Tab Content Views ── */}
+      {/* Tab Content Views */}
       <div>
         {activeTab === "overview" && (
           <ProjectHubOverviewTab
@@ -292,7 +292,7 @@ export function ProjectHubView({
         )}
       </div>
 
-      {/* ── Quick Task Modal ── */}
+      {/* Quick Task Modal */}
       <QuickTaskModal
         isOpen={taskModalOpen}
         onClose={() => setTaskModalOpen(false)}
@@ -300,21 +300,21 @@ export function ProjectHubView({
         members={members}
       />
 
-      {/* ── Quick Bug Modal ── */}
+      {/* Quick Bug Modal */}
       <QuickBugModal
         isOpen={bugModalOpen}
         onClose={() => setBugModalOpen(false)}
         defaultProject={project.name}
       />
 
-      {/* ── Project Members Modal ── */}
+      {/* Project Members Modal */}
       <ProjectMembersModal
         project={project}
         isOpen={membersModalOpen}
         onClose={() => setMembersModalOpen(false)}
       />
 
-      {/* ── Quick Edit Project Modal ── */}
+      {/* Quick Edit Project Modal */}
       <QuickEditProjectModal
         project={project}
         isOpen={editProjectModalOpen}

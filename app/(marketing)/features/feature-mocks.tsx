@@ -1,4 +1,4 @@
-// ─── Mock UI Components for Feature Page ─────────────────────────────────────
+// Mock UI Components for Feature Page
 
 export function MockTestPlan() {
   return (

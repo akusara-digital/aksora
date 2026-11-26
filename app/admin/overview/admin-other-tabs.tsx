@@ -10,7 +10,7 @@ import { formatDate, formatDateTime } from "./admin-utils";
 type Announcement = { id: number; title: string; message: string; type: string; targetCompany: string; active: number; createdBy: string; expiresAt: string | null; createdAt: string };
 type AuditEntry = { id: number; actor: string; action: string; target: string; detail: string; createdAt: string };
 
-// ─── Announcements Tab ───────────────────────────────────────────────────────
+// Announcements Tab
 export function AnnouncementsTab() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +83,7 @@ export function AnnouncementsTab() {
   );
 }
 
-// ─── Tickets Tab ─────────────────────────────────────────────────────────────
+// Tickets Tab
 export function TicketsTab() {
   type Ticket = {
     id: number;
@@ -182,7 +182,7 @@ export function TicketsTab() {
   );
 }
 
-// ─── Audit Log Tab ───────────────────────────────────────────────────────────
+// Audit Log Tab
 export function AuditLogTab() {
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -248,7 +248,7 @@ export function AuditLogTab() {
   );
 }
 
-// ─── A/B Test Tab ────────────────────────────────────────────────────────────
+// A/B Test Tab
 export function AbTestTab() {
   type AbRow = { variant: string; eventType: string; count: number };
   const [rows, setRows] = useState<AbRow[]>([]);
@@ -287,7 +287,7 @@ export function AbTestTab() {
   );
 }
 
-// ─── Abuse Signals Tab ───────────────────────────────────────────────────────
+// Abuse Signals Tab
 type AbuseRow = { key: string; attempts: number; firstAttempt: string; lockedUntil: string | null };
 
 export function AbuseTab() {
@@ -328,7 +328,7 @@ export function AbuseTab() {
   );
 }
 
-// ─── Email Log Tab ───────────────────────────────────────────────────────────
+// Email Log Tab
 type EmailEvent = { id: number; email: string; type: string; subject: string; createdAt: string };
 
 export function EmailLogTab() {

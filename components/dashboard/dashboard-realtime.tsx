@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "@/components/ui/toast";
 import { Bell } from "@phosphor-icons/react";
 
-// ── Types ──────────────────────────────────────────────────────────────────
 
 type ConnectionState = "connected" | "reconnecting" | "disconnected";
 
@@ -16,7 +15,7 @@ interface SSENotification {
   createdAt: string;
 }
 
-// ── Constants ──────────────────────────────────────────────────────────────
+// Constants
 
 const BACKOFF_BASE = 15000;
 const BACKOFF_MAX = 120000;
@@ -28,7 +27,7 @@ function getBackoffDelay(attempt: number): number {
   return Math.floor(base * (0.8 + Math.random() * 0.4));
 }
 
-// ── Component ──────────────────────────────────────────────────────────────
+// Component
 
 /**
  * DashboardRealtime - SSE client for real-time dashboard updates.

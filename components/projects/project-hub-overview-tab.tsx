@@ -97,7 +97,7 @@ export function ProjectHubOverviewTab({
 
   return (
     <div className="space-y-6">
-      {/* ── 4 KPI Metric Cards ── */}
+      {/* 4 KPI Metric Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Tasks */}
         <div
@@ -200,7 +200,7 @@ export function ProjectHubOverviewTab({
         </div>
       </div>
 
-      {/* ── Two Column Grid: Recent Tasks & Recent Bugs ── */}
+      {/* Two Column Grid: Recent Tasks & Recent Bugs */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Tasks Card */}
         <div className="rounded-xl border border-slate-200 bg-white shadow-xs">
@@ -353,7 +353,7 @@ export function ProjectHubOverviewTab({
         </div>
       </div>
 
-      {/* ── Test Plans Summary Section ── */}
+      {/* Test Plans Summary Section */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">

@@ -80,7 +80,7 @@ export const logger = {
   },
 };
 
-// --- Legacy exports (used by existing API routes) ---
+// Legacy exports (used by existing API routes)
 
 // Substrings that only ever show up in raw driver/database error text, never
 // in an app-authored `throw new Error("...")` validation message. If any of

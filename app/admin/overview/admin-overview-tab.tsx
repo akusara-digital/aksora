@@ -190,7 +190,7 @@ export function OverviewTab() {
   );
 }
 
-// ─── Company Card ────────────────────────────────────────────────────────────
+// Company Card
 function CompanyCard({ company, expanded, onToggle, onAction, actionLoading }: {
   company: CompanyDetail; expanded: boolean; onToggle: () => void;
   onAction: (action: string, companyId: number, value?: string | number) => void; actionLoading: string | null;

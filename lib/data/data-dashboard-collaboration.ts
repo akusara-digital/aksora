@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/data-helpers";
 
-// --- Dashboard Comments (Phase 4) ---
+// Dashboard Comments (Phase 4)
 
 export interface DashboardCommentRow {
   id: number;
@@ -92,7 +92,7 @@ export async function createComment(
 }
 
 
-// ─── Presence Heartbeat Functions (Phase 4) ─────────────────────────────────
+// Presence Heartbeat Functions (Phase 4)
 
 /**
  * Upsert a presence heartbeat for a user.
@@ -147,7 +147,7 @@ export async function removeStalePresence(): Promise<void> {
 }
 
 
-// ─── Dashboard Saved Filters (Phase 5) ──────────────────────────────────────
+// Dashboard Saved Filters (Phase 5)
 
 export interface DashboardFilterRow {
   id: number;

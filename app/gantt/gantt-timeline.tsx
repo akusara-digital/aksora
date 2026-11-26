@@ -137,7 +137,7 @@ export function GanttTimeline({
 
   return (
     <div className="relative overflow-hidden flex flex-col">
-      {/* ── sticky header ── */}
+      {/* sticky header */}
       <div className="flex border-b-2 border-gray-200 bg-gray-50 sticky top-0 z-20 shadow-sm">
         <div className="shrink-0 flex items-end px-4 pb-2 pt-3 border-r-2 border-gray-200" style={{ width: LABEL_W }}>
           <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Item</span>
@@ -191,7 +191,6 @@ export function GanttTimeline({
         </div>
       </div>
 
-      {/* ── body ── */}
       <div ref={rowAreaRef} className="flex relative" style={{ height: renderedRowHeight }}>
         {/* Fixed label column */}
         <div className="relative shrink-0 border-r-2 border-gray-200 bg-white z-10" style={{ width: LABEL_W, height: renderedRowHeight }}>
@@ -497,7 +496,7 @@ export function GanttTimeline({
         </div>
       </div>
 
-      {/* ── legend ── */}
+      {/* legend */}
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 px-4 py-3 border-t-2 border-gray-100 bg-gray-50/80">
         <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
           <div className="h-3.5 w-0.5  bg-sky-500/60 shrink-0" /> Today

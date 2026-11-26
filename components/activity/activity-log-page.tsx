@@ -25,7 +25,6 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ModulePagination } from "@/components/module/module-pagination";
 import { AppLoader } from "@/components/shared/app-loader";
 
-// ── Types ──────────────────────────────────────────────────────────────────
 
 interface ActivityEntry {
   id: number;
@@ -53,7 +52,7 @@ interface ActivityFeedResponse {
   collapsed: CollapsedGroup[];
 }
 
-// ── Entity Icon Map ────────────────────────────────────────────────────────
+// Entity Icon Map
 
 const ENTITY_ICON: Record<string, React.ReactNode> = {
   Task: <Kanban size={14} weight="bold" className="text-blue-500" />,
@@ -68,7 +67,7 @@ const ENTITY_TYPES = ["All", "Task", "Bug", "TestCase", "TestSuite", "Session", 
 
 const PAGE_SIZE = 10;
 
-// ── Main Component ─────────────────────────────────────────────────────────
+// Main Component
 
 export function ActivityLogPage() {
   const [scope, setScope] = useState<"my" | "team">("team");
@@ -224,7 +223,7 @@ export function ActivityLogPage() {
   );
 }
 
-// ── Sub-Components ─────────────────────────────────────────────────────────
+// Sub-Components
 
 function LoadingState() {
   return <AppLoader message="Loading activity..." />;
@@ -333,7 +332,7 @@ function ActionBadge({ action }: { action: string }) {
   );
 }
 
-// ── Utilities ──────────────────────────────────────────────────────────────
+// Utilities
 
 function getEntityModulePath(entityType: string): string {
   switch (entityType) {

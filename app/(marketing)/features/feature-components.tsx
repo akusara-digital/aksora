@@ -1,6 +1,6 @@
 import { Checks, X } from "@phosphor-icons/react/dist/ssr";
 
-// ─── Feature Row with Mock UI ────────────────────────────────────────────────
+// Feature Row with Mock UI
 export function FeatureRow({ number, icon, color, bg, title, desc, bullets, mockUI, reverse }: {
   number: string; icon: React.ReactNode; color: string; bg: string; title: string; desc: string; bullets: string[]; mockUI: React.ReactNode; reverse?: boolean;
 }) {
@@ -31,7 +31,7 @@ export function FeatureRow({ number, icon, color, bg, title, desc, bullets, mock
   );
 }
 
-// ─── Comparison Table Row ────────────────────────────────────────────────────
+// Comparison Table Row
 export function CompareRow({ feature, ours, spreadsheet, jira, testrail }: {
   feature: string; ours: boolean | string; spreadsheet: boolean | string; jira: boolean | string; testrail: boolean | string;
 }) {

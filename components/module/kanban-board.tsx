@@ -89,7 +89,7 @@ function buildStatusAliases(statusOptions: { label: string; value: string }[]) {
   return aliases;
 }
 
-/* ─── Main Board ─── */
+/* Main Board */
 export function KanbanBoard({
   rows,
   statusOptions,

@@ -19,13 +19,12 @@ import {
 import { cn } from "@/lib/utils";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
 
 export type SidebarIcon = React.ComponentType<{ size?: number; weight?: "bold"; className?: string }>;
 export type SidebarItem = { href: string; label: string; icon: SidebarIcon };
 export type SidebarGroup = { title: string; items: SidebarItem[] };
 
-// ─── Consolidated Navigation Data ───────────────────────────────────────────
+// Consolidated Navigation Data
 
 export function getGroups(t: Dictionary["sidebar"]): SidebarGroup[] {
   return [
@@ -76,7 +75,7 @@ export function getFooterItems(_t: Dictionary["sidebar"]): SidebarItem[] {
   return [];
 }
 
-// ─── Role-based filtering ────────────────────────────────────────────────────
+// Role-based filtering
 
 const FULL_ROLE_MENU = [
   "/",
@@ -305,7 +304,7 @@ export function SidebarNavItem({
   );
 }
 
-// ─── Nav Section ─────────────────────────────────────────────────────────────
+// Nav Section
 
 export function SidebarSection({
   group,

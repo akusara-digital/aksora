@@ -90,7 +90,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
  ]}
  >
 
- {/* ── KPI Cards ── */}
+ {/* KPI Cards */}
  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
  <div className="flex items-center gap-3 text-slate-500 mb-3">
@@ -148,7 +148,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
  </div>
  </div>
 
- {/* ── Test Cases Breakdown ── */}
+ {/* Test Cases Breakdown */}
  {stats.totalCases > 0 && (
  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm mb-8">
  <h3 className="text-sm font-bold text-slate-700 mb-3">Test Cases Breakdown</h3>
@@ -182,7 +182,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
  </div>
  )}
 
- {/* ── Suites Overview ── */}
+ {/* Suites Overview */}
  {suites.length > 0 && (
  <div className="mb-8">
  <div className="flex items-center justify-between mb-4">
@@ -271,7 +271,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
  )}
 
  <div className="grid gap-8 lg:grid-cols-2 mb-8">
- {/* ── Test Plans ── */}
+ {/* Test Plans */}
  <section>
  <div className="flex items-center justify-between mb-4">
  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -311,7 +311,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
  </div>
  </section>
 
- {/* ── Project Defects ── */}
+ {/* Project Defects */}
  <section>
  <div className="flex items-center justify-between mb-4">
  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -372,7 +372,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
  </section>
  </div>
 
- {/* ── Meeting Notes ── */}
+ {/* Meeting Notes */}
  <section className="mb-20">
  <div className="flex items-center justify-between mb-6">
  <div className="flex items-center gap-2">

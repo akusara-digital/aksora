@@ -194,7 +194,7 @@ export default function FeaturesPage() {
 }
 
 
-// ─── Stats Item ──────────────────────────────────────────────────────────────
+// Stats Item
 function StatItem({ value, label }: { value: string; label: string }) {
   return (
     <div>
@@ -204,7 +204,7 @@ function StatItem({ value, label }: { value: string; label: string }) {
   );
 }
 
-// ─── Timeline Step ───────────────────────────────────────────────────────────
+// Timeline Step
 function TimelineStep({ step, icon, title, desc }: { step: number; icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="relative">
@@ -220,7 +220,7 @@ function TimelineStep({ step, icon, title, desc }: { step: number; icon: React.R
   );
 }
 
-// ─── Mini Feature Card ───────────────────────────────────────────────────────
+// Mini Feature Card
 function MiniFeature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xs hover:border-blue-300 dark:hover:border-blue-600 transition-all group">

@@ -144,7 +144,7 @@ export function RunPlayMode({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col h-screen w-screen bg-gradient-to-b from-slate-900 via-[#0f172a] to-[#020617] text-white">
-      {/* ===== HEADER ===== */}
+      {/* Header */}
       <div className="h-[60px] shrink-0 flex items-center justify-between px-6 border-b border-white/5">
         <div className="flex items-center gap-3.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 shadow-lg shadow-blue-600/25">
@@ -178,7 +178,7 @@ export function RunPlayMode({
         </div>
       </div>
 
-      {/* ===== PROGRESS BAR ===== */}
+      {/* Progress bar */}
       <div className="shrink-0 px-6 pt-3">
         <div className="h-1 rounded-full overflow-hidden bg-white/5">
           <div
@@ -188,7 +188,7 @@ export function RunPlayMode({
         </div>
       </div>
 
-      {/* ===== DOTS ===== */}
+      {/* Dots */}
       <div className="shrink-0 flex flex-wrap gap-1.5 justify-center px-6 py-2">
         {items.map((item, i) => (
           <button
@@ -207,7 +207,7 @@ export function RunPlayMode({
         ))}
       </div>
 
-      {/* ===== CARD CONTENT ===== */}
+      {/* Card content */}
       <div className="flex-1 overflow-hidden px-6 flex flex-col">
         <div className="flex-1 overflow-auto rounded-2xl border border-white/10 p-7 flex flex-col gap-6 bg-white/[0.03]">
           {/* Case Header */}
@@ -362,7 +362,7 @@ export function RunPlayMode({
         </div>
       </div>
 
-      {/* ===== FOOTER ACTIONS ===== */}
+      {/* Footer actions */}
       <RunPlayModeFooter
         index={index}
         totalItems={items.length}

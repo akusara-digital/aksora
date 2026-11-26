@@ -57,7 +57,7 @@ export function ProjectHubBugsTab({
 
   return (
     <div className="space-y-4">
-      {/* ── Toolbar: Search & Filters ── */}
+      {/* Toolbar: Search & Filters */}
       <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-wrap items-center gap-3">
           {/* Search Box */}
@@ -139,7 +139,7 @@ export function ProjectHubBugsTab({
         </div>
       </div>
 
-      {/* ── Bugs List ── */}
+      {/* Bugs List */}
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
         {filtered.length === 0 ? (
           <div className="p-12 text-center">

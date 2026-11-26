@@ -33,7 +33,7 @@ export type Column = {
   internalLink?: (row: TableRow) => string;
 };
 
-/* ─── Sortable Table Row ─── */
+/* Sortable Table Row */
 export const SortableRow = memo(function SortableRow({
   row,
   index,

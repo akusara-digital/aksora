@@ -62,7 +62,7 @@ type ModuleWorkspaceTableProps = {
   reorderable?: boolean;
 };
 
-/* ─── Main Table ─── */
+/* Main Table */
 export function ModuleWorkspaceTable({
   module,
   shortTitle,

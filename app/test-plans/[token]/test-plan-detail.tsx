@@ -348,7 +348,7 @@ export function TestPlanDetail({
  { label: plan.title ||"Untitled Plan" },
  ]} />
 
- {/* ── Hero ── */}
+ {/* Hero */}
  <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
  <div className="h-1 w-full bg-blue-600" />
  <div className="p-6 md:p-8">
@@ -492,7 +492,7 @@ export function TestPlanDetail({
  </div>
  </div>
 
- {/* ── Suite accordion ── */}
+ {/* Suite accordion */}
  <div>
  <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
  <div className="flex items-center gap-2">
@@ -756,7 +756,7 @@ export function TestPlanDetail({
   }}
  />
 
- {/* ── Edit / Rename Plan Modal ── */}
+ {/* Edit / Rename Plan Modal */}
  <ModalShell
    isOpen={showEditModal}
    onClose={() => setShowEditModal(false)}
@@ -886,7 +886,7 @@ export function TestPlanDetail({
    </form>
  </ModalShell>
 
- {/* ── Delete Plan Confirmation ── */}
+ {/* Delete Plan Confirmation */}
  <ConfirmModal
    isOpen={showDeleteModal}
    title={`Delete Test Plan: ${currentPlan.title || "Untitled"}`}

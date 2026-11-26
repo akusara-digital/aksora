@@ -11,7 +11,6 @@ import {
 import { cn } from "@/lib/utils";
 import { DashboardFilterForm, SaveFilterButton } from "@/components/dashboard/dashboard-filter-form";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface SavedFilter {
   id: number;
@@ -32,7 +31,7 @@ interface DashboardSavedFiltersProps {
   density?: string;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// Component
 
 export function DashboardSavedFilters({
   activeProject,
@@ -48,7 +47,7 @@ export function DashboardSavedFilters({
   const [deleteConfirm, setDeleteConfirm] = useState<SavedFilter | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // ─── Fetch filters ─────────────────────────────────────────────────────────
+  // Fetch filters
 
   const fetchFilters = useCallback(async () => {
     try {
@@ -67,7 +66,7 @@ export function DashboardSavedFilters({
 
   useEffect(() => { fetchFilters(); }, [fetchFilters]);
 
-  // ─── Save filter ───────────────────────────────────────────────────────────
+  // Save filter
 
   const handleSave = async (name: string, shared: boolean): Promise<{ error?: string }> => {
     try {
@@ -85,7 +84,7 @@ export function DashboardSavedFilters({
     }
   };
 
-  // ─── Delete filter ─────────────────────────────────────────────────────────
+  // Delete filter
 
   const handleDelete = async (filter: SavedFilter) => {
     if (filter.shared && !deleteConfirm) {
@@ -109,7 +108,6 @@ export function DashboardSavedFilters({
     await handleDelete(deleteConfirm);
   };
 
-  // ─── Helpers ───────────────────────────────────────────────────────────────
 
   const isProjectAvailable = (project: string) => {
     if (!project) return true;
@@ -120,7 +118,6 @@ export function DashboardSavedFilters({
   const visibleFilters = showMore ? allFilters : allFilters.slice(0, 10);
   const hasMore = allFilters.length > 10;
 
-  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-2" data-testid="dashboard-saved-filters">
@@ -213,7 +210,7 @@ export function DashboardSavedFilters({
   );
 }
 
-// ─── FilterChip sub-component ────────────────────────────────────────────────
+// FilterChip sub-component
 
 function FilterChip({
   filter,
@@ -259,7 +256,6 @@ function FilterChip({
   );
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 type SavedFilterLike = {
   id?: unknown;

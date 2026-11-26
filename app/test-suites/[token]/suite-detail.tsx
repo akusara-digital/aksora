@@ -255,7 +255,7 @@ export function SuiteDetail({
  { label: currentSuite.title },
  ]} />
 
- {/* ── Hero ── */}
+ {/* Hero */}
  <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
  <div className="h-1 w-full bg-blue-600" />
  <div className="p-6 md:p-8">
@@ -431,7 +431,7 @@ export function SuiteDetail({
  </div>
  </div>
 
- {/* ── Tabs ── */}
+ {/* Tabs */}
  <div className="flex items-center gap-1 border-b border-slate-200">
  {([
  { key:"cases", label:`Test Cases (${total})` },
@@ -452,7 +452,7 @@ export function SuiteDetail({
  ))}
  </div>
 
- {/* ── Test Cases tab ── */}
+ {/* Test Cases tab */}
  {activeTab ==="cases" && (
  <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
  {/* Filter bar */}
@@ -544,7 +544,7 @@ export function SuiteDetail({
  </div>
  )}
 
- {/* ── Session History tab ── */}
+ {/* Session History tab */}
  {activeTab ==="history" && (
  <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
  {sessions.length === 0 ? (
@@ -622,7 +622,7 @@ export function SuiteDetail({
  </div>
  )}
 
- {/* ── Edit / Rename Suite Modal ── */}
+ {/* Edit / Rename Suite Modal */}
  <ModalShell
    isOpen={showEditModal}
    onClose={() => setShowEditModal(false)}
@@ -715,7 +715,7 @@ export function SuiteDetail({
    </form>
  </ModalShell>
 
- {/* ── Delete Suite Confirmation ── */}
+ {/* Delete Suite Confirmation */}
  <ConfirmModal
    isOpen={showDeleteModal}
    title={`Delete Test Suite: ${currentSuite.title || "Untitled"}`}

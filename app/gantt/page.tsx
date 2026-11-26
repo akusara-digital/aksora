@@ -177,7 +177,7 @@ export default function GanttPage() {
     return () => { observer.disconnect(); if (rafId !== null) cancelAnimationFrame(rafId); };
   }, [loading]);
 
-  // ─── Derived data (extracted to hook) ──────────────────────────────────────
+  // Derived data (extracted to hook)
   const derived = useGanttDerivedData({
     data, filter, viewMode, zoomLevel, focusDate, sectionCollapse, hideCompleted,
     visibleRowWindow, timelineViewportWidth, dragPreview,
@@ -230,7 +230,7 @@ export default function GanttPage() {
     return Array.from({ length: totalCols }, (_, col) => { const label = getDayLabel(addDays(viewStart, col), holidays); return label ? { col, label } : null; }).filter(Boolean) as { col: number; label: string }[];
   }, [viewStart, totalCols, viewMode, holidays]);
 
-  // ─── Scroll & drag handlers ────────────────────────────────────────────────
+  // Scroll & drag handlers
   const syncTimelineScroll = useCallback(() => {
     const body = bodyRef.current; const hdr = headerRef.current;
     if (!body || !hdr) return;
@@ -318,7 +318,6 @@ export default function GanttPage() {
     window.requestAnimationFrame(() => { scrollToDate(yearScrollTarget, "auto", viewMode === "year" ? "center" : "start"); });
   }, [displayItems.length, loading, scrollToDate, timelineViewportWidth, viewMode, yearScrollTarget]);
 
-  // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <PageShell
       icon={<Lightning size={22} weight="bold" />}

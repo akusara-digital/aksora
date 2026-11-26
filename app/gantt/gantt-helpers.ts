@@ -247,7 +247,7 @@ export function overlapsWindow(item: Pick<GanttItem, "startDate" | "endDate">, s
   return itemStart <= end && itemEnd >= start;
 }
 
-// ─── New types ────────────────────────────────────────────────────────────────
+// New types
 
 export type GanttFilter = "all" | "sprint" | "plan" | "task";
 
@@ -274,7 +274,7 @@ export const SECTION_ACCENT_COLORS = {
   task: "#059669",
 } as const;
 
-// ─── New helper functions ─────────────────────────────────────────────────────
+// New helper functions
 
 /** Compute progress percentage for a timeline item based on child item statuses */
 export function computeProgress(item: GanttItem, data: GanttData): number {

@@ -515,7 +515,7 @@ export function QuickCreateSuiteModal({
         {/* Modal Content */}
         <div className="overflow-y-auto">
           {mode === "ai" ? (
-            /* ================= AUTO (AI) MODE ================= */
+            /* Auto (ai) mode */
             <div className="flex flex-col justify-between min-h-[480px] sm:min-h-[510px] p-4 sm:p-5 text-xs text-slate-800">
               <div className="space-y-3.5">
                 {hasDraftSession && (
@@ -665,7 +665,7 @@ export function QuickCreateSuiteModal({
               </div>
             </div>
           ) : (
-            /* ================= MANUAL MODE ================= */
+            /* Manual mode */
             <form
               onSubmit={handleManualSubmit}
               className="flex flex-col justify-between min-h-[480px] sm:min-h-[510px] p-4 sm:p-5 text-xs text-slate-800"

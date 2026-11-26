@@ -40,7 +40,7 @@ function getAccent(value: string) {
   };
 }
 
-/* ─── Sortable Card ─── */
+/* Sortable Card */
 export const SortableCard = memo(function SortableCard({
   card,
   onViewRow,
@@ -103,7 +103,7 @@ export const SortableCard = memo(function SortableCard({
 
 SortableCard.displayName = "SortableCard";
 
-/* ─── Droppable Column ─── */
+/* Droppable Column */
 export const KanbanColumn = memo(function KanbanColumn({
   status,
   cards,

@@ -14,7 +14,7 @@ import type {
   OverviewProjectItem,
 } from "@/lib/data/data-dashboard-overview";
 
-// ─── 1. Left Card: Recent Activity & Runs Table (matching Recent Orders in Group 659) ─
+// 1. Left Card: Recent Activity & Runs Table (matching Recent Orders in Group 659)
 export function RecentActivityTableCard({
   runs,
   bugs,
@@ -131,7 +131,7 @@ export function RecentActivityTableCard({
   );
 }
 
-// ─── 2. Right Card: Top Projects & Health (matching Top selling Products in Group 659)
+// 2. Right Card: Top Projects & Health (matching Top selling Products in Group 659)
 export function TopProjectsCard({ projects }: { projects: OverviewProjectItem[] }) {
   const displayProjects = projects.slice(0, 4);
 
