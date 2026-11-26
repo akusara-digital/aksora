@@ -18,6 +18,12 @@ import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { cn } from "@/lib/utils";
 import { validateProjectSelection } from "@/lib/project-utils";
 import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
+import { AiDraftRestoredBanner } from "@/components/shared/ai-draft-restored-banner";
+import {
+  saveAiSession,
+  getAiSession,
+  clearAiSession,
+} from "@/lib/ai-session-cache";
 import { SuiteModalHeader } from "./suite-modal-header";
 import { QuickCreateSuiteCaseRow } from "./quick-create-suite-case-row";
 import type { InitialCaseItem } from "./quick-create-suite-ai-section";
@@ -388,10 +394,30 @@ export function QuickCreateSuiteModal({
     }, 50);
   };
 
-  // Handle Ctrl+Enter / Cmd+Enter
+  // Restore draft session from browser cache on mount
+  useEffect(() => {
+    if (!isOpen) return;
+    const session = getAiSession<{ title: string; cases: InitialCaseItem[] }>("test_suite");
+    if (session) {
+      if (session.inputPrompt && !aiPrompt) setAiPrompt(session.inputPrompt);
+      if (session.resultDraft) {
+        if (!title && session.resultDraft.title) setTitle(session.resultDraft.title);
+        if (session.resultDraft.cases && session.resultDraft.cases.length > 0 && initialCases.length === 0) {
+          setInitialCases(session.resultDraft.cases);
+          setShowInitialCases(true);
+        }
+      }
+    }
+  }, [isOpen]);
+
+  // Handle Ctrl+Enter / Cmd+Enter & ESC
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (saving || isAiProcessing) return;
+        onClose();
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         if (!saving && !isAiProcessing) {
@@ -405,7 +431,7 @@ export function QuickCreateSuiteModal({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  });
+  }, [isOpen, saving, isAiProcessing, mode]);
 
   if (!isOpen) return null;
 
@@ -414,7 +440,10 @@ export function QuickCreateSuiteModal({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-2xs transition-opacity animate-in fade-in duration-100"
-        onClick={onClose}
+        onClick={() => {
+          if (saving || isAiProcessing) return;
+          onClose();
+        }}
       />
 
       {/* Modal Dialog Panel */}

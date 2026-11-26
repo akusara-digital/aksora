@@ -14,6 +14,8 @@ type FormDrawerProps = {
   children: ReactNode;
   /** Tailwind max-width class. Default "max-w-2xl" suits most forms; pass "max-w-5xl" for wide module forms. */
   size?: "sm" | "md" | "lg" | "xl";
+  isBusy?: boolean;
+  closeOnBackdrop?: boolean;
 };
 
 const SIZE_MAP: Record<string, string> = {
@@ -23,17 +25,31 @@ const SIZE_MAP: Record<string, string> = {
   xl: "max-w-5xl",
 };
 
-export function FormDrawer({ open, title, subtitle, headerAccessory, customHeader, onClose, children, size = "xl" }: FormDrawerProps) {
+export function FormDrawer({
+  open,
+  title,
+  subtitle,
+  headerAccessory,
+  customHeader,
+  onClose,
+  children,
+  size = "xl",
+  isBusy = false,
+  closeOnBackdrop = true,
+}: FormDrawerProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (isBusy || closeOnBackdrop === false) return;
+        onClose();
+      }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose]);
+  }, [open, onClose, isBusy, closeOnBackdrop]);
 
   useEffect(() => {
     if (open) {
@@ -51,7 +67,10 @@ export function FormDrawer({ open, title, subtitle, headerAccessory, customHeade
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/30 animate-in fade-in duration-100"
-        onClick={onClose}
+        onClick={() => {
+          if (isBusy || closeOnBackdrop === false) return;
+          onClose();
+        }}
       />
       {/* Modal panel */}
       <div

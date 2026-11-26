@@ -17,6 +17,14 @@ import { humanizeErrorMessage } from "@/lib/error-utils";
 import { compressImageToWebp } from "@/lib/image-compress";
 import { validateProjectSelection } from "@/lib/project-utils";
 import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
+import { AiDraftRestoredBanner } from "@/components/shared/ai-draft-restored-banner";
+import {
+  saveAiSession,
+  getAiSession,
+  clearAiSession,
+  runAiBackgroundProcess,
+  isAiDomainProcessing,
+} from "@/lib/ai-session-cache";
 
 export interface TestCaseDraft {
   caseName?: string;
@@ -42,9 +50,8 @@ export interface AiTestCaseAgentContentProps {
   onDirectSubmit?: (entry: Record<string, unknown>, createAnother?: boolean) => Promise<void> | void;
   onCancel: () => void;
   pending?: boolean;
+  onBusyChange?: (busy: boolean) => void;
 }
-
-const STORAGE_AI_TC_MEMORY = "aksora_test_case_ai_prompt_memory";
 
 export function AiTestCaseAgentContent({
   projectOptions = [],
@@ -54,9 +61,11 @@ export function AiTestCaseAgentContent({
   onSwitchToManual,
   onCancel,
   pending = false,
+  onBusyChange,
 }: AiTestCaseAgentContentProps) {
   const [showUnconfigured, setShowUnconfigured] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [restoredDraft, setRestoredDraft] = useState<TestCaseDraft | null>(null);
   const [activeEngine, setActiveEngine] = useState<{ provider: string; model: string }>({
     provider: "",
     model: "",
@@ -73,25 +82,45 @@ export function AiTestCaseAgentContent({
   const projectValidation = validateProjectSelection(effectiveProject, projectOptions);
   const activeProject = effectiveProject;
 
+  // Sync busy state
+  useEffect(() => {
+    if (onBusyChange) {
+      onBusyChange(loading);
+    }
+  }, [loading, onBusyChange]);
+
   useEffect(() => {
     setActiveEngine(getActiveAiConfig());
-    if (typeof window !== "undefined") {
-      const savedMemory = localStorage.getItem(STORAGE_AI_TC_MEMORY);
-      if (savedMemory) {
-        setInputNotes(savedMemory);
+
+    const session = getAiSession<TestCaseDraft>("test_case");
+    if (session) {
+      if (session.inputPrompt) setInputNotes(session.inputPrompt);
+      if (session.imageBase64) {
+        setImagePreview(session.imageBase64);
+        setImageBase64(session.imageBase64);
+      }
+      if (session.status === "processing" || isAiDomainProcessing("test_case")) {
+        setLoading(true);
+      } else if (session.status === "completed" && session.resultDraft) {
+        setRestoredDraft(session.resultDraft);
       }
     }
+
+    const handleCompleted = (e: Event) => {
+      const custom = e as CustomEvent<{ domain: string; result: TestCaseDraft }>;
+      if (custom.detail?.domain === "test_case" && custom.detail.result) {
+        setLoading(false);
+        setRestoredDraft(custom.detail.result);
+        toast("AI finished structuring in background! Ready to review.", "success");
+      }
+    };
+    window.addEventListener("aksora:ai-session-completed", handleCompleted);
+    return () => window.removeEventListener("aksora:ai-session-completed", handleCompleted);
   }, []);
 
   const handleNotesChange = (val: string) => {
     setInputNotes(val);
-    if (typeof window !== "undefined") {
-      if (val.trim()) {
-        localStorage.setItem(STORAGE_AI_TC_MEMORY, val);
-      } else {
-        localStorage.removeItem(STORAGE_AI_TC_MEMORY);
-      }
-    }
+    saveAiSession("test_case", { inputPrompt: val, project: activeProject });
   };
 
   const handleAttachImage = async (file: File) => {
@@ -99,10 +128,20 @@ export function AiTestCaseAgentContent({
       const compressed = await compressImageToWebp(file, { maxDimension: 1440, quality: 0.8 });
       setImagePreview(compressed.dataUrl);
       setImageBase64(compressed.dataUrl);
+      saveAiSession("test_case", { imageBase64: compressed.dataUrl });
       toast("Screenshot attached", "success");
     } catch {
       toast("Failed to process screenshot", "error");
     }
+  };
+
+  const handleDiscardDraft = () => {
+    clearAiSession("test_case");
+    setRestoredDraft(null);
+    setInputNotes("");
+    setImagePreview(null);
+    setImageBase64(null);
+    toast("Draft cleared", "info");
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -141,62 +180,51 @@ export function AiTestCaseAgentContent({
 
     try {
       const credentials = getActiveAiCredentials();
-      const res = await fetch("/api/ai/qa-agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "generate_cases",
-          payload: {
-            story: inputNotes.trim(),
-            featureName: activeProject,
-            imageBase64: imageBase64 || undefined,
-            mimeType: "image/webp",
-          },
-          ai: credentials,
-        }),
+      const draft = await runAiBackgroundProcess<TestCaseDraft>({
+        domain: "test_case",
+        action: "generate_cases",
+        payload: {
+          story: inputNotes.trim(),
+          featureName: activeProject,
+          imageBase64: imageBase64 || undefined,
+          mimeType: "image/webp",
+        },
+        aiCredentials: credentials,
+        transformResponse: (data) => {
+          const rawCases = data?.testCases;
+          const primaryCase = Array.isArray(rawCases) && rawCases.length > 0 ? rawCases[0] : null;
+
+          const normalizedType: "Positive" | "Negative" =
+            String(primaryCase?.category || primaryCase?.typeCase || "").toLowerCase().includes("neg")
+              ? "Negative"
+              : "Positive";
+
+          const rawPriority = String(primaryCase?.priority || "").toLowerCase();
+          const normalizedPriority: "Critical" | "High" | "Medium" | "Low" =
+            rawPriority.includes("crit") || rawPriority === "p0"
+              ? "Critical"
+              : rawPriority.includes("high") || rawPriority === "p1"
+              ? "High"
+              : rawPriority.includes("low") || rawPriority === "p3"
+              ? "Low"
+              : "Medium";
+
+          return {
+            caseName: primaryCase?.caseName || inputNotes.trim().slice(0, 90),
+            typeCase: normalizedType,
+            priority: normalizedPriority,
+            preCondition: primaryCase?.preCondition || "Browser on landing page in standard session",
+            testStep: primaryCase?.testStep || inputNotes.trim(),
+            expectedResult: primaryCase?.expectedResult || "System behaves as expected according to specifications",
+            actualResult: "",
+            subModule: activeProject,
+            deviceType: "Desktop Web",
+            evidence: imageBase64 || "",
+            project: activeProject,
+            testSuiteId: selectedSuiteId,
+          };
+        },
       });
-
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(json.error || `Failed to process test case with AI (HTTP ${res.status})`);
-      }
-
-      const rawCases = json.data?.testCases;
-      const primaryCase = Array.isArray(rawCases) && rawCases.length > 0 ? rawCases[0] : null;
-
-      const normalizedType: "Positive" | "Negative" =
-        String(primaryCase?.category || primaryCase?.typeCase || "").toLowerCase().includes("neg")
-          ? "Negative"
-          : "Positive";
-
-      const rawPriority = String(primaryCase?.priority || "").toLowerCase();
-      const normalizedPriority: "Critical" | "High" | "Medium" | "Low" =
-        rawPriority.includes("crit") || rawPriority === "p0"
-          ? "Critical"
-          : rawPriority.includes("high") || rawPriority === "p1"
-          ? "High"
-          : rawPriority.includes("low") || rawPriority === "p3"
-          ? "Low"
-          : "Medium";
-
-      const draft: TestCaseDraft = {
-        caseName: primaryCase?.caseName || inputNotes.trim().slice(0, 90),
-        typeCase: normalizedType,
-        priority: normalizedPriority,
-        preCondition: primaryCase?.preCondition || "Browser on landing page in standard session",
-        testStep: primaryCase?.testStep || inputNotes.trim(),
-        expectedResult: primaryCase?.expectedResult || "System behaves as expected according to specifications",
-        actualResult: "",
-        subModule: activeProject,
-        deviceType: "Desktop Web",
-        evidence: imageBase64 || "",
-        project: activeProject,
-        testSuiteId: selectedSuiteId,
-      };
-
-      if (typeof window !== "undefined") {
-        localStorage.removeItem(STORAGE_AI_TC_MEMORY);
-      }
 
       toast("Test case structured. Review and tweak before saving.", "success");
       onSwitchToManual(draft);
@@ -228,6 +256,28 @@ export function AiTestCaseAgentContent({
           hasProjects={Boolean(projectOptions && projectOptions.length > 0)}
           selectedProject={effectiveProject}
         />
+
+        {/* AI Draft Restored Banner */}
+        <AiDraftRestoredBanner
+          isProcessing={loading}
+          hasDraft={Boolean(restoredDraft)}
+          onDiscard={handleDiscardDraft}
+        />
+
+        {restoredDraft && (
+          <div className="flex items-center justify-between border border-emerald-300 bg-emerald-50/90 px-3.5 py-2 text-xs">
+            <span className="font-semibold text-emerald-900 truncate max-w-[70%]">
+              Restored structured case: <strong>{restoredDraft.caseName}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={() => onSwitchToManual(restoredDraft)}
+              className="inline-flex items-center gap-1.5 rounded bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 transition cursor-pointer"
+            >
+              Review & Edit Draft
+            </button>
+          </div>
+        )}
 
         {/* Central Input Card Container */}
         <div className="flex flex-col rounded-none border border-slate-200 bg-white p-3.5 sm:p-4 shadow-2xs transition-all hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">

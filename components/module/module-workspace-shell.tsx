@@ -12,6 +12,7 @@ import { useState, type Dispatch, type ReactNode, type SetStateAction } from"rea
 import { getModuleWorkspaceIcon } from"@/components/module/module-workspace-utils";
 import type { Column, TableRow } from"@/components/module/module-workspace-table-row";
 import type { ModuleKey } from"@/lib/modules";
+import { clearAiSession } from "@/lib/ai-session-cache";
 import { BugModalModeSelector, type BugCreateMode } from "@/components/bugs/bug-modal-mode-selector";
 import { BugModalHeader } from "@/components/bugs/bug-modal-header";
 import { toast } from "@/components/ui/toast";
@@ -251,6 +252,7 @@ export function ModuleWorkspaceShell({
  const router = useRouter();
  const [bugCreateMode, setBugCreateMode] = useState<BugCreateMode>("ai");
  const [manualBugDraft, setManualBugDraft] = useState<Record<string, unknown> | null>(null);
+ const [isBugAiBusy, setIsBugAiBusy] = useState(false);
  const [selectedBugProject, setSelectedBugProject] = useState<string>(
    () => selectValues.project || relatedOptions.project?.[0]?.value || "",
  );
@@ -325,6 +327,7 @@ export function ModuleWorkspaceShell({
        toast(err instanceof Error ? err.message : "Failed to create bug", "error");
      }
    } else {
+     clearAiSession("bug");
      onSubmit(formData);
      setManualBugDraft(null);
    }
@@ -450,6 +453,7 @@ export function ModuleWorkspaceShell({
  <FormDrawer
  open={showForm}
  size="lg"
+ isBusy={module === "bugs" && bugCreateMode === "ai" && isBugAiBusy}
  title={editingRow ? `Edit ${config.shortTitle.replace(/s$/i, "")}` : `Create ${config.shortTitle.replace(/s$/i, "")}`}
  subtitle={
   editingRow
@@ -475,7 +479,6 @@ export function ModuleWorkspaceShell({
       mode={bugCreateMode}
       onModeChange={setBugCreateMode}
       onClose={() => {
-        setManualBugDraft(null);
         onCancelForm();
       }}
       isEditing={Boolean(editingRow)}
@@ -488,7 +491,6 @@ export function ModuleWorkspaceShell({
   ) : undefined
  }
  onClose={() => {
-   setManualBugDraft(null);
    onCancelForm();
  }}
  >
@@ -498,9 +500,9 @@ export function ModuleWorkspaceShell({
     defaultProject={selectValues.project || ""}
     selectedProject={selectedBugProject || selectValues.project || relatedOptions.project?.[0]?.value || ""}
     onCancel={() => {
-      setManualBugDraft(null);
       onCancelForm();
     }}
+    onBusyChange={setIsBugAiBusy}
     pending={pending}
     onDirectSubmit={handleDirectBugSubmit}
     onSwitchToManual={handleSwitchToManual}
@@ -515,6 +517,7 @@ export function ModuleWorkspaceShell({
     pending={pending}
     onCancel={() => {
       setManualBugDraft(null);
+      clearAiSession("bug");
       onCancelForm();
     }}
     onSubmit={handleDirectBugSubmit}

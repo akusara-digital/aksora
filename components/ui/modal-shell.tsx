@@ -15,6 +15,7 @@ export interface ModalShellProps {
   footer?: React.ReactNode;
   className?: string;
   closeOnBackdrop?: boolean;
+  isBusy?: boolean;
 }
 
 const MAX_WIDTH_MAP = {
@@ -36,6 +37,7 @@ export function ModalShell({
   footer,
   className,
   closeOnBackdrop = true,
+  isBusy = false,
 }: ModalShellProps) {
   const [show, setShow] = useState(isOpen);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -57,11 +59,14 @@ export function ModalShell({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (isBusy) return;
+        onClose();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isBusy]);
 
   if (!isOpen && !show) return null;
 
@@ -76,6 +81,7 @@ export function ModalShell({
       <div
         className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
         onClick={() => {
+          if (isBusy) return;
           if (closeOnBackdrop) onClose();
         }}
       />

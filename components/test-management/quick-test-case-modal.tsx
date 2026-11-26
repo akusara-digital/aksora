@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/toast";
+import { clearAiSession } from "@/lib/ai-session-cache";
 import { TestCaseModalHeader } from "./test-case-modal-header";
 import { AiTestCaseAgentContent, type TestCaseDraft } from "./ai-test-case-agent-content";
 import { StreamlinedTestCaseForm } from "./streamlined-test-case-form";
@@ -38,6 +39,7 @@ export function QuickTestCaseModal({
   const [selectedSuite, setSelectedSuite] = useState(suiteId);
   const [manualDraft, setManualDraft] = useState<Record<string, unknown> | null>(null);
   const [pending, setPending] = useState(false);
+  const [isAiBusy, setIsAiBusy] = useState(false);
 
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -62,11 +64,14 @@ export function QuickTestCaseModal({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (isAiBusy || pending) return;
+        onClose();
+      }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isAiBusy, pending]);
 
   if (!isOpen) return null;
 
@@ -135,6 +140,7 @@ export function QuickTestCaseModal({
       if (!createAnother) {
         onClose();
       }
+      clearAiSession("test_case");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Failed to save test case.", "error");
     } finally {
@@ -147,7 +153,10 @@ export function QuickTestCaseModal({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-2xs transition-opacity animate-in fade-in duration-100"
-        onClick={onClose}
+        onClick={() => {
+          if (isAiBusy || pending) return;
+          onClose();
+        }}
       />
 
       {/* Modal Dialog Panel */}
@@ -187,6 +196,7 @@ export function QuickTestCaseModal({
               onSwitchToManual={handleSwitchToManual}
               onDirectSubmit={(entry, another) => handleSubmit(entry, another)}
               onCancel={onClose}
+              onBusyChange={setIsAiBusy}
               pending={pending}
             />
           ) : (
