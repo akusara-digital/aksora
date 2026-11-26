@@ -247,7 +247,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   return (
     <BreadcrumbProvider>
-      <div suppressHydrationWarning className="flex min-h-screen bg-[var(--bg-app)] overflow-x-hidden">
+      <div suppressHydrationWarning className="flex min-h-screen bg-[var(--bg-app)] overflow-x-clip">
       {mounted && user && !user.activeWorkspaceId && (user.memberships?.length ?? 0) === 0 && (
         <WorkspaceOnboardingModal />
       )}

@@ -436,7 +436,7 @@ export function QuickBugModal({
           </div>
         }
       >
-        <div className="mb-3 flex items-center justify-between rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50/80 to-indigo-50/40 px-3 py-2 text-xs">
+        <div className="mb-3 flex items-center justify-between rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2 text-xs">
           <div className="flex items-center gap-2">
             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
               <Sparkle size={12} weight="fill" />
@@ -450,7 +450,7 @@ export function QuickBugModal({
           </div>
           {aiConfigured ? (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               Connected
             </span>
           ) : (

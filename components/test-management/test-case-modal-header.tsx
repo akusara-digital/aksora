@@ -105,7 +105,7 @@ export function TestCaseModalHeader({
                 {/* Auto-create suite banner when no suites exist */}
                 {suiteOptions.length === 0 && (
                   <div className="border-b border-slate-100 px-3 py-1.5 bg-blue-50/70 mb-1 rounded-t-md text-[11px] text-blue-900 flex items-center justify-between gap-1.5">
-                    <span className="font-semibold flex items-center gap-1">📁 Auto-Suite</span>
+                    <span className="font-semibold flex items-center gap-1">Auto-Suite</span>
                     <span className="font-medium text-blue-700 truncate">&quot;{suiteDisplay || "General Test Suite"}&quot;</span>
                   </div>
                 )}

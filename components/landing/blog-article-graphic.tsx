@@ -95,14 +95,14 @@ export function BlogArticleGraphic({ slug, className = "" }: BlogArticleGraphicP
     case "qa-metrics-that-matter":
       return (
         <div
-          className={`w-full rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-indigo-50/40 p-4 flex flex-col justify-between overflow-hidden ${className}`}
+          className={`w-full rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-blue-50/40 p-4 flex flex-col justify-between overflow-hidden ${className}`}
         >
           <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 mb-2">
             <span className="flex items-center gap-1.5 text-slate-700">
-              <ChartPieSlice size={14} weight="bold" className="text-indigo-600" />
+              <ChartPieSlice size={14} weight="bold" className="text-blue-600" />
               Actionable Quality KPIs
             </span>
-            <span className="text-indigo-700 font-mono text-[10px] bg-indigo-100/70 px-1.5 py-0.5 rounded">
+            <span className="text-blue-700 font-mono text-[10px] bg-blue-100/70 px-1.5 py-0.5 rounded">
               High Signal
             </span>
           </div>

@@ -150,7 +150,7 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-blue-500/15 transition-all hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] disabled:opacity-50"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-blue-500/15 transition-all hover:bg-blue-700 active:scale-[0.98] disabled:opacity-50"
         >
           <span>{pending ? "Updating Password..." : "Update Password"}</span>
           {!pending && <ArrowRight size={16} weight="bold" />}

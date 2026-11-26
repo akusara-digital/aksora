@@ -350,7 +350,7 @@ export function TestPlanDetail({
 
  {/* ── Hero ── */}
  <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
- <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-500" />
+ <div className="h-1 w-full bg-blue-600" />
  <div className="p-6 md:p-8">
  <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
 
@@ -409,7 +409,7 @@ export function TestPlanDetail({
  {currentPlan.publicToken && (
  <button
  onClick={copyReportLink}
- className="flex items-center gap-1.5 rounded-md border border-violet-200 bg-violet-50 px-3 h-8 text-xs font-bold text-violet-600 hover:bg-violet-100 transition"
+ className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 h-8 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition"
  >
  {copied ? <Check size={13} weight="bold" /> : <Share size={13} weight="bold" />}
  {copied ?"Copied!" :"Share Report"}

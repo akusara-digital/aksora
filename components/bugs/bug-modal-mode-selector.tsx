@@ -20,8 +20,8 @@ export function BugModalModeSelector({ mode, onChange }: BugModalModeSelectorPro
         className="h-7 rounded-md border border-gray-200 bg-white px-2 text-xs font-semibold text-gray-800 outline-none sm:hidden"
         aria-label="Creation Mode"
       >
-        <option value="ai">✨ By AI (Fast)</option>
-        <option value="manual">✍️ Manual</option>
+        <option value="ai">By AI (Fast)</option>
+        <option value="manual">Manual</option>
       </select>
 
       {/* Desktop segmented buttons */}

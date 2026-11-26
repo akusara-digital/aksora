@@ -82,7 +82,7 @@ export interface SicmundusParentTask {
 }
 
 export const DEFAULT_PRESET_TASKS: SicmundusParentTask[] = [
-  { id: "auto", title: "✨ Auto-detect / Create Task in Sicmundus", category: "Automatic", project_name: "Auto" },
+  { id: "auto", title: "Auto-detect / Create Task in Sicmundus", category: "Automatic", project_name: "Auto" },
   { id: "48eaa317-0f7c-4152-ada5-e0c8b4eb88ac", title: "Testing QA Studio & Evidence Hub", category: "Testing", project_name: "QA Ecosystem" },
   { id: "0b113ed4-4af4-4357-946c-0cb763684809", title: "Enhancement - DPD & SFTP", category: "Development", project_name: "CIMB" },
   { id: "53f08fe6-f880-4fe1-954f-1834dbdc115c", title: "MOT - Asset", category: "Maintenance", project_name: "Website Asset" },

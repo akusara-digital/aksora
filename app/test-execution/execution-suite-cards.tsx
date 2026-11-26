@@ -192,7 +192,7 @@ export function ExecutionSuiteCards({
   return (
     <div className="space-y-6">
       {/* 0. Execution Scopes Indicator Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 border border-blue-100 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-bold uppercase tracking-wider text-[10px] text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded-md">
             Flexible Test Runs
@@ -209,7 +209,7 @@ export function ExecutionSuiteCards({
             <strong className="font-bold text-slate-900">By Test Suite</strong> (Module / Feature)
           </span>
           <span className="inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-slate-200/80 shadow-2xs">
-            <span className="h-2 w-2 rounded-full bg-violet-600" />
+            <span className="h-2 w-2 rounded-full bg-slate-600" />
             <strong className="font-bold text-slate-900">By Test Case</strong> (Single Retest)
           </span>
         </div>
@@ -218,7 +218,7 @@ export function ExecutionSuiteCards({
       {/* 1. KPI Metric Overview Cards */}
       {metrics && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50/60 to-white p-4 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-blue-700">Active Runs</span>
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white">
@@ -229,7 +229,7 @@ export function ExecutionSuiteCards({
               <span className="text-2xl font-black text-slate-900">{metrics.activeRuns}</span>
               {metrics.activeRuns > 0 ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Live
                 </span>
               ) : (
                 <span className="text-xs text-slate-400">idle</span>

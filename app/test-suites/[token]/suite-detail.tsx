@@ -257,7 +257,7 @@ export function SuiteDetail({
 
  {/* ── Hero ── */}
  <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
- <div className="h-1 w-full bg-gradient-to-r from-indigo-500 via-blue-500 to-sky-400" />
+ <div className="h-1 w-full bg-blue-600" />
  <div className="p-6 md:p-8">
  <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
 

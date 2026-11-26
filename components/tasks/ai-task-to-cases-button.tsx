@@ -166,14 +166,14 @@ export function AiTaskToCasesButton({ task, className }: AiTaskToCasesButtonProp
         disabled={loading}
         className={
           className ||
-          "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-purple-200 bg-purple-50 px-3 text-xs font-semibold text-purple-700 transition hover:bg-purple-100 hover:border-purple-300 disabled:opacity-50"
+          "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 hover:border-blue-300 disabled:opacity-50"
         }
         title="Generate test cases automatically from acceptance criteria"
       >
         {loading ? (
-          <CircleNotch size={14} className="animate-spin text-purple-600" />
+          <CircleNotch size={14} className="animate-spin text-blue-600" />
         ) : (
-          <Sparkle size={14} weight="fill" className="text-purple-600" />
+          <Sparkle size={14} weight="fill" className="text-blue-600" />
         )}
         {loading ? "Generating..." : "Generate Test Cases"}
       </button>
@@ -305,7 +305,7 @@ export function AiTaskToCasesButton({ task, className }: AiTaskToCasesButtonProp
                 type="button"
                 onClick={handleSaveToSuite}
                 disabled={saving || suites.length === 0}
-                className="inline-flex h-9 items-center gap-1.5 rounded-md bg-purple-600 px-4 text-xs font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
               >
                 {saving ? (
                   <CircleNotch size={14} className="animate-spin" />

@@ -263,7 +263,7 @@ export function HeroMockup() {
           <div className="rounded-xl border border-slate-200 bg-white p-3.5 text-left shadow-xs dark:border-slate-800 dark:bg-slate-950">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Upcoming Milestone</span>
-              <span className="flex h-1.5 w-1.5 rounded-full bg-blue-600 animate-ping" />
+              <span className="flex h-1.5 w-1.5 rounded-full bg-blue-600" />
             </div>
             <h5 className="mt-1 text-xs font-bold text-slate-900 dark:text-white">Daily Standup &amp; Sync</h5>
             <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">Today, 09:00 AM • 4 team members synced</p>

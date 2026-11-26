@@ -65,7 +65,7 @@ export function ModuleRowActions({
         {module === "test-suites" && (
           <Link
             href={`/test-execution/${publicToken}`}
-            className="rounded-sm bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-violet-700"
+            className="rounded-sm bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700"
           >
             Execute
           </Link>

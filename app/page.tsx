@@ -32,7 +32,7 @@ export default async function LandingPage() {
   const t = dict.landing;
 
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden bg-white dark:bg-slate-950 text-slate-950 dark:text-white transition-colors antialiased">
+    <div className="flex min-h-screen flex-col overflow-x-clip bg-white dark:bg-slate-950 text-slate-950 dark:text-white transition-colors antialiased">
       {/* 1. TOP NAVBAR */}
       <MarketingHeader />
 

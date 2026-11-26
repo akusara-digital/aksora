@@ -32,10 +32,10 @@ export function RunPlayFailureBanner({
           <button
             type="button"
             onClick={onAutoDraftBug}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-rose-600 to-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-md shadow-rose-600/20 hover:from-rose-500 hover:to-indigo-500 transition active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-md shadow-blue-600/20 hover:bg-blue-500 transition active:scale-95"
           >
             <Sparkle size={14} weight="bold" />
-            ✨ Auto-Draft Bug with AI
+            <span>Auto-Draft Bug with AI</span>
           </button>
           <button
             type="button"

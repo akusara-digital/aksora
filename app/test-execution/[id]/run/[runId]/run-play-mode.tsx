@@ -183,7 +183,7 @@ export function RunPlayMode({
         <div className="h-1 rounded-full overflow-hidden bg-white/5">
           <div
             style={{ width: `${progress}%` }}
-            className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-300"
+            className="h-full bg-blue-500 rounded-full transition-all duration-300"
           />
         </div>
       </div>

@@ -298,7 +298,7 @@ export function ModuleWorkspaceForm({
                       {renderField("endTime", "w-full")}
                     </div>
                     <div className="rounded-lg border border-slate-200/70 bg-white/80 px-3 py-2 text-[11px] text-slate-500 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
-                      💡 <strong>Smart Sync:</strong> Setting start & end times calculates duration. Picking a preset calculates end time.
+                      <strong>Smart Sync:</strong> Setting start & end times calculates duration. Picking a preset calculates end time.
                     </div>
                   </div>
 

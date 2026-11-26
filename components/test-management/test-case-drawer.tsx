@@ -224,7 +224,7 @@ export function TestCaseDrawer({
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           {/* Single Case Quick Execution Bar */}
-          <div className="rounded-xl border border-blue-200/80 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 p-3.5 shadow-2xs">
+          <div className="rounded-xl border border-blue-200/80 bg-blue-50/60 p-3.5 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded">
