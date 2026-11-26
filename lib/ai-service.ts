@@ -27,6 +27,9 @@ export {
 
 const PROVIDER_TIMEOUT_MS = 45_000;
 
+export const LANGUAGE_MATCH_DIRECTIVE =
+  "LANGUAGE RULE (CRITICAL): Detect the language of the user's input/prompt (Indonesian, English, Japanese, Spanish, or any other language) and write ALL generated human-readable text fields, titles, descriptions, steps, summaries, and replies strictly in that exact same language. Keep JSON keys, enum values, code, and technical identifiers intact.";
+
 function normalizeProvider(provider: string): SupportedProvider {
   const p = (provider || "").toLowerCase().trim();
   if (SUPPORTED_PROVIDERS.includes(p as SupportedProvider)) {
@@ -255,14 +258,20 @@ export async function fetchProviderModels(
  * Execute universal LLM call across any configured provider.
  */
 export async function callLLM(opts: CallLLMOptions): Promise<CallLLMResult> {
-  if (!opts.usage) return callProvider(opts);
+  const effectiveOpts: CallLLMOptions = {
+    ...opts,
+    systemPrompt: opts.systemPrompt
+      ? `${opts.systemPrompt}\n\n${LANGUAGE_MATCH_DIRECTIVE}`
+      : LANGUAGE_MATCH_DIRECTIVE,
+  };
+  if (!effectiveOpts.usage) return callProvider(effectiveOpts);
   const started = Date.now();
   try {
-    const result = await callProvider(opts);
-    void logAiUsage(opts, result.provider, result.model, result.totalTokens || 0, Date.now() - started, true);
+    const result = await callProvider(effectiveOpts);
+    void logAiUsage(effectiveOpts, result.provider, result.model, result.totalTokens || 0, Date.now() - started, true);
     return result;
   } catch (error) {
-    void logAiUsage(opts, opts.provider, opts.model || "", 0, Date.now() - started, false);
+    void logAiUsage(effectiveOpts, effectiveOpts.provider, effectiveOpts.model || "", 0, Date.now() - started, false);
     throw error;
   }
 }
