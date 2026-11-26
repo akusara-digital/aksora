@@ -8,6 +8,7 @@ vi.mock("@/lib/vault-crypto", () => ({
 import {
   mapJiraStatusToBugStatus,
   fetchTicketStatus,
+  fetchJiraMembers,
   type TrackerRow,
 } from "@/lib/issue-trackers";
 
@@ -114,6 +115,80 @@ describe("issue-trackers sync & status mapping", () => {
         categoryKey: "done",
         mappedStatus: "closed",
       });
+    });
+  });
+
+  describe("fetchJiraMembers", () => {
+    it("fetches assignable users from Jira and formats options with user icon", async () => {
+      const jiraTracker: TrackerRow = {
+        id: 1,
+        workspaceId: 10,
+        kind: "jira",
+        name: "Acme Jira",
+        config: JSON.stringify({
+          host: "acme.atlassian.net",
+          email: "qa@acme.com",
+          projectKey: "ACME",
+          issueType: "Bug",
+        }),
+        secretEncrypted: "encrypted",
+        enabled: 1,
+      };
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+        new Response(
+          JSON.stringify([
+            {
+              accountId: "acc-12345",
+              displayName: "Wahyu Priyono",
+              emailAddress: "wahyu.priyono@magnusdigital.co.id",
+              active: true,
+            },
+            {
+              accountId: "acc-67890",
+              displayName: "chandra.lesmana",
+              active: true,
+            },
+            {
+              accountId: "acc-app",
+              displayName: "Jira Bot",
+              accountType: "app",
+              active: true,
+            },
+          ]),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      );
+
+      const members = await fetchJiraMembers(jiraTracker);
+      expect(members).toHaveLength(2);
+      expect(members[0]).toEqual({
+        value: "acc-12345",
+        label: "👤 Wahyu Priyono (wahyu.priyono@magnusdigital.co.id)",
+        displayName: "Wahyu Priyono",
+        email: "wahyu.priyono@magnusdigital.co.id",
+      });
+      expect(members[1]).toEqual({
+        value: "acc-67890",
+        label: "👤 chandra.lesmana",
+        displayName: "chandra.lesmana",
+        email: "",
+      });
+    });
+
+    it("returns empty array when tracker kind is not jira", async () => {
+      const githubTracker: TrackerRow = {
+        id: 2,
+        workspaceId: 10,
+        kind: "github",
+        name: "Repo",
+        config: JSON.stringify({ owner: "akusara", repo: "aksora" }),
+        secretEncrypted: "encrypted",
+        enabled: 1,
+      };
+
+      const members = await fetchJiraMembers(githubTracker);
+      expect(members).toEqual([]);
     });
   });
 });

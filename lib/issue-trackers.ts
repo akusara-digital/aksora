@@ -221,7 +221,16 @@ export async function createTicket(tracker: TrackerRow, bug: TicketBug, opts: Cr
       fields.labels = labels;
     }
 
-    const res = await fetch(`${origin}/rest/api/3/issue`, {
+    if (opts.assignee && opts.assignee !== "Leave Unassigned") {
+      const assign = opts.assignee.trim();
+      if (assign.length >= 16 || assign.includes(":")) {
+        fields.assignee = { accountId: assign };
+      } else {
+        fields.assignee = { name: assign };
+      }
+    }
+
+    let res = await fetch(`${origin}/rest/api/3/issue`, {
       method: "POST",
       headers: {
         Authorization: `Basic ${Buffer.from(`${cfg.email}:${secret}`).toString("base64")}`,
@@ -231,6 +240,22 @@ export async function createTicket(tracker: TrackerRow, bug: TicketBug, opts: Cr
       redirect: "error",
       body: JSON.stringify({ fields }),
     });
+
+    if (!res.ok && fields.assignee) {
+      // Retry without assignee if assigning is restricted in Jira project
+      delete fields.assignee;
+      res = await fetch(`${origin}/rest/api/3/issue`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${cfg.email}:${secret}`).toString("base64")}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        redirect: "error",
+        body: JSON.stringify({ fields }),
+      });
+    }
+
     if (!res.ok) throw await readError(res, "Jira");
     const json = (await res.json()) as { key: string };
     return { key: json.key, url: `${origin}/browse/${json.key}` };
@@ -340,6 +365,85 @@ export async function testTracker(tracker: TrackerRow): Promise<string> {
   }
 
   throw new Error(`Unsupported tracker kind: ${tracker.kind}`);
+}
+
+export type JiraMember = {
+  value: string;
+  label: string;
+  displayName: string;
+  email?: string;
+};
+
+/** Fetches assignable users directly from Jira for project or workspace. */
+export async function fetchJiraMembers(tracker: TrackerRow): Promise<JiraMember[]> {
+  if (tracker.kind !== "jira") return [];
+  const secret = secretOf(tracker);
+  const cfg = parseConfig(tracker, "jira");
+  const origin = await jiraOrigin(cfg.host);
+  const auth = `Basic ${Buffer.from(`${cfg.email}:${secret}`).toString("base64")}`;
+
+  try {
+    const url = `${origin}/rest/api/3/user/assignable/search?project=${encodeURIComponent(cfg.projectKey)}&maxResults=100`;
+    const res = await fetch(url, {
+      headers: { Authorization: auth, Accept: "application/json" },
+      redirect: "error",
+    });
+
+    if (res.ok) {
+      const json = (await res.json()) as Array<Record<string, unknown>>;
+      if (Array.isArray(json) && json.length > 0) {
+        return json
+          .filter((u) => u.active !== false && u.accountType !== "app")
+          .map((u) => {
+            const displayName = String(u.displayName || u.name || "Member").trim();
+            const emailAddress = u.emailAddress ? String(u.emailAddress).trim() : "";
+            const label = emailAddress && !displayName.includes(emailAddress)
+              ? `👤 ${displayName} (${emailAddress})`
+              : `👤 ${displayName}`;
+            return {
+              value: String(u.accountId || u.name || displayName),
+              label,
+              displayName,
+              email: emailAddress,
+            };
+          });
+      }
+    }
+  } catch {
+    // Try fallback search
+  }
+
+  try {
+    const fallbackUrl = `${origin}/rest/api/3/users/search?maxResults=100`;
+    const res = await fetch(fallbackUrl, {
+      headers: { Authorization: auth, Accept: "application/json" },
+      redirect: "error",
+    });
+    if (res.ok) {
+      const json = (await res.json()) as Array<Record<string, unknown>>;
+      if (Array.isArray(json) && json.length > 0) {
+        return json
+          .filter((u) => u.active !== false && u.accountType !== "app")
+          .map((u) => {
+            const displayName = String(u.displayName || u.name || "Member").trim();
+            const emailAddress = u.emailAddress ? String(u.emailAddress).trim() : "";
+            const label = emailAddress && !displayName.includes(emailAddress)
+              ? `👤 ${displayName} (${emailAddress})`
+              : `👤 ${displayName}`;
+            return {
+              value: String(u.accountId || u.name || displayName),
+              label,
+              displayName,
+              email: emailAddress,
+            };
+          });
+      }
+    }
+  } catch {
+    // Return empty array
+  }
+
+  return [];
 }
 
 export interface TicketStatusResult {

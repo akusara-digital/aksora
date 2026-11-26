@@ -7,6 +7,7 @@ import {
   CircleNotch,
   Tag,
   Plus,
+  PaperPlaneTilt,
 } from "@phosphor-icons/react";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { toast } from "@/components/ui/toast";
@@ -248,14 +249,41 @@ export function StreamlinedBugForm({
     if (evidence.trim()) payload.evidence = evidence.trim();
     if (relatedItems.trim()) payload.relatedItems = relatedItems.trim();
 
-    // If editing existing bug, or Jira is not connected: submit directly
     clearFormDraft("bug_manual");
-    if (isEditing || !jiraTracker) {
-      onSubmit(payload, { pushToJira: false });
+    onSubmit(payload, { pushToJira: false });
+  };
+
+  const handlePushToJiraClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const effectiveProject = selectedProject || project;
+    if (!validateProjectSelection(effectiveProject)) {
+      toast("Please specify a project before proceeding. Create a project first if none exist.", "warning");
+      return;
+    }
+    if (!title.trim()) {
+      toast("Bug title is required.", "warning");
       return;
     }
 
-    // Open SnapTest-style Push to Jira confirmation popup
+    const payload: Record<string, unknown> = {
+      project: effectiveProject.trim(),
+      title: title.trim(),
+      severity,
+      priority,
+      bugType,
+      stepsToReproduce: stepsToReproduce.trim(),
+      expectedResult: expectedResult.trim(),
+      actualResult: actualResult.trim(),
+      status: String(initialData?.status || "open"),
+    };
+
+    if (suggestedDev.trim()) payload.suggestedDev = suggestedDev.trim();
+    if (moduleName.trim()) payload.module = moduleName.trim();
+    if (preconditions.trim()) payload.preconditions = preconditions.trim();
+    if (evidence.trim()) payload.evidence = evidence.trim();
+    if (relatedItems.trim()) payload.relatedItems = relatedItems.trim();
+
+    clearFormDraft("bug_manual");
     setPendingPayload(payload);
     setShowJiraModal(true);
   };
@@ -523,32 +551,50 @@ export function StreamlinedBugForm({
           <div />
         )}
         <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={pending}
-          className="rounded-md border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer disabled:opacity-50"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={pending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
-        >
-          {pending ? (
-            <CircleNotch size={13} className="animate-spin text-white" />
-          ) : isEditing ? (
-            <span>Save Changes</span>
-          ) : (
-            <>
-              <Plus size={13} weight="bold" />
-              <span>Create Bug</span>
-            </>
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={pending}
+            className="rounded-md border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={handlePushToJiraClick}
+              disabled={pending}
+              className="inline-flex items-center gap-1.5 rounded-md bg-[#4F46E5] hover:bg-[#4338CA] px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition cursor-pointer disabled:opacity-50"
+              title="Save bug in Aksora and push directly to Jira"
+            >
+              {pending ? (
+                <CircleNotch size={13} className="animate-spin text-white" />
+              ) : (
+                <>
+                  <PaperPlaneTilt size={13} weight="bold" />
+                  <span>Push Jira</span>
+                </>
+              )}
+            </button>
           )}
-        </button>
+          <button
+            type="submit"
+            disabled={pending}
+            className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
+          >
+            {pending ? (
+              <CircleNotch size={13} className="animate-spin text-white" />
+            ) : isEditing ? (
+              <span>Save Changes</span>
+            ) : (
+              <>
+                <Plus size={13} weight="bold" />
+                <span>Create Bug</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
-    </div>
 
       <PushToJiraModal
         isOpen={showJiraModal}
@@ -558,6 +604,8 @@ export function StreamlinedBugForm({
         defaultModule={moduleName}
         defaultProject={selectedProject || project}
         submitting={pending}
+        trackerId={jiraTracker?.id}
+        hideSaveWithoutPush={true}
         onConfirmPush={handleConfirmPush}
         onSaveWithoutPush={handleSaveWithoutPush}
       />

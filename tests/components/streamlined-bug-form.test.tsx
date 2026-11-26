@@ -38,6 +38,22 @@ describe("StreamlinedBugForm", () => {
     expect(submittedPayload.severity).toBe("medium");
   });
 
+  it("renders Push Jira button and opens Push to Jira modal on click", () => {
+    render(<StreamlinedBugForm {...defaultProps} />);
+
+    const pushJiraBtn = screen.getByRole("button", { name: /push jira/i });
+    expect(pushJiraBtn).toBeDefined();
+
+    // Enter title so validation passes
+    const titleInput = screen.getByPlaceholderText(/e\.g\. checkout button unresponsive/i);
+    fireEvent.change(titleInput, { target: { value: "Jira upload bug" } });
+
+    fireEvent.click(pushJiraBtn);
+
+    // Push to Jira modal should open
+    expect(screen.getByText("Push to Jira Confirmation")).toBeDefined();
+  });
+
   it("allows toggling optional details accordion", () => {
     render(<StreamlinedBugForm {...defaultProps} />);
 

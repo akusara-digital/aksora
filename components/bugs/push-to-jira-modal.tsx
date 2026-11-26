@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CircleNotch } from "@phosphor-icons/react";
 
 export interface PushToJiraModalProps {
@@ -12,6 +12,7 @@ export interface PushToJiraModalProps {
   defaultProject?: string;
   submitting?: boolean;
   hideSaveWithoutPush?: boolean;
+  trackerId?: number;
   onConfirmPush: (config: {
     assignee: string;
     environment: string;
@@ -22,10 +23,15 @@ export interface PushToJiraModalProps {
 
 const ENVIRONMENT_OPTIONS = [
   { label: "🏷️ Development", value: "Development" },
-  { label: "🏷️ Staging", value: "Staging" },
-  { label: "🏷️ Production", value: "Production" },
-  { label: "🏷️ QA / Testing", value: "QA" },
   { label: "🏷️ UAT", value: "UAT" },
+  { label: "🏷️ Production", value: "Production" },
+];
+
+const BASE_SCOPE_OPTIONS = [
+  { label: "None (Leave empty)", value: "" },
+  { label: "🖥️ Frontend", value: "Frontend" },
+  { label: "⚙️ Backend", value: "Backend" },
+  { label: "🤖 AI", value: "AI" },
 ];
 
 export function PushToJiraModal({
@@ -37,12 +43,36 @@ export function PushToJiraModal({
   defaultProject = "",
   submitting = false,
   hideSaveWithoutPush = false,
+  trackerId,
   onConfirmPush,
   onSaveWithoutPush,
 }: PushToJiraModalProps) {
   const [assignee, setAssignee] = useState(() => defaultAssignee || "");
   const [environment, setEnvironment] = useState("Development");
   const [scope, setScope] = useState(() => defaultModule || "");
+  const [jiraMembers, setJiraMembers] = useState<Array<{ label: string; value: string }>>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    setLoadingMembers(true);
+    fetch(`/api/issue-trackers/jira/members${trackerId ? `?trackerId=${trackerId}` : ""}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (!active) return;
+        if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+          setJiraMembers(json.data);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoadingMembers(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [isOpen, trackerId]);
 
   if (!isOpen) return null;
 
@@ -55,10 +85,18 @@ export function PushToJiraModal({
   };
 
   const scopeOptions = [
-    { label: "None (Leave empty)", value: "" },
-    ...(defaultModule ? [{ label: defaultModule, value: defaultModule }] : []),
-    ...(defaultProject && defaultProject !== defaultModule ? [{ label: defaultProject, value: defaultProject }] : []),
+    ...BASE_SCOPE_OPTIONS,
+    ...(defaultModule && !BASE_SCOPE_OPTIONS.some((o) => o.value === defaultModule)
+      ? [{ label: defaultModule, value: defaultModule }]
+      : []),
   ];
+
+  const effectiveDevOptions = jiraMembers.length > 0
+    ? jiraMembers
+    : devOptions.map((dev) => ({
+        value: dev.value,
+        label: dev.label.startsWith("👤") ? dev.label : `👤 ${dev.label || dev.value}`,
+      }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4 animate-in fade-in duration-150">
@@ -93,11 +131,11 @@ export function PushToJiraModal({
             <select
               value={assignee}
               onChange={(e) => setAssignee(e.target.value)}
-              disabled={submitting}
+              disabled={submitting || loadingMembers}
               className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-700 shadow-2xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer disabled:opacity-50"
             >
               <option value="">Leave Unassigned</option>
-              {devOptions.map((dev) => (
+              {effectiveDevOptions.map((dev) => (
                 <option key={dev.value} value={dev.value}>
                   {dev.label || dev.value}
                 </option>
