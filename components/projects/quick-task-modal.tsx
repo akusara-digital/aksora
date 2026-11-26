@@ -7,6 +7,7 @@ import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { InlineAlert } from "@/components/ui/inline-alert";
 import { ProjectMemberItem } from "./project-hub-types";
 
 interface QuickTaskModalProps {
@@ -114,11 +115,7 @@ export function QuickTaskModal({
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
-            {error}
-          </div>
-        )}
+        {error && <InlineAlert variant="error" message={error} />}
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">

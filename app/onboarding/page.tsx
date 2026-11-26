@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Buildings } from "@phosphor-icons/react";
+import { InlineAlert } from "@/components/ui/inline-alert";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -70,7 +71,7 @@ export default function OnboardingPage() {
           </div>
 
           {error && (
-            <p className="text-xs font-semibold text-rose-600">{error}</p>
+            <InlineAlert variant="error" message={error} compact />
           )}
 
           <button

@@ -6,6 +6,7 @@ import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { InlineAlert } from "@/components/ui/inline-alert";
 
 export interface ProjectEditItem {
   id: number;
@@ -98,11 +99,7 @@ export function QuickEditProjectModal({
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
-            {error}
-          </div>
-        )}
+        {error && <InlineAlert variant="error" message={error} />}
 
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-700">

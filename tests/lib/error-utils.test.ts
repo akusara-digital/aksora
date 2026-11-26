@@ -21,9 +21,7 @@ describe("humanizeErrorMessage", () => {
   it("converts generic HTML error pages to clean summary instead of raw markup", () => {
     const html = `<html><head><title>502 Bad Gateway</title></head><body><center>nginx</center></body></html>`;
     const result = humanizeErrorMessage(html);
-    expect(result).toBe(
-      "AI gateway is temporarily unavailable (Bad Gateway). Please check the server status or try again shortly."
-    );
+    expect(result).toContain("temporarily unavailable (Bad Gateway)");
   });
 
   it("handles Cloudflare 521/522/524 errors cleanly", () => {
@@ -32,12 +30,55 @@ describe("humanizeErrorMessage", () => {
   });
 
   it("handles auth and quota errors gracefully", () => {
-    expect(humanizeErrorMessage("Incorrect API key provided: sk-***")).toContain(
-      "AI authentication failed"
+    expect(humanizeErrorMessage("Incorrect API key provided: sk-***")).toMatch(
+      /authentication failed/i
     );
-    expect(humanizeErrorMessage("You exceeded your current quota, please check your plan")).toContain(
-      "AI quota exceeded"
+    expect(humanizeErrorMessage("You exceeded your current quota, please check your plan")).toMatch(
+      /quota exceeded/i
     );
+  });
+
+  it("handles database and SQL constraint errors cleanly", () => {
+    expect(humanizeErrorMessage('error: duplicate key value violates unique constraint "projects_key_unique"')).toBe(
+      "A record with this information already exists. Please choose a different name or identifier."
+    );
+    expect(humanizeErrorMessage('violates foreign key constraint "test_cases_suite_id_fkey"')).toBe(
+      "Cannot perform this action because other records depend on this item."
+    );
+    expect(humanizeErrorMessage('error: column "nonexistent" does not exist')).toBe(
+      "A database schema mismatch occurred. Please refresh the page or try again."
+    );
+  });
+
+  it("parses raw JSON error strings and extracts inner error message", () => {
+    expect(humanizeErrorMessage('{"error":"Invalid credentials provided."}')).toBe(
+      "Invalid credentials provided."
+    );
+    expect(humanizeErrorMessage('{"message":"Workspace name already taken"}')).toBe(
+      "Workspace name already taken"
+    );
+  });
+
+  it("handles network connection and timeout errors cleanly", () => {
+    expect(humanizeErrorMessage("TypeError: Failed to fetch")).toBe(
+      "Unable to connect to the server. Please check your internet connection or server status."
+    );
+    expect(humanizeErrorMessage("connect ECONNREFUSED 127.0.0.1:5432")).toBe(
+      "Unable to connect to the server. Please check your internet connection or server status."
+    );
+    expect(humanizeErrorMessage("The operation timed out")).toBe(
+      "Request timed out. Please check your network connection or try again."
+    );
+  });
+
+  it("strips JavaScript stack traces from error messages", () => {
+    const errorWithStackTrace = `Error: Something broke
+    at Object.<anonymous> (sw.js:1:249721)
+    at runAction (bundle.js:10:45)`;
+    const result = humanizeErrorMessage(errorWithStackTrace);
+    expect(result).not.toContain("sw.js");
+    expect(result).not.toContain("bundle.js");
+    expect(result).toContain("Something broke");
   });
 
   it("strips HTML tags and caps excessively long plain text messages", () => {

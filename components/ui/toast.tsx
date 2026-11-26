@@ -40,12 +40,29 @@ function buildToastSignature(message: string, type: ToastType, options?: ToastOp
   ].join("|");
 }
 
-export function toast(message: string, type: ToastType = "success", options?: ToastOptions) {
+export function toast(message: unknown, type: ToastType = "success", options?: ToastOptions) {
   if (!toastFn) return;
+
+  const rawStr =
+    typeof message === "string"
+      ? message
+      : message instanceof Error
+      ? message.message
+      : typeof message === "object" && message !== null
+      ? (message as any).error || (message as any).message || JSON.stringify(message)
+      : String(message ?? "");
+
   const sanitized =
-    type === "error" || type === "warning" || message.includes("<")
-      ? humanizeErrorMessage(message, message)
-      : message;
+    type === "error" ||
+    type === "warning" ||
+    rawStr.includes("<") ||
+    rawStr.startsWith("{") ||
+    rawStr.startsWith("[") ||
+    rawStr.toLowerCase().includes("error") ||
+    rawStr.toLowerCase().includes("failed")
+      ? humanizeErrorMessage(rawStr, rawStr)
+      : rawStr;
+
   const signature = buildToastSignature(sanitized, type, options);
   if (activeToastSignatures.has(signature)) return;
   toastFn(sanitized, type, options);

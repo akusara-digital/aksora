@@ -18,6 +18,7 @@ import {
 } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { InlineAlert } from "@/components/ui/inline-alert";
 import { cn } from "@/lib/utils";
 import type { AppUser } from "@/components/layout/account-dropdown";
 
@@ -263,9 +264,8 @@ export function GlobalCreateModal({ open, onClose }: GlobalCreateModalProps) {
         </div>
 
         {error && (
-          <div className="mx-5 mt-4 p-2.5 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-2 text-xs text-rose-700">
-            <WarningCircle size={16} weight="bold" className="shrink-0 mt-0.5 text-rose-600" />
-            <div className="flex-1 font-medium">{error}</div>
+          <div className="mx-5 mt-4">
+            <InlineAlert variant="error" message={error} />
           </div>
         )}
 

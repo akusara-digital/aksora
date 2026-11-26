@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Buildings } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
+import { InlineAlert } from "@/components/ui/inline-alert";
 
 export function WorkspaceOnboardingModal() {
   const [name, setName] = useState("");
@@ -56,7 +57,7 @@ export function WorkspaceOnboardingModal() {
               disabled={loading}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none disabled:opacity-50"
             />
-            {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
+            {error && <InlineAlert variant="error" message={error} compact className="mt-2" />}
           </div>
           <button
             type="button"
