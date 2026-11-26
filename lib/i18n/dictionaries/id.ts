@@ -86,7 +86,7 @@ const dict: Dictionary = {
     ctaStart: "Mulai Workspace Gratis",
     ctaDemo: "Demo Interaktif",
     subtext: "Gratis untuk tim kecil • Tanpa kartu kredit • Setup instan",
-    trustedBy: "Dipercaya oleh tim seperti Anda",
+    trustedBy: "Dibangun untuk tim engineering dan QA",
     teams: ["Tim QA", "Tim Engineering", "Tim Produk", "Tim DevOps", "Tim Release"],
     metrics: [
       { value: "4.2x", label: "Siklus Eksekusi Uji Lebih Cepat" },
