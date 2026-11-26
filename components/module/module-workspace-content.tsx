@@ -138,6 +138,11 @@ export function ModuleWorkspace({
 
   useEffect(() => {
     setLocalRows(rows);
+    setViewingRow((current) => {
+      if (!current) return null;
+      const updated = rows.find((r) => String(r.id) === String(current.id));
+      return updated ?? current;
+    });
   }, [rows]);
 
   useEffect(() => {
@@ -561,7 +566,6 @@ export function ModuleWorkspace({
     setActiveTab(null);
   }, []);
   const handleEditView = useCallback(() => {
-    setViewingRow(null);
     openFormEditor(viewingRow);
   }, [openFormEditor, viewingRow]);
   const handleDeleteCancel = useCallback(() => setDeleteId(null), []);
