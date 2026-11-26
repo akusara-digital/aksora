@@ -11,7 +11,11 @@ import { WorkLogFillGapModal } from "./work-log-fill-gap-modal";
 import { WorkLogToolsMenu } from "./work-log-tools-menu";
 import { getSicmundusAuthPayload } from "@/lib/sicmundus-client";
 
-export function WorkLogAiActions() {
+export interface WorkLogAiActionsProps {
+  actionButtons?: React.ReactNode;
+}
+
+export function WorkLogAiActions({ actionButtons }: WorkLogAiActionsProps = {}) {
   const router = useRouter();
 
   // Modals state
@@ -73,12 +77,23 @@ export function WorkLogAiActions() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={cn(actionButtons ? "flex flex-col items-end gap-1.5" : "flex flex-wrap items-center gap-2")}>
+        <div className="flex items-center gap-2">
+          {/* Unified Tools Dropdown Menu */}
+          <WorkLogToolsMenu
+            onOpenAudit={() => setIsAuditOpen(true)}
+            onSyncSicmundus={handleSyncSicmundus}
+            syncingSicmundus={syncingSicmundus}
+            activeModel={activeModel}
+          />
+          {actionButtons}
+        </div>
+
         {/* Today's Daily 8h Target Indicator */}
         {todayMinutes !== null && (
           <div
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition shrink-0 shadow-xs",
+              "inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition shrink-0 shadow-2xs",
               isTodayTargetMet
                 ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                 : "border-amber-200 bg-amber-50 text-amber-800"
@@ -106,14 +121,6 @@ export function WorkLogAiActions() {
             )}
           </div>
         )}
-
-        {/* Unified Tools Dropdown Menu */}
-        <WorkLogToolsMenu
-          onOpenAudit={() => setIsAuditOpen(true)}
-          onSyncSicmundus={handleSyncSicmundus}
-          syncingSicmundus={syncingSicmundus}
-          activeModel={activeModel}
-        />
       </div>
 
       {/* Monthly Timesheet Audit */}

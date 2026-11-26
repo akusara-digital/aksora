@@ -87,46 +87,48 @@ export function SuitesHeaderActions({
           />
         </div>
 
-        {exportModule === "test-cases" && (
-          <>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {exportModule === "test-cases" && (
+            <>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event("qa:open-new-suite"))}
+                className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition shadow-2xs shrink-0"
+                title="Create a new Test Suite"
+              >
+                <FolderPlus size={14} weight="bold" className="text-gray-500 shrink-0" />
+                <span>New Suite</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event("qa:open-new-case"))}
+                className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
+                title="Create a new Test Case"
+              >
+                <Plus size={14} weight="bold" className="shrink-0" />
+                <span>New Test Case</span>
+              </button>
+            </>
+          )}
+
+          {exportModule === "test-plans" && (
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new Event("qa:open-new-suite"))}
-              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition shadow-2xs shrink-0"
-              title="Create a new Test Suite"
-            >
-              <FolderPlus size={14} weight="bold" className="text-gray-500 shrink-0" />
-              <span>New Suite</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new Event("qa:open-new-case"))}
+              onClick={() => window.dispatchEvent(new Event("qa:open-new-plan"))}
               className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
-              title="Create a new Test Case"
+              title="Create a new Test Plan"
             >
               <Plus size={14} weight="bold" className="shrink-0" />
-              <span>New Test Case</span>
+              <span>New Test Plan</span>
             </button>
-          </>
-        )}
+          )}
 
-        {exportModule === "test-plans" && (
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new Event("qa:open-new-plan"))}
-            className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
-            title="Create a new Test Plan"
-          >
-            <Plus size={14} weight="bold" className="shrink-0" />
-            <span>New Test Plan</span>
-          </button>
-        )}
-
-        <ModuleMoreActionsMenu
-          module={exportModule}
-          canAdd={true}
-          onImportFile={(file) => void handleUpload(file)}
-        />
+          <ModuleMoreActionsMenu
+            module={exportModule}
+            canAdd={true}
+            onImportFile={(file) => void handleUpload(file)}
+          />
+        </div>
       </div>
  <ImportErrorsModal
  isOpen={importErrors !== null}

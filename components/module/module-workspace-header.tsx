@@ -92,7 +92,7 @@ export function ModuleWorkspaceHeader({
           </div>
 
           {!showForm ? (
-            <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
+            <div className="flex w-full min-w-0 flex-wrap items-start gap-2 sm:gap-2.5 lg:w-auto lg:flex-1 lg:justify-end">
               <div className="relative w-full min-w-0 md:w-56 lg:max-w-56">
                 <div className="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-gray-400">
                   <MagnifyingGlass size={14} weight="bold" />
@@ -108,30 +108,55 @@ export function ModuleWorkspaceHeader({
 
               {module === "test-sessions" && <TestSessionsToolsMenu />}
 
-              {module === "work-logs" && <WorkLogAiActions />}
-
-              {canAdd && (
-                <>
-                  <button
-                    type="button"
-                    onClick={onToggleForm}
-                    className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
-                  >
-                    <Plus size={14} weight="bold" className="shrink-0" />
-                    New {shortTitle.replace(/s$/i, "")}
-                  </button>
-                </>
+              {module === "work-logs" ? (
+                <WorkLogAiActions
+                  actionButtons={
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {canAdd && (
+                        <button
+                          type="button"
+                          onClick={onToggleForm}
+                          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
+                        >
+                          <Plus size={14} weight="bold" className="shrink-0" />
+                          New {shortTitle.replace(/s$/i, "")}
+                        </button>
+                      )}
+                      <ModuleMoreActionsMenu
+                        module={module}
+                        canAdd={canAdd}
+                        onImportFile={onImportFile}
+                        allColumns={allColumns}
+                        visibleColumnKeys={visibleColumnKeys}
+                        onToggleColumn={onToggleColumn}
+                        onResetColumns={onResetColumns}
+                      />
+                    </div>
+                  }
+                />
+              ) : (
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {canAdd && (
+                    <button
+                      type="button"
+                      onClick={onToggleForm}
+                      className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-blue-600 px-3.5 text-[13px] font-bold text-white transition hover:bg-blue-700 shadow-xs shrink-0"
+                    >
+                      <Plus size={14} weight="bold" className="shrink-0" />
+                      New {shortTitle.replace(/s$/i, "")}
+                    </button>
+                  )}
+                  <ModuleMoreActionsMenu
+                    module={module}
+                    canAdd={canAdd}
+                    onImportFile={onImportFile}
+                    allColumns={allColumns}
+                    visibleColumnKeys={visibleColumnKeys}
+                    onToggleColumn={onToggleColumn}
+                    onResetColumns={onResetColumns}
+                  />
+                </div>
               )}
-
-              <ModuleMoreActionsMenu
-                module={module}
-                canAdd={canAdd}
-                onImportFile={onImportFile}
-                allColumns={allColumns}
-                visibleColumnKeys={visibleColumnKeys}
-                onToggleColumn={onToggleColumn}
-                onResetColumns={onResetColumns}
-              />
 
               {topContent ? <div className="flex w-full basis-full flex-col items-end">{topContent}</div> : null}
             </div>
