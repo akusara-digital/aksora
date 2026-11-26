@@ -258,25 +258,13 @@ export function AiTestCaseAgentContent({
         />
 
         {/* AI Draft Restored Banner */}
-        <AiDraftRestoredBanner
-          isProcessing={loading}
-          hasDraft={Boolean(restoredDraft)}
-          onDiscard={handleDiscardDraft}
-        />
-
         {restoredDraft && (
-          <div className="flex items-center justify-between border border-emerald-300 bg-emerald-50/90 px-3.5 py-2 text-xs">
-            <span className="font-semibold text-emerald-900 truncate max-w-[70%]">
-              Restored structured case: <strong>{restoredDraft.caseName}</strong>
-            </span>
-            <button
-              type="button"
-              onClick={() => onSwitchToManual(restoredDraft)}
-              className="inline-flex items-center gap-1.5 rounded bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 transition cursor-pointer"
-            >
-              Review & Edit Draft
-            </button>
-          </div>
+          <AiDraftRestoredBanner
+            hasDraft={Boolean(restoredDraft)}
+            draftTitle={restoredDraft.caseName}
+            onReview={() => onSwitchToManual(restoredDraft)}
+            onDiscard={handleDiscardDraft}
+          />
         )}
 
         {/* Central Input Card Container */}
