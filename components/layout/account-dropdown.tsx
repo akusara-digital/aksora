@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import Link from "next/link";
 import { Bell, CaretDown, Gear, Moon, SignOut, UserCircle } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
@@ -42,28 +43,21 @@ export function AccountDropdown({
   refreshUser,
   onLogoutClick,
 }: AccountDropdownProps) {
-  const [accountOpen, setAccountOpen] = useState(false);
-  const accountRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const handler = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (accountRef.current && !accountRef.current.contains(target)) {
-        setAccountOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  const { setOpen: setAccountOpen, toggle, triggerRef, menuRef, ready, portalStyle } = usePortalDropdown({
+    align: "right",
+    width: 288,
+    estHeight: 340,
+  });
 
   const companyName = String(user?.company || "").trim();
   const wsParam = user?.workspaceUuid ? `?ws=${encodeURIComponent(user.workspaceUuid)}` : "";
 
   return (
-    <div ref={accountRef} className="relative">
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setAccountOpen((v) => !v)}
+        onClick={toggle}
         className="flex h-8 cursor-pointer items-center gap-2 border border-gray-200 bg-white px-2 text-left transition hover:bg-gray-50"
       >
         {user?.avatar ? (
@@ -84,8 +78,13 @@ export function AccountDropdown({
         <CaretDown size={12} weight="bold" className="text-gray-400" />
       </button>
 
-      {accountOpen && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-72 border border-gray-200 bg-white p-4 shadow-lg">
+      {ready &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={portalStyle}
+            className="w-72 rounded-md border border-gray-200 bg-white p-4 shadow-lg"
+          >
           <div className="flex flex-col items-center gap-2">
             <label className="group relative cursor-pointer" title="Change avatar">
               {user?.avatar ? (
@@ -188,7 +187,8 @@ export function AccountDropdown({
               Logout
             </button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

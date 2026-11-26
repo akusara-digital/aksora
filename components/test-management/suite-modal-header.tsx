@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Lightning, ListBullets, X, CaretDown, SquaresFour } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { ProjectDropdownContent } from "@/components/projects/project-dropdown-content";
 
 interface SuiteModalHeaderProps {
@@ -24,18 +25,10 @@ export function SuiteModalHeader({
   onModeChange,
   onClose,
 }: SuiteModalHeaderProps) {
-  const [projectOpen, setProjectOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setProjectOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const { setOpen: setProjectOpen, toggle, triggerRef, menuRef, ready, portalStyle } = usePortalDropdown({
+    width: 256,
+    estHeight: 280,
+  });
 
   const currentOption = projectOptions.find((o) => o.value === project || o.label === project);
   const hasNoProjects = projectOptions.length === 0;
@@ -55,10 +48,11 @@ export function SuiteModalHeader({
         {Boolean(onProjectChange) && (
           <>
             <span className="text-slate-300 font-medium select-none">/</span>
-            <div ref={dropdownRef} className="relative inline-block text-left">
+            <div className="relative inline-block text-left">
               <button
+                ref={triggerRef}
                 type="button"
-                onClick={() => setProjectOpen((prev) => !prev)}
+                onClick={toggle}
                 className={cn(
                   "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition cursor-pointer shadow-2xs",
                   hasNoProjects
@@ -77,19 +71,25 @@ export function SuiteModalHeader({
                 <CaretDown size={12} weight="bold" className={hasNoProjects ? "text-amber-500 shrink-0" : "text-slate-400 shrink-0"} />
               </button>
 
-              {projectOpen && (
-                <div className="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100">
-                  <ProjectDropdownContent
-                    options={projectOptions}
-                    selectedValue={project}
-                    onSelect={(val) => onProjectChange?.(val)}
-                    onClose={() => setProjectOpen(false)}
-                    title="Select Project"
-                    emptyTitle="No projects found"
-                    emptySubtitle="Create a project first."
-                  />
-                </div>
-              )}
+              {ready &&
+                createPortal(
+                  <div
+                    ref={menuRef}
+                    style={portalStyle}
+                    className="w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100"
+                  >
+                    <ProjectDropdownContent
+                      options={projectOptions}
+                      selectedValue={project}
+                      onSelect={(val) => onProjectChange?.(val)}
+                      onClose={() => setProjectOpen(false)}
+                      title="Select Project"
+                      emptyTitle="No projects found"
+                      emptySubtitle="Create a project first."
+                    />
+                  </div>,
+                  document.body,
+                )}
             </div>
           </>
         )}

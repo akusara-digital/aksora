@@ -1,9 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { toast } from "@/components/ui/toast";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import {
   Plus,
@@ -107,20 +109,13 @@ export type DashboardProps = {
 
 export function Dashboard(props: DashboardProps) {
   const [showStandup, setShowStandup] = useState(false);
-  const [newRunMenuOpen, setNewRunMenuOpen] = useState(false);
   const [dateRangePreset, setDateRangePreset] = useState<"7d" | "30d" | "all">("7d");
-  const newRunMenuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!newRunMenuOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (newRunMenuRef.current && !newRunMenuRef.current.contains(e.target as Node)) {
-        setNewRunMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [newRunMenuOpen]);
+  const newRunMenu = usePortalDropdown({
+    align: "right",
+    width: 192,
+    estHeight: 140,
+    offset: 6,
+  });
 
   // Real database metrics with zero hardcoding
   const tcVal = props.metrics?.find((m) => m.label === "Test Cases")?.value;
@@ -234,7 +229,7 @@ export function Dashboard(props: DashboardProps) {
           </button>
 
           {/* "+ New Test Run" Button */}
-          <div ref={newRunMenuRef} className="relative inline-flex rounded-xl shadow-2xs">
+          <div className="relative inline-flex rounded-xl shadow-2xs">
             <Link
               href="/test-execution"
               className="inline-flex h-9 items-center gap-1.5 rounded-l-xl bg-blue-600 px-3.5 text-xs font-bold text-white transition hover:bg-blue-700"
@@ -243,39 +238,46 @@ export function Dashboard(props: DashboardProps) {
               <span>New Run</span>
             </Link>
             <button
+              ref={newRunMenu.triggerRef}
               type="button"
-              onClick={() => setNewRunMenuOpen((v) => !v)}
-              className="inline-flex h-9 items-center justify-center rounded-r-xl border-l border-blue-500 bg-blue-600 px-2 text-white transition hover:bg-blue-700"
+              onClick={newRunMenu.toggle}
+              className="inline-flex h-9 items-center justify-center rounded-r-xl border-l border-blue-500 bg-blue-600 px-2 text-white transition hover:bg-blue-700 cursor-pointer"
               aria-label="Options"
             >
               <CaretDown size={12} weight="bold" />
             </button>
 
-            {newRunMenuOpen && (
-              <div className="absolute right-0 top-full z-50 mt-1.5 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-800 dark:bg-slate-900">
-                <Link
-                  href="/test-execution"
-                  onClick={() => setNewRunMenuOpen(false)}
-                  className="block rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+            {newRunMenu.ready &&
+              createPortal(
+                <div
+                  ref={newRunMenu.menuRef}
+                  style={newRunMenu.portalStyle}
+                  className="w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-800 dark:bg-slate-900"
                 >
-                  Run Test Suite
-                </Link>
-                <Link
-                  href="/test-plans"
-                  onClick={() => setNewRunMenuOpen(false)}
-                  className="block rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
-                >
-                  Create Test Plan
-                </Link>
-                <Link
-                  href="/test-cases"
-                  onClick={() => setNewRunMenuOpen(false)}
-                  className="block rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
-                >
-                  Add Test Case
-                </Link>
-              </div>
-            )}
+                  <Link
+                    href="/test-execution"
+                    onClick={newRunMenu.close}
+                    className="block rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    Run Test Suite
+                  </Link>
+                  <Link
+                    href="/test-plans"
+                    onClick={newRunMenu.close}
+                    className="block rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    Create Test Plan
+                  </Link>
+                  <Link
+                    href="/test-cases"
+                    onClick={newRunMenu.close}
+                    className="block rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    Add Test Case
+                  </Link>
+                </div>,
+                document.body,
+              )}
           </div>
         </div>
       </div>

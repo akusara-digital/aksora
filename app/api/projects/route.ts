@@ -84,11 +84,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate project key if not provided
-    let key = String(body?.key || "").trim().toUpperCase();
+    let key = String(body?.key || "").replace(/[^a-zA-Z0-9]/g, "").trim().toUpperCase().slice(0, 4);
     if (!key) {
       const words = name.replace(/[^a-zA-Z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
       if (words.length >= 2) {
-        key = words.map((w) => w[0]).join("").slice(0, 5).toUpperCase();
+        key = words.map((w) => w[0]).join("").slice(0, 4).toUpperCase();
       } else if (words.length === 1) {
         key = words[0].slice(0, 4).toUpperCase();
       }

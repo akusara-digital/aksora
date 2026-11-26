@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { Funnel, X } from "@phosphor-icons/react";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { usePresenceHeartbeat } from "@/components/module/use-presence-heartbeat";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { DashboardSavedFilters } from "@/components/dashboard/dashboard-saved-filters";
 
 import type { DashboardProps } from "@/components/dashboard/dashboard";
@@ -33,28 +35,11 @@ export function DashboardHome({ initialData, initialProjects }: Props) {
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState<string[]>(initialProjects);
   const [selectedProject, setSelectedProject] = useState("");
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const hasHydrated = useRef(false);
-
-  // Close project dropdown on outside click or Escape
-  useEffect(() => {
-    if (!open) return;
-    const handleOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", handleOutside);
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("mousedown", handleOutside);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [open]);
+  const { setOpen, toggle, triggerRef, menuRef, ready, portalStyle } = usePortalDropdown({
+    width: 224,
+    estHeight: 260,
+  });
 
   // Send presence heartbeats while dashboard is open
   usePresenceHeartbeat();
@@ -118,33 +103,43 @@ export function DashboardHome({ initialData, initialProjects }: Props) {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white px-4 py-2.5 shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-slate-500">Project scope:</span>
-            <div className="relative" ref={dropdownRef}>
+            <div className="relative">
               <button
-                onClick={() => setOpen((v) => !v)}
-                className="flex h-8 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700"
+                ref={triggerRef}
+                type="button"
+                onClick={toggle}
+                className="flex h-8 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700 cursor-pointer"
               >
                 <Funnel size={13} weight="bold" />
                 {selectedProject || "All Projects"}
               </button>
-              {open && (
-                <div className="absolute left-0 top-full z-50 mt-1 max-h-64 w-56 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
-                  <button
-                    onClick={() => { setSelectedProject(""); setOpen(false); }}
-                    className="block w-full px-3 py-2 text-left text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              {ready &&
+                createPortal(
+                  <div
+                    ref={menuRef}
+                    style={portalStyle}
+                    className="max-h-64 w-56 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg"
                   >
-                    All Projects
-                  </button>
-                  {projects.map((p) => (
                     <button
-                      key={p}
-                      onClick={() => { setSelectedProject(p); setOpen(false); }}
-                      className="block w-full truncate px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700"
+                      type="button"
+                      onClick={() => { setSelectedProject(""); setOpen(false); }}
+                      className="block w-full px-3 py-2 text-left text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
                     >
-                      {p}
+                      All Projects
                     </button>
-                  ))}
-                </div>
-              )}
+                    {projects.map((p) => (
+                      <button
+                        type="button"
+                        key={p}
+                        onClick={() => { setSelectedProject(p); setOpen(false); }}
+                        className="block w-full truncate px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 cursor-pointer"
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>,
+                  document.body,
+                )}
             </div>
             {selectedProject && (
               <button

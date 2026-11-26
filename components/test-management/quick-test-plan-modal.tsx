@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { useRouter } from "next/navigation";
 import {
   X,
@@ -72,10 +74,8 @@ export function QuickTestPlanModal({
 
   // Project selector dropdown states
   const [loadedProjects, setLoadedProjects] = useState<Array<{ label: string; value: string }>>([]);
-  const [headerProjectDropdownOpen, setHeaderProjectDropdownOpen] = useState(false);
-  const [formProjectDropdownOpen, setFormProjectDropdownOpen] = useState(false);
-  const headerProjectDropdownRef = useRef<HTMLDivElement>(null);
-  const formProjectDropdownRef = useRef<HTMLDivElement>(null);
+  const headerDropdown = usePortalDropdown({ width: 256, estHeight: 280 });
+  const formDropdown = usePortalDropdown({ matchTriggerWidth: true, estHeight: 280 });
 
   // Fetch full project list from /api/projects so options are always up-to-date with /projects
   useEffect(() => {
@@ -95,26 +95,6 @@ export function QuickTestPlanModal({
       })
       .catch(() => {});
   }, [isOpen]);
-
-  // Click outside listener for project dropdowns
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        headerProjectDropdownRef.current &&
-        !headerProjectDropdownRef.current.contains(e.target as Node)
-      ) {
-        setHeaderProjectDropdownOpen(false);
-      }
-      if (
-        formProjectDropdownRef.current &&
-        !formProjectDropdownRef.current.contains(e.target as Node)
-      ) {
-        setFormProjectDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const normalizedProjects = useMemo(() => {
     const map = new Map<string, string>();
@@ -287,10 +267,11 @@ export function QuickTestPlanModal({
             <span className="text-slate-300 font-medium select-none">/</span>
 
             {/* Header Project Selector Popover */}
-            <div ref={headerProjectDropdownRef} className="relative inline-block text-left min-w-0">
+            <div className="relative inline-block text-left min-w-0">
               <button
+                ref={headerDropdown.triggerRef}
                 type="button"
-                onClick={() => setHeaderProjectDropdownOpen((v) => !v)}
+                onClick={headerDropdown.toggle}
                 className={cn(
                   "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition cursor-pointer shadow-2xs max-w-full",
                   hasNoProjects
@@ -310,22 +291,28 @@ export function QuickTestPlanModal({
                 <CaretDown size={12} weight="bold" className={hasNoProjects ? "text-amber-500 shrink-0" : "text-slate-400 shrink-0"} />
               </button>
 
-              {headerProjectDropdownOpen && (
-                <div className="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100">
-                  <ProjectDropdownContent
-                    options={normalizedProjects}
-                    selectedValue={project}
-                    onSelect={(val) => {
-                      setProject(val);
-                      setHeaderProjectDropdownOpen(false);
-                    }}
-                    onClose={() => setHeaderProjectDropdownOpen(false)}
-                    title="Select Project"
-                    emptyTitle="No projects found"
-                    emptySubtitle="Please create a project first on the Projects page."
-                  />
-                </div>
-              )}
+              {headerDropdown.ready &&
+                createPortal(
+                  <div
+                    ref={headerDropdown.menuRef}
+                    style={headerDropdown.portalStyle}
+                    className="w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100"
+                  >
+                    <ProjectDropdownContent
+                      options={normalizedProjects}
+                      selectedValue={project}
+                      onSelect={(val) => {
+                        setProject(val);
+                        headerDropdown.close();
+                      }}
+                      onClose={headerDropdown.close}
+                      title="Select Project"
+                      emptyTitle="No projects found"
+                      emptySubtitle="Please create a project first on the Projects page."
+                    />
+                  </div>,
+                  document.body,
+                )}
             </div>
           </div>
 
@@ -451,10 +438,11 @@ export function QuickTestPlanModal({
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
                     Project <span className="text-rose-500">*</span>
                   </label>
-                  <div ref={formProjectDropdownRef} className="relative">
+                  <div className="relative">
                     <button
+                      ref={formDropdown.triggerRef}
                       type="button"
-                      onClick={() => setFormProjectDropdownOpen((v) => !v)}
+                      onClick={formDropdown.toggle}
                       className={cn(
                         "flex h-9 w-full items-center justify-between rounded-md border bg-white px-3 text-left text-xs transition cursor-pointer outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
                         project ? "text-gray-900 font-semibold" : "text-gray-400 font-normal",
@@ -470,22 +458,28 @@ export function QuickTestPlanModal({
 
                     <input type="hidden" name="project" value={project} required />
 
-                    {formProjectDropdownOpen && (
-                      <div className="absolute left-0 top-full z-50 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100">
-                        <ProjectDropdownContent
-                          options={normalizedProjects}
-                          selectedValue={project}
-                          onSelect={(val) => {
-                            setProject(val);
-                            setFormProjectDropdownOpen(false);
-                          }}
-                          onClose={() => setFormProjectDropdownOpen(false)}
-                          title="Select Project"
-                          emptyTitle="No projects found"
-                          emptySubtitle="Please create a project first on the Projects page."
-                        />
-                      </div>
-                    )}
+                    {formDropdown.ready &&
+                      createPortal(
+                        <div
+                          ref={formDropdown.menuRef}
+                          style={formDropdown.portalStyle}
+                          className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100"
+                        >
+                          <ProjectDropdownContent
+                            options={normalizedProjects}
+                            selectedValue={project}
+                            onSelect={(val) => {
+                              setProject(val);
+                              formDropdown.close();
+                            }}
+                            onClose={formDropdown.close}
+                            title="Select Project"
+                            emptyTitle="No projects found"
+                            emptySubtitle="Please create a project first on the Projects page."
+                          />
+                        </div>,
+                        document.body,
+                      )}
                   </div>
                 </div>
 

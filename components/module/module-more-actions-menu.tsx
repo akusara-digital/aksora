@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   DotsThreeVertical,
   FileXls,
@@ -10,6 +11,7 @@ import {
   Check,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 
 type Column = {
   key: string;
@@ -37,28 +39,22 @@ export function ModuleMoreActionsMenu({
   onResetColumns,
   buttonClassName,
 }: ModuleMoreActionsMenuProps) {
-  const [open, setOpen] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-        setShowColumns(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const { open, setOpen, toggle, triggerRef, menuRef, ready, portalStyle } = usePortalDropdown({
+    align: "right",
+    width: 224,
+    estHeight: 240,
+    offset: 6,
+  });
 
   return (
-    <div ref={menuRef} className="relative inline-block text-left">
+    <div className="relative inline-block text-left">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => {
-          setOpen((prev) => !prev);
+          toggle();
           setShowColumns(false);
         }}
         title="More actions & export"
@@ -72,8 +68,13 @@ export function ModuleMoreActionsMenu({
         <DotsThreeVertical size={16} weight="bold" />
       </button>
 
-      {open && (
-        <div className="absolute right-0 top-full z-50 mt-1.5 w-56 rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg animate-in fade-in zoom-in-95 duration-150">
+      {ready &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={portalStyle}
+            className="w-56 rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg animate-in fade-in zoom-in-95 duration-150"
+          >
           {!showColumns ? (
             <>
               <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
@@ -172,8 +173,9 @@ export function ModuleMoreActionsMenu({
               </div>
             </div>
           )}
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
 
       {/* Hidden file input for import */}
       {canAdd && onImportFile && (

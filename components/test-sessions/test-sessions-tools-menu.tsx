@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Sparkle, CaretDown, ChatCenteredText, Scroll } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import { AiStandupDigestModal } from "@/components/dashboard/ai-standup-digest-modal";
 import { AiReleaseNotesModal } from "@/components/test-sessions/ai-release-notes-modal";
 
@@ -15,27 +17,21 @@ export function TestSessionsToolsMenu({
   testerName,
   defaultVersion,
 }: TestSessionsToolsMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [isStandupOpen, setIsStandupOpen] = useState(false);
   const [isReleaseNotesOpen, setIsReleaseNotesOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const { open: isOpen, setOpen: setIsOpen, toggle, triggerRef, menuRef, ready, portalStyle } = usePortalDropdown({
+    align: "right",
+    width: 240,
+    estHeight: 160,
+  });
 
   return (
     <>
-      <div className="relative inline-block text-left shrink-0" ref={menuRef}>
+      <div className="relative inline-block text-left shrink-0">
         <button
+          ref={triggerRef}
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={toggle}
           className={cn(
             "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition shadow-xs cursor-pointer",
             isOpen
@@ -51,8 +47,13 @@ export function TestSessionsToolsMenu({
           <CaretDown size={11} weight="bold" className="text-gray-400 shrink-0" />
         </button>
 
-        {isOpen && (
-          <div className="absolute right-0 z-50 mt-1 w-60 origin-top-right rounded-lg border border-gray-200 bg-white py-1 shadow-lg ring-1 ring-black/5 animate-in fade-in-50 zoom-in-95 duration-100">
+        {ready &&
+          createPortal(
+            <div
+              ref={menuRef}
+              style={portalStyle}
+              className="w-60 origin-top-right rounded-lg border border-gray-200 bg-white py-1 shadow-lg ring-1 ring-black/5 animate-in fade-in-50 zoom-in-95 duration-100"
+            >
             <div className="px-3 py-1.5 border-b border-gray-100">
               <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                 Session AI Automations
@@ -98,7 +99,8 @@ export function TestSessionsToolsMenu({
                 </div>
               </button>
             </div>
-          </div>
+          </div>,
+          document.body,
         )}
       </div>
 

@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { Checks, X, WarningCircle, ClockCountdown } from "@phosphor-icons/react";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 
 type Notification = {
   id: string;
@@ -22,7 +24,16 @@ export function NotificationPanel({
   const [notifs, setNotifs] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-  const ref = useRef<HTMLDivElement>(null);
+  const { menuRef, ready, portalStyle } = usePortalDropdown({
+    isOpen: true,
+    onOpenChange: (next) => {
+      if (!next) onClose();
+    },
+    align: "right",
+    width: 320,
+    estHeight: 320,
+    anchorRef,
+  });
 
   useEffect(() => {
     fetch("/api/notifications")
@@ -33,18 +44,6 @@ export function NotificationPanel({
       })
       .catch(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (ref.current?.contains(target)) return;
-      if (anchorRef?.current?.contains(target)) return;
-      onClose();
-    };
-
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [anchorRef, onClose]);
 
   const visibleNotifs = notifs.filter((n) => !dismissed.has(n.id));
   const overdueNotifs = visibleNotifs.filter((n) => n.type === "overdue");
@@ -62,10 +61,13 @@ export function NotificationPanel({
     setDismissed(new Set(notifs.map((n) => n.id)));
   };
 
-  return (
+  if (!ready) return null;
+
+  return createPortal(
     <div
-      ref={ref}
-      className="absolute right-0 top-full z-[var(--z-notification)] mt-1 w-80 overflow-hidden border border-slate-200 bg-white shadow-2xl"
+      ref={menuRef}
+      style={portalStyle}
+      className="w-80 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
     >
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
         <p className="text-[11px] font-black uppercase tracking-widest text-slate-700">Notifications</p>
@@ -159,6 +161,7 @@ export function NotificationPanel({
           )}
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }

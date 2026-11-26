@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { type Dispatch, type SetStateAction } from "react";
+import { createPortal } from "react-dom";
 import { CaretDown } from "@phosphor-icons/react";
 import { FormFieldError } from "@/components/shared/form-field-error";
 import { cn } from "@/lib/utils";
+import { usePortalDropdown } from "@/hooks/use-portal-dropdown";
 import type { FieldOption, FormField } from "@/components/module/module-workspace-form-field";
 import { ProjectDropdownContent } from "@/components/projects/project-dropdown-content";
 
@@ -34,6 +36,12 @@ export function ModuleWorkspaceFormSelect({
   const isLocked = Boolean(field.readonly);
   const placeholderText = field.placeholder || `Select ${field.label}`;
   const options = relatedOptions[field.name] ?? field.options ?? [];
+  const { triggerRef, menuRef, ready, portalStyle } = usePortalDropdown({
+    isOpen: openSelectField === field.name,
+    onOpenChange: (next) => setOpenSelectField(next ? field.name : null),
+    matchTriggerWidth: true,
+    estHeight: 240,
+  });
 
   if (isLocked) {
     return (
@@ -52,6 +60,7 @@ export function ModuleWorkspaceFormSelect({
       <div className="relative">
         <input type="hidden" name={field.name} value={selectedValue} readOnly />
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => setOpenSelectField(openSelectField === field.name ? null : field.name)}
           className={cn(
@@ -68,13 +77,16 @@ export function ModuleWorkspaceFormSelect({
           <CaretDown size={14} weight="bold" className="shrink-0 text-gray-400" />
         </button>
 
-        {openSelectField === field.name && (
-          <div
-            className={cn(
-              "absolute left-0 top-full z-50 mt-1 w-full rounded-none border border-gray-200 bg-white shadow-lg",
-              field.name === "project" ? "overflow-hidden" : "max-h-56 overflow-y-auto overscroll-contain"
-            )}
-          >
+        {ready &&
+          createPortal(
+            <div
+              ref={menuRef}
+              style={portalStyle}
+              className={cn(
+                "rounded-none border border-gray-200 bg-white shadow-lg",
+                field.name === "project" ? "overflow-hidden" : "max-h-56 overflow-y-auto overscroll-contain"
+              )}
+            >
             {field.name === "project" ? (
               <ProjectDropdownContent
                 options={options.map((o) => ({ label: o.label, value: o.value }))}
@@ -110,8 +122,9 @@ export function ModuleWorkspaceFormSelect({
                 <p>No options available.</p>
               </div>
             )}
-          </div>
-        )}
+            </div>,
+            document.body,
+          )}
       </div>
       <FormFieldError message={fieldError} />
     </div>
