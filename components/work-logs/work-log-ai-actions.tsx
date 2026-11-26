@@ -78,7 +78,7 @@ export function WorkLogAiActions({ actionButtons }: WorkLogAiActionsProps = {}) 
   return (
     <>
       <div className={cn(actionButtons ? "flex flex-col items-end gap-1.5" : "flex flex-wrap items-center gap-2")}>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Unified Tools Dropdown Menu */}
           <WorkLogToolsMenu
             onOpenAudit={() => setIsAuditOpen(true)}
