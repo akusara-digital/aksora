@@ -123,8 +123,8 @@ export function WorkLogTimesheetAuditModal({ isOpen, onClose }: WorkLogTimesheet
   };
 
   const monthNames = [
-    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-    "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ];
 
   // Pad the grid so the 1st of the month lands on its correct weekday column (Mon-first).
@@ -135,25 +135,25 @@ export function WorkLogTimesheetAuditModal({ isOpen, onClose }: WorkLogTimesheet
       <ModalShell
         isOpen={isOpen}
         onClose={onClose}
-        title="Audit Timesheet & Kalender Kerja Sicmundus"
-        description="Pantau pemenuhan target minimal 8 jam kerja setiap hari kerja."
+        title="Timesheet Audit & Calendar"
+        description="Monitor daily compliance against the 8-hour working day target."
         maxWidth="2xl"
         icon={
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200">
-            <CalendarCheck size={18} weight="bold" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/60 shadow-xs">
+            <CalendarCheck size={20} weight="bold" />
           </div>
         }
         footer={
           <div className="flex items-center justify-between w-full">
-            <span className="text-xs text-gray-500">
-              Target standar harian: <strong>minimal 8 jam (480m)</strong> pada hari kerja non-libur.
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Daily standard target: <strong>minimum 8 hours (480 mins)</strong> on non-holiday weekdays.
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="h-8 rounded-lg border border-gray-200 bg-white px-4 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
+              className="h-8 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-800"
             >
-              Tutup
+              Close
             </button>
           </div>
         }
@@ -202,16 +202,16 @@ export function WorkLogTimesheetAuditModal({ isOpen, onClose }: WorkLogTimesheet
                 <span className="text-gray-400"> ({summary.completionRate}%)</span>
               </span>
               <span className="text-gray-600">
-                Lengkap: <strong className="text-gray-900">{summary.compliantDays}</strong> / {summary.workingDays} hari kerja
+                Completed: <strong className="text-gray-900">{summary.compliantDays}</strong> / {summary.workingDays} working days
               </span>
               {summary.underTargetDays > 0 && (
                 <span className="text-amber-700">
-                  Kurang jam: <strong>{summary.underTargetDays}</strong> hari
+                  Under target: <strong>{summary.underTargetDays}</strong> days
                 </span>
               )}
               {summary.missingDays > 0 && (
                 <span className="text-rose-700">
-                  Belum terisi: <strong>{summary.missingDays}</strong> hari
+                  Missing: <strong>{summary.missingDays}</strong> days
                 </span>
               )}
             </div>
@@ -221,16 +221,16 @@ export function WorkLogTimesheetAuditModal({ isOpen, onClose }: WorkLogTimesheet
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 text-center text-gray-500">
               <ArrowsClockwise size={24} weight="bold" className="animate-spin text-emerald-600 mb-2" />
-              <p className="text-xs font-medium">Memuat audit timesheet bulanan...</p>
+              <p className="text-xs font-medium">Loading monthly timesheet audit...</p>
             </div>
           ) : days.length === 0 ? (
             <div className="p-8 text-center text-xs text-gray-500 border border-gray-200 rounded-lg">
-              Tidak ada data timesheet untuk bulan ini.
+              No timesheet records found for this month.
             </div>
           ) : (
             <div>
               <div className="grid grid-cols-7 gap-1.5 mb-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d) => (
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
                   <span key={d}>{d}</span>
                 ))}
               </div>
@@ -267,10 +267,10 @@ export function WorkLogTimesheetAuditModal({ isOpen, onClose }: WorkLogTimesheet
 
               {/* Legend */}
               <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-gray-500">
-                <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Lengkap</span>
-                <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Kurang jam</span>
-                <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" /> Kosong</span>
-                <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-gray-300" /> Libur</span>
+                <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Compliant</span>
+                <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Under Target</span>
+                <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" /> Missing</span>
+                <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-gray-300" /> Off / Holiday</span>
               </div>
 
               {/* Selected day detail */}
@@ -286,10 +286,10 @@ export function WorkLogTimesheetAuditModal({ isOpen, onClose }: WorkLogTimesheet
                       </p>
                       <p className="mt-0.5 text-xs text-gray-500 truncate">
                         {selectedDay.entriesCount > 0
-                          ? `${selectedDay.entriesCount} entri: ${selectedDay.entries.map((e) => e.project).join(", ")}`
+                          ? `${selectedDay.entriesCount} entries: ${selectedDay.entries.map((e) => e.project).join(", ")}`
                           : selectedDay.status === "weekend" || selectedDay.status === "holiday"
-                          ? "Hari libur / tidak wajib input log"
-                          : "Belum ada entri log tercatat"}
+                          ? "Weekend or holiday (no hours required)"
+                          : "No log entries recorded"}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -303,7 +303,7 @@ export function WorkLogTimesheetAuditModal({ isOpen, onClose }: WorkLogTimesheet
                           className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md font-bold text-[11px] transition"
                         >
                           <Plus size={11} weight="bold" />
-                          Lengkapi
+                          Complete
                         </button>
                       )}
                     </div>
