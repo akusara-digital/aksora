@@ -390,7 +390,7 @@ export const moduleConfigs: Record<ModuleKey, ModuleConfig> = {
       Status: String(item.status),
     }),
     fields: [
-      { name: "name", label: "Full Name", kind: "text", placeholder: "e.g. John Doe", required: true },
+      { name: "name", label: "Full Name", kind: "text", placeholder: "Your Name", required: true },
       { name: "role", label: "Role / Title", kind: "text", placeholder: "e.g. Senior QA Engineer" },
       { name: "email", label: "Email Address", kind: "text", placeholder: "e.g. john@example.com" },
       { name: "skills", label: "Skills / Specialization", kind: "text", placeholder: "e.g. Automation, Mobile, API" },
@@ -427,7 +427,7 @@ export const moduleConfigs: Record<ModuleKey, ModuleConfig> = {
       Role: getRoleExportLabel(String(item.role ?? "")),
     }),
     fields: [
-      { name: "name", label: "Full Name", kind: "text", placeholder: "e.g. John Doe", required: true },
+      { name: "name", label: "Full Name", kind: "text", placeholder: "Your Name", required: true },
       { name: "email", label: "Email Address", kind: "text", placeholder: "e.g. user@example.com", required: true },
       { name: "password", label: "Password", kind: "text", placeholder: "Leave blank to keep current password" },
       { name: "role", label: "Role", kind: "select", options: getUserRoleOptions(), required: true },

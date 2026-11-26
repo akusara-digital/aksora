@@ -113,7 +113,7 @@ export default function FeaturesPage() {
             <MiniFeature icon={<Note size={18} weight="bold" />} title="Meeting Notes" desc="Document standups, retros, and decisions alongside your QA data. Context stays together." />
             <MiniFeature icon={<Lock size={18} weight="bold" />} title="Encrypted Sessions" desc="TLS in transit, encrypted cookies, secure password hashing. Security is not optional." />
             <MiniFeature icon={<Database size={18} weight="bold" />} title="Data Export" desc="Export all your data anytime in standard formats. No vendor lock-in, ever." />
-            <MiniFeature icon={<FileXls size={18} weight="bold" />} title="Excel Import/Export" desc="Migrate from spreadsheets seamlessly. Export reports for stakeholders who prefer Excel." />
+            <MiniFeature icon={<FileXls size={18} weight="bold" />} title="Excel Import/Export" desc="Import from Excel or CSV without re-entering cases, and export reports for stakeholders." />
             <MiniFeature icon={<Bell size={18} weight="bold" />} title="Notifications" desc="Stay informed about assignments, status changes, and team activity without checking manually." />
             <MiniFeature icon={<MagnifyingGlass size={18} weight="bold" />} title="Global Search" desc="Find any test case, bug, or task instantly. Search across all modules from one place." />
             <MiniFeature icon={<Globe size={18} weight="bold" />} title="99.9% Uptime" desc="Enterprise-grade infrastructure with automated backups and monitoring." />

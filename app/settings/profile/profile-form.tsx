@@ -238,7 +238,7 @@ export function ProfileForm({ user }: { user: UserProfile }) {
               });
             }}
             className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition text-sm font-bold text-gray-800"
-            placeholder="John Doe"
+            placeholder="Your Name"
           />
           <FormFieldError message={fieldErrors.name} />
         </div>

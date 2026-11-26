@@ -13,7 +13,7 @@ export function MarketingFooter() {
               <span className="text-base font-bold tracking-tight text-slate-950 dark:text-white">Aksora</span>
             </Link>
             <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-              Effortlessly manage test plans, live runs, defects, and sprint velocity in one high-velocity QA &amp; engineering platform.
+              Manage test plans, live runs, defects, and sprint tasks in one QA and engineering workspace.
             </p>
             <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 pt-1">
               <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-slate-950 dark:hover:text-white transition-colors text-xs font-mono">

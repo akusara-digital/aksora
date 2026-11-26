@@ -77,7 +77,7 @@ export default function ContactPage() {
                     <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 block">Full Name *</label>
                     <input
                       type="text"
-                      placeholder="John Doe"
+                      placeholder="Your Name"
                       className="w-full border border-gray-200 bg-gray-50 px-4 py-2.5 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-blue-600 focus:ring-0 focus:outline-none transition-colors"
                     />
                   </div>

@@ -84,7 +84,7 @@ const dict = {
     ctaStart: "Start Free Workspace",
     ctaDemo: "Interactive Demo",
     subtext: "Free for small teams • No credit card required • Instant setup",
-    trustedBy: "Trusted by teams like yours",
+    trustedBy: "Built for engineering and QA teams",
     teams: ["QA Team", "Engineering Squad", "Product Team", "DevOps Crew", "Release Managers"],
     metrics: [
       { value: "4.2x", label: "Faster Test Execution Cycle" },
