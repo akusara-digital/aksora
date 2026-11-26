@@ -384,7 +384,6 @@ export function ModuleWorkspaceShell({
  onDelete={() => {
    if (viewingRow) {
      onDeleteRow(viewingRow);
-     onCloseView();
    }
  }}
  module={module}

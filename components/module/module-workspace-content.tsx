@@ -569,6 +569,13 @@ export function ModuleWorkspace({
     openFormEditor(viewingRow);
   }, [openFormEditor, viewingRow]);
   const handleDeleteCancel = useCallback(() => setDeleteId(null), []);
+  const handleDeleteConfirm = useCallback(() => {
+    if (viewingRow && deleteId !== null && String(viewingRow.id) === String(deleteId)) {
+      setViewingRow(null);
+      setActiveTab(null);
+    }
+    performSingleDelete();
+  }, [viewingRow, deleteId, performSingleDelete]);
   const handleReopenCancel = useCallback(() => setReopenId(null), []);
   const handleReopenConfirm = useCallback(async () => {
     if (!reopenId) return;
@@ -692,7 +699,7 @@ export function ModuleWorkspace({
         reorderable={reorderable}
         onUpdateStatus={onUpdateStatus}
         onBatchReorder={onBatchReorder}
-        onDeleteConfirm={performSingleDelete}
+        onDeleteConfirm={handleDeleteConfirm}
         onDeleteCancel={handleDeleteCancel}
         onReopenReasonChange={setReopenReason}
         onReopenCancel={handleReopenCancel}
