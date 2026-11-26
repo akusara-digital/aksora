@@ -517,8 +517,6 @@ export function ModuleWorkspaceShell({
     initialData={editingRow || manualBugDraft}
     pending={pending}
     onCancel={() => {
-      setManualBugDraft(null);
-      clearAiSession("bug");
       onCancelForm();
     }}
     onSubmit={handleDirectBugSubmit}

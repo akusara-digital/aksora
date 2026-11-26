@@ -28,6 +28,7 @@ import { CustomSelect } from "@/components/ui/custom-select";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { cn } from "@/lib/utils";
 import type { AppUser } from "@/components/layout/account-dropdown";
+import { saveFormDraft, getFormDraft, clearFormDraft } from "@/lib/form-draft-cache";
 
 export interface GlobalCreateModalProps {
   open: boolean;
@@ -241,6 +242,55 @@ export function GlobalCreateModal({ open, onClose, user }: GlobalCreateModalProp
     el.scrollBy({ left: 140, behavior: "smooth" });
     setTimeout(updateScrollState, 250);
   };
+
+  // Restore draft when opened
+  useEffect(() => {
+    if (!open) return;
+    const draft = getFormDraft<{
+      type?: CreateItemType;
+      title?: string;
+      description?: string;
+      project?: string;
+      priority?: "P0" | "P1" | "P2" | "P3";
+      severity?: "low" | "medium" | "high" | "critical";
+      category?: string;
+      assignee?: string;
+      sprintText?: string;
+      projectKey?: string;
+    }>("global_create");
+    if (draft) {
+      if (draft.type) setType(draft.type);
+      if (draft.title) setTitle(draft.title);
+      if (draft.description) setDescription(draft.description);
+      if (draft.project) setProject(draft.project);
+      if (draft.priority) setPriority(draft.priority);
+      if (draft.severity) setSeverity(draft.severity);
+      if (draft.category) setCategory(draft.category);
+      if (draft.assignee) setAssignee(draft.assignee);
+      if (draft.sprintText) setSprintText(draft.sprintText);
+      if (draft.projectKey) setProjectKey(draft.projectKey);
+    }
+  }, [open]);
+
+  // Auto-save draft on input
+  useEffect(() => {
+    if (!open) return;
+    const timer = setTimeout(() => {
+      saveFormDraft("global_create", {
+        type,
+        title,
+        description,
+        project,
+        priority,
+        severity,
+        category,
+        assignee,
+        sprintText,
+        projectKey,
+      });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [open, type, title, description, project, priority, severity, category, assignee, sprintText, projectKey]);
 
   useEffect(() => {
     if (!open) return;
@@ -472,6 +522,7 @@ export function GlobalCreateModal({ open, onClose, user }: GlobalCreateModalProp
       setDescription("");
       setSprintText("");
       setError(null);
+      clearFormDraft("global_create");
 
       // If a project was created, append to projects state
       if (type === "projects" && json?.data) {
@@ -904,7 +955,24 @@ export function GlobalCreateModal({ open, onClose, user }: GlobalCreateModalProp
 
           {/* Footer actions */}
           <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-            <div className="flex items-center gap-2 ml-auto">
+            {title.trim() || description.trim() ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setTitle("");
+                  setDescription("");
+                  setSprintText("");
+                  clearFormDraft("global_create");
+                  toast("Draft cleared", "info");
+                }}
+                className="text-xs text-slate-400 hover:text-rose-600 transition underline cursor-pointer"
+              >
+                Clear draft
+              </button>
+            ) : (
+              <div />
+            )}
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onClose}

@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { validateProjectSelection } from "@/lib/project-utils";
 import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
 import { TestCaseCollapsibleDetails } from "./test-case-collapsible-details";
+import { saveFormDraft, getFormDraft, clearFormDraft } from "@/lib/form-draft-cache";
 
 export interface TestCaseSubmitEntry {
   tcId?: string;
@@ -134,6 +135,78 @@ export function StreamlinedTestCaseForm({
     );
   });
 
+  // Restore draft when creating a new test case
+  useEffect(() => {
+    if (initialData?.id) return;
+    const draft = getFormDraft<{
+      caseName?: string;
+      project?: string;
+      suiteId?: string;
+      typeCase?: "Positive" | "Negative";
+      priority?: "Critical" | "High" | "Medium" | "Low";
+      testStep?: string;
+      expectedResult?: string;
+      actualResult?: string;
+      preCondition?: string;
+      subModule?: string;
+      deviceType?: string;
+      assignee?: string;
+    }>("test_case_manual");
+    if (draft) {
+      if (draft.caseName) setCaseName(draft.caseName);
+      if (draft.project) setProject(draft.project);
+      if (draft.suiteId) setSuiteId(draft.suiteId);
+      if (draft.typeCase) setTypeCase(draft.typeCase);
+      if (draft.priority) setPriority(draft.priority);
+      if (draft.testStep) setTestStep(draft.testStep);
+      if (draft.expectedResult) setExpectedResult(draft.expectedResult);
+      if (draft.actualResult) setActualResult(draft.actualResult);
+      if (draft.preCondition) setPreCondition(draft.preCondition);
+      if (draft.subModule) setSubModule(draft.subModule);
+      if (draft.deviceType) setDeviceType(draft.deviceType);
+      if (draft.assignee) setAssignee(draft.assignee);
+      if (draft.preCondition || draft.actualResult || draft.subModule || draft.assignee) {
+        setShowOptional(true);
+      }
+    }
+  }, [initialData?.id]);
+
+  // Auto-save draft on input
+  useEffect(() => {
+    if (initialData?.id) return;
+    const timer = setTimeout(() => {
+      saveFormDraft("test_case_manual", {
+        caseName,
+        project,
+        suiteId,
+        typeCase,
+        priority,
+        testStep,
+        expectedResult,
+        actualResult,
+        preCondition,
+        subModule,
+        deviceType,
+        assignee,
+      });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [
+    caseName,
+    project,
+    suiteId,
+    typeCase,
+    priority,
+    testStep,
+    expectedResult,
+    actualResult,
+    preCondition,
+    subModule,
+    deviceType,
+    assignee,
+    initialData?.id,
+  ]);
+
   const handleFormatSteps = () => {
     if (!testStep.trim()) return;
     setTestStep(formatStepScenario(testStep));
@@ -177,6 +250,7 @@ export function StreamlinedTestCaseForm({
       };
 
       await onSubmit(payload, createAnother);
+      clearFormDraft("test_case_manual");
 
       if (createAnother) {
         setCaseName("");
@@ -361,19 +435,40 @@ export function StreamlinedTestCaseForm({
 
       {/* Footer Actions */}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3">
-        {!initialData?.id ? (
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={createAnother}
-              onChange={(e) => setCreateAnother(e.target.checked)}
-              className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-            />
-            <span className="text-xs text-slate-600">Create another</span>
-          </label>
-        ) : (
-          <div />
-        )}
+        <div className="flex items-center gap-3">
+          {!initialData?.id ? (
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={createAnother}
+                onChange={(e) => setCreateAnother(e.target.checked)}
+                className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              />
+              <span className="text-xs text-slate-600">Create another</span>
+            </label>
+          ) : (
+            <div />
+          )}
+          {!initialData?.id && caseName.trim() && (
+            <button
+              type="button"
+              onClick={() => {
+                setCaseName("");
+                setTestStep("1. ");
+                setExpectedResult("");
+                setActualResult("");
+                setPreCondition("");
+                setSubModule("");
+                setAssignee("");
+                clearFormDraft("test_case_manual");
+                toast("Draft cleared", "info");
+              }}
+              className="text-xs text-slate-400 hover:text-rose-600 transition underline cursor-pointer"
+            >
+              Clear draft
+            </button>
+          )}
+        </div>
 
         <div className="flex items-center gap-2">
           <button

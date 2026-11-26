@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Kanban } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
@@ -9,6 +9,7 @@ import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { ProjectMemberItem } from "./project-hub-types";
+import { saveFormDraft, getFormDraft, clearFormDraft } from "@/lib/form-draft-cache";
 
 interface QuickTaskModalProps {
   isOpen: boolean;
@@ -57,6 +58,46 @@ export function QuickTaskModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Restore draft when opened
+  useEffect(() => {
+    if (!isOpen) return;
+    const draft = getFormDraft<{
+      title?: string;
+      category?: string;
+      status?: string;
+      priority?: string;
+      relatedFeature?: string;
+      assignee?: string;
+      description?: string;
+    }>("quick_task");
+    if (draft) {
+      if (draft.title) setTitle(draft.title);
+      if (draft.category) setCategory(draft.category);
+      if (draft.status) setStatus(draft.status);
+      if (draft.priority) setPriority(draft.priority);
+      if (draft.relatedFeature) setRelatedFeature(draft.relatedFeature);
+      if (draft.assignee) setAssignee(draft.assignee);
+      if (draft.description) setDescription(draft.description);
+    }
+  }, [isOpen]);
+
+  // Auto-save draft on input
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      saveFormDraft("quick_task", {
+        title,
+        category,
+        status,
+        priority,
+        relatedFeature,
+        assignee,
+        description,
+      });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [isOpen, title, category, status, priority, relatedFeature, assignee, description]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedTitle = title.trim();
@@ -91,6 +132,7 @@ export function QuickTaskModal({
       }
 
       toast(`Task "${trimmedTitle}" created successfully!`, "success");
+      clearFormDraft("quick_task");
       setTitle("");
       setRelatedFeature("");
       setAssignee("");
@@ -219,22 +261,42 @@ export function QuickTaskModal({
           />
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 transition cursor-pointer"
-          >
-            <Plus size={14} weight="bold" />
-            {submitting ? "Creating..." : "Create Task"}
-          </button>
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+          {title.trim() || description.trim() ? (
+            <button
+              type="button"
+              onClick={() => {
+                setTitle("");
+                setRelatedFeature("");
+                setAssignee("");
+                setDescription("");
+                clearFormDraft("quick_task");
+                toast("Draft cleared", "info");
+              }}
+              className="text-xs text-slate-400 hover:text-rose-600 transition underline cursor-pointer"
+            >
+              Clear draft
+            </button>
+          ) : (
+            <div />
+          )}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 transition cursor-pointer"
+            >
+              <Plus size={14} weight="bold" />
+              {submitting ? "Creating..." : "Create Task"}
+            </button>
+          </div>
         </div>
       </form>
     </ModalShell>

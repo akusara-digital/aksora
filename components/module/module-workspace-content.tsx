@@ -17,6 +17,7 @@ import { getUserRoleOptions } from "@/lib/roles";
 import { getLatestVersion, getNextVersion, applyWorkLogsDateRowSpan } from "@/components/module/module-workspace-content-helpers";
 import { useWorkspaceRowHandlers, useColumnVisibility } from "@/components/module/module-workspace-content-handlers";
 import type { TableRow } from "@/components/module/module-workspace-table-row";
+import { saveFormDraft } from "@/lib/form-draft-cache";
 
 type Row = TableRow;
 
@@ -580,7 +581,20 @@ export function ModuleWorkspace({
       refreshPage();
     });
   }, [reopenId, reopenReason, refreshPage]);
-  const handleFormChange = useCallback(() => setFormDirty(true), []);
+  const handleFormChange = useCallback(() => {
+    setFormDirty(true);
+    if (!editingRow) {
+      const form = document.getElementById(`${module}-form`) as HTMLFormElement | null;
+      if (form) {
+        const formData = new FormData(form);
+        const data: Record<string, string> = {};
+        formData.forEach((val, key) => {
+          if (typeof val === "string") data[key] = val;
+        });
+        saveFormDraft(`module_${module}`, data);
+      }
+    }
+  }, [editingRow, module]);
   const handleAdd = useCallback(() => {
     const hasProjectField = resolvedConfig.fields.some((f) => f.name === "project");
     if (hasProjectField && (!relatedOptions.project || relatedOptions.project.length === 0)) {

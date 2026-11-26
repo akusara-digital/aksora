@@ -24,6 +24,7 @@ import {
   getAiSession,
   clearAiSession,
 } from "@/lib/ai-session-cache";
+import { saveFormDraft, getFormDraft, clearFormDraft } from "@/lib/form-draft-cache";
 import { SuiteModalHeader } from "./suite-modal-header";
 import { QuickCreateSuiteCaseRow } from "./quick-create-suite-case-row";
 import type { InitialCaseItem } from "./quick-create-suite-ai-section";
@@ -359,6 +360,8 @@ export function QuickCreateSuiteModal({
         toast(`Test suite "${suiteTitle}" created.`, "success");
       }
 
+      clearFormDraft("test_suite_manual");
+
       if (newId) onCreated?.(newId);
 
       if (createAnother) {
@@ -412,7 +415,42 @@ export function QuickCreateSuiteModal({
         setHasDraftSession(true);
       }
     }
+
+    const manualDraft = getFormDraft<{
+      title?: string;
+      notes?: string;
+      status?: "active" | "draft";
+      testPlanId?: string;
+      initialCases?: InitialCaseItem[];
+      selectedProject?: string;
+    }>("test_suite_manual");
+    if (manualDraft) {
+      if (manualDraft.title && !title) setTitle(manualDraft.title);
+      if (manualDraft.notes && !notes) setNotes(manualDraft.notes);
+      if (manualDraft.status) setStatus(manualDraft.status);
+      if (manualDraft.testPlanId) setTestPlanId(manualDraft.testPlanId);
+      if (manualDraft.initialCases && manualDraft.initialCases.length > 0) {
+        setInitialCases(manualDraft.initialCases);
+        setShowInitialCases(true);
+      }
+      if (manualDraft.selectedProject && !selectedProject) setSelectedProject(manualDraft.selectedProject);
+    }
   }, [isOpen]);
+
+  // Auto-save manual draft
+  useEffect(() => {
+    if (!isOpen) return;
+    if (mode === "manual" && (title.trim() || notes.trim() || initialCases.some((c) => c.caseName.trim()))) {
+      saveFormDraft("test_suite_manual", {
+        title,
+        notes,
+        status,
+        testPlanId,
+        initialCases,
+        selectedProject,
+      });
+    }
+  }, [isOpen, mode, title, notes, status, testPlanId, initialCases, selectedProject]);
 
   // Handle Ctrl+Enter / Cmd+Enter & ESC
   useEffect(() => {

@@ -8,6 +8,7 @@ import type { FormField } from "@/components/module/module-workspace-form-field"
 import type { TableRow } from "@/components/module/module-workspace-table-row";
 import { scrollToFormSection } from "@/components/module/use-module-workspace-actions-helpers";
 import { createCrudActions } from "@/components/module/use-module-workspace-actions-crud";
+import { getFormDraft } from "@/lib/form-draft-cache";
 
 type ActionArgs = {
   module: ModuleKey;
@@ -114,14 +115,29 @@ export function useModuleWorkspaceActions(args: ActionArgs) {
   });
 
   useEffect(() => {
-    if (!showForm || editingRow || !initialFormValues) return;
+    if (!showForm || editingRow) return;
     const form = document.getElementById(`${module}-form`) as HTMLFormElement | null;
     if (!form) return;
-    for (const [key, value] of Object.entries(initialFormValues)) {
-      const input = form.elements.namedItem(key) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
-      if (input && !input.value) {
-        input.value = value;
-        setSelectValues((prev) => ({ ...prev, [key]: value }));
+
+    // Restore draft if present
+    const draft = getFormDraft<Record<string, string>>(`module_${module}`);
+    if (draft) {
+      for (const [key, value] of Object.entries(draft)) {
+        const input = form.elements.namedItem(key) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+        if (input && value) {
+          input.value = value;
+          setSelectValues((prev) => ({ ...prev, [key]: value }));
+        }
+      }
+    }
+
+    if (initialFormValues) {
+      for (const [key, value] of Object.entries(initialFormValues)) {
+        const input = form.elements.namedItem(key) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+        if (input && !input.value) {
+          input.value = value;
+          setSelectValues((prev) => ({ ...prev, [key]: value }));
+        }
       }
     }
   }, [editingRow, initialFormValues, module, setSelectValues, showForm]);

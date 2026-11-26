@@ -16,6 +16,7 @@ import { validateProjectSelection } from "@/lib/project-utils";
 import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
 import { BugCollapsibleDetails } from "./bug-collapsible-details";
 import { PushToJiraModal } from "./push-to-jira-modal";
+import { saveFormDraft, getFormDraft, clearFormDraft } from "@/lib/form-draft-cache";
 
 export interface BugSubmitOptions {
   pushToJira?: boolean;
@@ -142,8 +143,80 @@ export function StreamlinedBugForm({
       ) {
         setShowOptional(true);
       }
+    } else {
+      const draft = getFormDraft<{
+        title?: string;
+        project?: string;
+        severity?: string;
+        priority?: string;
+        bugType?: string;
+        stepsToReproduce?: string;
+        expectedResult?: string;
+        actualResult?: string;
+        suggestedDev?: string;
+        moduleName?: string;
+        preconditions?: string;
+        evidence?: string;
+        relatedItems?: string;
+      }>("bug_manual");
+      if (draft) {
+        if (draft.title) setTitle(draft.title);
+        if (draft.project) setProject(draft.project);
+        if (draft.severity) setSeverity(draft.severity);
+        if (draft.priority) setPriority(draft.priority);
+        if (draft.bugType) setBugType(draft.bugType);
+        if (draft.stepsToReproduce) setStepsToReproduce(draft.stepsToReproduce);
+        if (draft.expectedResult) setExpectedResult(draft.expectedResult);
+        if (draft.actualResult) setActualResult(draft.actualResult);
+        if (draft.suggestedDev) setSuggestedDev(draft.suggestedDev);
+        if (draft.moduleName) setModuleName(draft.moduleName);
+        if (draft.preconditions) setPreconditions(draft.preconditions);
+        if (draft.evidence) setEvidence(draft.evidence);
+        if (draft.relatedItems) setRelatedItems(draft.relatedItems);
+        if (draft.evidence || draft.moduleName || draft.preconditions || draft.suggestedDev || draft.relatedItems) {
+          setShowOptional(true);
+        }
+      }
     }
   }, [initialData]);
+
+  // Auto-save draft on input
+  useEffect(() => {
+    if (initialData?.id) return;
+    const timer = setTimeout(() => {
+      saveFormDraft("bug_manual", {
+        title,
+        project,
+        severity,
+        priority,
+        bugType,
+        stepsToReproduce,
+        expectedResult,
+        actualResult,
+        suggestedDev,
+        moduleName,
+        preconditions,
+        evidence,
+        relatedItems,
+      });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [
+    title,
+    project,
+    severity,
+    priority,
+    bugType,
+    stepsToReproduce,
+    expectedResult,
+    actualResult,
+    suggestedDev,
+    moduleName,
+    preconditions,
+    evidence,
+    relatedItems,
+    initialData?.id,
+  ]);
 
   const triggerSubmit = () => {
     const effectiveProject = selectedProject || project;
@@ -176,6 +249,7 @@ export function StreamlinedBugForm({
     if (relatedItems.trim()) payload.relatedItems = relatedItems.trim();
 
     // If editing existing bug, or Jira is not connected: submit directly
+    clearFormDraft("bug_manual");
     if (isEditing || !jiraTracker) {
       onSubmit(payload, { pushToJira: false });
       return;
@@ -424,7 +498,31 @@ export function StreamlinedBugForm({
       </div>
 
       {/* Footer Controls */}
-      <div className="mt-2 flex flex-wrap items-center justify-end gap-2 border-t border-slate-200 pt-3.5">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3.5">
+        {!isEditing && (title.trim() || stepsToReproduce.trim()) ? (
+          <button
+            type="button"
+            onClick={() => {
+              setTitle("");
+              setStepsToReproduce("");
+              setExpectedResult("");
+              setActualResult("");
+              setSuggestedDev("");
+              setModuleName("");
+              setPreconditions("");
+              setEvidence("");
+              setRelatedItems("");
+              clearFormDraft("bug_manual");
+              toast("Draft cleared", "info");
+            }}
+            className="text-xs text-slate-400 hover:text-rose-600 transition underline cursor-pointer"
+          >
+            Clear draft
+          </button>
+        ) : (
+          <div />
+        )}
+        <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={onCancel}
@@ -450,6 +548,7 @@ export function StreamlinedBugForm({
           )}
         </button>
       </div>
+    </div>
 
       <PushToJiraModal
         isOpen={showJiraModal}

@@ -19,6 +19,7 @@ import { TopBreadcrumbs } from "@/components/layout/breadcrumb";
 import { AccountDropdown, type AppUser } from "@/components/layout/account-dropdown";
 import { isStandaloneRoute } from "@/lib/route-utils";
 import { toast } from "@/components/ui/toast";
+import { clearMenuDraftsExcept } from "@/lib/form-draft-cache";
 
 const ConfirmModal = dynamic(() => import("@/components/ui/confirm-modal").then((m) => m.ConfirmModal), { ssr: false });
 const CommandPalette = dynamic(() => import("@/components/shared/search/command-palette").then((m) => m.CommandPalette), { ssr: false });
@@ -165,6 +166,7 @@ export function AppWrapper({ children }: AppWrapperProps) {
 
   useEffect(() => {
     setMobileOpen(false);
+    clearMenuDraftsExcept(pathname);
   }, [pathname]);
 
   useEffect(() => {

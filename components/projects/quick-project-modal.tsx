@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FolderSimplePlus, Plus } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { InlineAlert } from "@/components/ui/inline-alert";
+import { saveFormDraft, getFormDraft, clearFormDraft } from "@/lib/form-draft-cache";
 
 export interface QuickProjectModalProps {
   isOpen: boolean;
@@ -34,6 +35,29 @@ export function QuickProjectModal({ isOpen, onClose, onSuccess }: QuickProjectMo
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Restore draft when opened
+  useEffect(() => {
+    if (!isOpen) return;
+    const draft = getFormDraft<{ name?: string; key?: string; description?: string }>("quick_project");
+    if (draft) {
+      if (draft.name) setName(draft.name);
+      if (draft.key) {
+        setKey(draft.key);
+        setIsKeyManuallyEdited(true);
+      }
+      if (draft.description) setDescription(draft.description);
+    }
+  }, [isOpen]);
+
+  // Auto-save draft on input
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      saveFormDraft("quick_project", { name, key, description });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [isOpen, name, key, description]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +87,7 @@ export function QuickProjectModal({ isOpen, onClose, onSuccess }: QuickProjectMo
       }
 
       toast(`Project "${trimmedName}" created successfully!`, "success");
+      clearFormDraft("quick_project");
       setName("");
       setKey("");
       setIsKeyManuallyEdited(false);
@@ -146,23 +171,43 @@ export function QuickProjectModal({ isOpen, onClose, onSuccess }: QuickProjectMo
           />
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="h-9 rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={submitting || !name.trim()}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50"
-          >
-            <Plus size={14} weight="bold" />
-            {submitting ? "Creating..." : "Create Project"}
-          </button>
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+          {name.trim() || description.trim() ? (
+            <button
+              type="button"
+              onClick={() => {
+                setName("");
+                setKey("");
+                setIsKeyManuallyEdited(false);
+                setDescription("");
+                clearFormDraft("quick_project");
+                toast("Draft cleared", "info");
+              }}
+              className="text-xs text-slate-400 hover:text-rose-600 transition underline cursor-pointer"
+            >
+              Clear draft
+            </button>
+          ) : (
+            <div />
+          )}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              className="h-9 rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || !name.trim()}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50"
+            >
+              <Plus size={14} weight="bold" />
+              {submitting ? "Creating..." : "Create Project"}
+            </button>
+          </div>
         </div>
       </form>
     </ModalShell>

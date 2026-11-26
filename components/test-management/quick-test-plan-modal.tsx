@@ -28,6 +28,7 @@ import {
   getAiSession,
   clearAiSession,
 } from "@/lib/ai-session-cache";
+import { saveFormDraft, getFormDraft, clearFormDraft } from "@/lib/form-draft-cache";
 
 export interface QuickTestPlanModalProps {
   isOpen: boolean;
@@ -172,8 +173,49 @@ export function QuickTestPlanModal({
         setAiPrompt("");
         setHasDraftSession(false);
       }
+      const manualDraft = getFormDraft<{
+        title?: string;
+        project?: string;
+        sprint?: string;
+        status?: string;
+        startDate?: string;
+        endDate?: string;
+        scope?: string;
+        notes?: string;
+        assignee?: string;
+      }>("test_plan_manual");
+      if (manualDraft) {
+        if (manualDraft.title && !title) setTitle(manualDraft.title);
+        if (manualDraft.project && !project) setProject(manualDraft.project);
+        if (manualDraft.sprint && !sprint) setSprint(manualDraft.sprint);
+        if (manualDraft.status) setStatus(manualDraft.status);
+        if (manualDraft.startDate) setStartDate(manualDraft.startDate);
+        if (manualDraft.endDate) setEndDate(manualDraft.endDate);
+        if (manualDraft.scope && !scope) setScope(manualDraft.scope);
+        if (manualDraft.notes && !notes) setNotes(manualDraft.notes);
+        if (manualDraft.assignee && !assignee) setAssignee(manualDraft.assignee);
+        if (manualDraft.scope || manualDraft.notes) setShowCollapsible(true);
+      }
     }
   }, [isOpen, initialData, defaultProject, projectOptions]);
+
+  // Auto-save manual test plan draft
+  useEffect(() => {
+    if (!isOpen || initialData) return;
+    if (title.trim() || scope.trim() || notes.trim() || assignee.trim() || sprint.trim()) {
+      saveFormDraft("test_plan_manual", {
+        title,
+        project,
+        sprint,
+        status,
+        startDate,
+        endDate,
+        scope,
+        notes,
+        assignee,
+      });
+    }
+  }, [isOpen, initialData, title, project, sprint, status, startDate, endDate, scope, notes, assignee]);
 
   // Handle ESC key
   useEffect(() => {
@@ -288,6 +330,7 @@ export function QuickTestPlanModal({
 
       toast(isEditing ? "Test plan updated successfully." : "Test plan created successfully.", "success");
       clearAiSession("test_plan");
+      clearFormDraft("test_plan_manual");
       setHasDraftSession(false);
       if (onCreated && json.data?.id) {
         onCreated(json.data.id);

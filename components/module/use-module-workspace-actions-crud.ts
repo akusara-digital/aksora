@@ -13,6 +13,7 @@ import {
   type ApiPayload,
 } from "@/components/module/use-module-workspace-actions-helpers";
 import type { TableRow } from "@/components/module/module-workspace-table-row";
+import { clearFormDraft } from "@/lib/form-draft-cache";
 
 type Row = TableRow;
 
@@ -82,6 +83,7 @@ export function createCrudActions(args: CrudArgs) {
     const form = document.getElementById(`${module}-form`) as HTMLFormElement | null;
     form?.reset();
     localStorage.removeItem(`draft-${module}`);
+    clearFormDraft(`module_${module}`);
     setDuplicates([]);
     setSprintDuplicate(false);
     setLastSprint(null);

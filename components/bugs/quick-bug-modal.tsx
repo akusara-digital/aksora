@@ -15,6 +15,11 @@ import {
   getAiSession,
   clearAiSession,
 } from "@/lib/ai-session-cache";
+import {
+  saveFormDraft,
+  getFormDraft,
+  clearFormDraft,
+} from "@/lib/form-draft-cache";
 
 interface QuickBugModalProps {
   isOpen: boolean;
@@ -149,6 +154,36 @@ export function QuickBugModal({
       return;
     }
 
+    if (!initialTitle && !initialSteps && !initialExpected && !initialActual) {
+      const draft = getFormDraft<{
+        project?: string;
+        rawText?: string;
+        title?: string;
+        steps?: string;
+        expected?: string;
+        actual?: string;
+        severity?: string;
+        bugType?: string;
+        preconditions?: string;
+        relatedItems?: string;
+        hasPreview?: boolean;
+      }>("quick_bug");
+
+      if (draft) {
+        if (draft.project) setProject(draft.project);
+        if (draft.rawText) setRawText(draft.rawText);
+        if (draft.title) setTitle(draft.title);
+        if (draft.steps) setSteps(draft.steps);
+        if (draft.expected) setExpected(draft.expected);
+        if (draft.actual) setActual(draft.actual);
+        if (draft.severity) setSeverity(draft.severity);
+        if (draft.bugType) setBugType(draft.bugType);
+        if (draft.preconditions) setPreconditions(draft.preconditions);
+        if (draft.relatedItems) setRelatedItems(draft.relatedItems);
+        if (draft.hasPreview) setHasPreview(draft.hasPreview);
+      }
+    }
+
     if (initialTitle) setTitle(initialTitle);
     if (initialSteps) setSteps(initialSteps);
     if (initialExpected) setExpected(initialExpected);
@@ -176,6 +211,25 @@ export function QuickBugModal({
       }
     }
   }, [isOpen, initialTitle, initialSteps, initialExpected, initialActual, initialEvidence, defaultProject, initialPreconditions, initialRelatedItems, autoAnalyze]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (rawText.trim() || title.trim() || steps.trim() || (project.trim() && project !== defaultProject)) {
+      saveFormDraft("quick_bug", {
+        project,
+        rawText,
+        title,
+        steps,
+        expected,
+        actual,
+        severity,
+        bugType,
+        preconditions,
+        relatedItems,
+        hasPreview,
+      });
+    }
+  }, [isOpen, project, rawText, title, steps, expected, actual, severity, bugType, preconditions, relatedItems, hasPreview, defaultProject]);
 
   const handleAnalyzeImage = async (file: File) => {
     setAnalyzingImage(true);
@@ -292,6 +346,7 @@ export function QuickBugModal({
         const res = await fetch("/api/items/bugs", { method: "POST", body: fd });
         if (res.ok) {
           clearAiSession("bug");
+          clearFormDraft("quick_bug");
           toast("Bug created successfully with evidence!", "success");
           onClose();
           setRawText("");
@@ -324,13 +379,37 @@ export function QuickBugModal({
         }
         footer={
           <div className="flex w-full items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
-            >
-              Cancel
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              {(rawText.trim() || title.trim() || steps.trim()) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearFormDraft("quick_bug");
+                    clearAiSession("bug");
+                    setRawText("");
+                    setTitle("");
+                    setSteps("");
+                    setExpected("");
+                    setActual("");
+                    setPreconditions("-");
+                    setRelatedItems("");
+                    setEvidenceImage("");
+                    setHasPreview(false);
+                    toast("Draft cleared", "info");
+                  }}
+                  className="text-xs font-semibold text-slate-500 hover:text-rose-600 transition underline underline-offset-2 px-1"
+                >
+                  Clear draft
+                </button>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"

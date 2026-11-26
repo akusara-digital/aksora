@@ -10,6 +10,11 @@ import { cn } from "@/lib/utils";
 import { AiGeneratedCaseCard, type CandidateAction, type GeneratedCase } from "@/components/test-management/ai-generated-case-card";
 import { findClosestCase, NEAR_DUPLICATE_SCORE } from "@/components/test-management/case-similarity";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import {
+  saveFormDraft,
+  getFormDraft,
+  clearFormDraft,
+} from "@/lib/form-draft-cache";
 
 interface ExistingCase {
   id?: number;
@@ -58,6 +63,22 @@ export function AiGenerateCasesModal({
   const [fileName, setFileName] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const draft = getFormDraft<{ story?: string; featureName?: string }>("ai_generate_cases");
+    if (draft) {
+      if (draft.story && !story) setStory(draft.story);
+      if (draft.featureName && !featureName) setFeatureName(draft.featureName);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (story.trim() || (featureName.trim() && featureName !== suiteLabel)) {
+      saveFormDraft("ai_generate_cases", { story, featureName });
+    }
+  }, [isOpen, story, featureName, suiteLabel]);
 
   // Support pasting image from clipboard (Ctrl+V) when modal is open
   useEffect(() => {
@@ -225,6 +246,7 @@ export function AiGenerateCasesModal({
       }
 
       if (savedCount > 0) {
+        clearFormDraft("ai_generate_cases");
         toast(
           errorCount > 0 ? `Saved ${savedCount} test cases, ${errorCount} failed` : `Saved ${savedCount} test cases to the suite`,
           errorCount > 0 ? "warning" : "success",
@@ -257,13 +279,30 @@ export function AiGenerateCasesModal({
       }
       footer={
         <div className="flex w-full items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
-          >
-            Cancel
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            {(story.trim() || cases.length > 0) && (
+              <button
+                type="button"
+                onClick={() => {
+                  clearFormDraft("ai_generate_cases");
+                  setStory("");
+                  setCases([]);
+                  handleClearImage();
+                  toast("Draft cleared", "info");
+                }}
+                className="text-xs font-semibold text-slate-500 hover:text-rose-600 transition underline underline-offset-2 px-1"
+              >
+                Clear draft
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {cases.length > 0 && (
               <button
