@@ -91,7 +91,15 @@ export function BugTicketButton({
     const list = await loadTrackers();
     const jira = list.find((t) => t.kind === "jira");
     if (!jira) {
-      toast("Jira is not connected. Go to Settings > Integrations to connect Jira.", "warning");
+      toast("Jira is not connected. Configure your Jira API in Settings.", "warning", {
+        actionLabel: "Setup Jira",
+        duration: 6000,
+        onAction: () => {
+          router.push("/settings/integrations");
+        },
+      });
+      // Also open PushToJiraModal so user gets the detailed setup card modal directly
+      setOpen(true);
       return;
     }
     setOpen(true);
