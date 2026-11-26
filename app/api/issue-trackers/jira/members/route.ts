@@ -29,14 +29,27 @@ export async function GET(request: Request) {
   }
 
   if (!tracker || !tracker.enabled) {
-    return NextResponse.json({ data: [] });
+    return NextResponse.json({
+      data: [],
+      connected: false,
+      error: "Jira integration is not configured or disabled in this workspace.",
+    });
   }
 
   try {
     const members = await fetchJiraMembers(tracker);
-    return NextResponse.json({ data: members });
+    return NextResponse.json({
+      data: members,
+      connected: true,
+      trackerName: tracker.name,
+      trackerId: tracker.id,
+    });
   } catch (err) {
     console.warn("[issue-trackers] Failed to fetch Jira members:", err);
-    return NextResponse.json({ data: [] });
+    return NextResponse.json({
+      data: [],
+      connected: false,
+      error: err instanceof Error ? err.message : "Failed to connect to Jira API.",
+    });
   }
 }
