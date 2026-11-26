@@ -48,14 +48,16 @@ const labelClass = "block text-xs font-bold uppercase tracking-wider text-slate-
 
 export function TrackerFormModal({
   initial,
+  defaultKind = "jira",
   onClose,
   onSaved,
 }: {
   initial: IssueTrackerItem | null;
+  defaultKind?: TrackerKind;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [kind, setKind] = useState<TrackerKind>(initial?.kind ?? "jira");
+  const [kind, setKind] = useState<TrackerKind>(initial?.kind ?? defaultKind);
   const [name, setName] = useState(initial?.name ?? "");
   const [config, setConfig] = useState<Record<string, string>>(initial?.config ?? { issueType: "Bug" });
   const [secret, setSecret] = useState("");

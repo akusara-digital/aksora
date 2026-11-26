@@ -14,6 +14,7 @@ export interface PushToJiraModalProps {
   submitting?: boolean;
   hideSaveWithoutPush?: boolean;
   trackerId?: number;
+  returnUrl?: string;
   onConfirmPush: (config: {
     assignee: string;
     assigneeName?: string;
@@ -46,6 +47,7 @@ export function PushToJiraModal({
   submitting = false,
   hideSaveWithoutPush = false,
   trackerId,
+  returnUrl = "/bugs",
   onConfirmPush,
   onSaveWithoutPush,
 }: PushToJiraModalProps) {
@@ -169,7 +171,7 @@ export function PushToJiraModal({
                 </button>
               )}
               <Link
-                href="/settings/integrations"
+                href={`/settings/integrations?add=jira&returnUrl=${encodeURIComponent(returnUrl)}`}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-bold text-white transition shadow-sm text-center"
               >
                 <GearSix size={14} weight="bold" />

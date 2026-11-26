@@ -95,7 +95,7 @@ export function BugTicketButton({
         actionLabel: "Setup Jira",
         duration: 6000,
         onAction: () => {
-          router.push("/settings/integrations");
+          router.push(`/settings/integrations?add=jira&returnUrl=/bugs/${bugId}`);
         },
       });
       // Also open PushToJiraModal so user gets the detailed setup card modal directly
@@ -204,6 +204,7 @@ export function BugTicketButton({
         defaultProject={defaultProject}
         submitting={creating}
         hideSaveWithoutPush={true}
+        returnUrl={`/bugs/${bugId}`}
         onConfirmPush={handleConfirmPush}
       />
     </>

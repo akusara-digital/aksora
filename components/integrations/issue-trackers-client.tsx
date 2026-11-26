@@ -1,17 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash, PencilSimple, PlugsConnected, CheckCircle } from "@phosphor-icons/react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Plus, Trash, PencilSimple, PlugsConnected, CheckCircle, ArrowLeft } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/toast";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { KIND_LABEL, TrackerFormModal, type IssueTrackerItem } from "@/components/integrations/tracker-form-modal";
 
 export function IssueTrackersClient({ canManage }: { canManage: boolean }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const returnUrl = searchParams.get("returnUrl");
+  const autoAddKind = searchParams.get("add");
+
   const [trackers, setTrackers] = useState<IssueTrackerItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editing, setEditing] = useState<IssueTrackerItem | "new" | null>(null);
+  const [editing, setEditing] = useState<IssueTrackerItem | "new" | null>(() => {
+    return autoAddKind ? "new" : null;
+  });
   const [deleteTarget, setDeleteTarget] = useState<IssueTrackerItem | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
 
@@ -81,6 +89,25 @@ export function IssueTrackersClient({ canManage }: { canManage: boolean }) {
 
   return (
     <div className="w-full space-y-8">
+      {returnUrl && (
+        <div className="flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50/80 p-4 text-xs shadow-2xs">
+          <div className="flex items-center gap-2.5 text-blue-900">
+            <PlugsConnected size={18} weight="bold" className="text-blue-600 shrink-0" />
+            <span>
+              You were redirected here to configure an integration. After saving, you can return to where you left off.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => router.push(returnUrl)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-300 bg-white px-3 py-1.5 font-bold text-blue-700 hover:bg-blue-100 transition shrink-0 cursor-pointer"
+          >
+            <ArrowLeft size={13} weight="bold" />
+            <span>Return back</span>
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Issue trackers</h2>
@@ -169,10 +196,15 @@ export function IssueTrackersClient({ canManage }: { canManage: boolean }) {
       {editing && (
         <TrackerFormModal
           initial={editing === "new" ? null : editing}
+          defaultKind={(autoAddKind as any) || "jira"}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
-            toast("Tracker saved", "success");
+            toast("Tracker saved successfully", "success", returnUrl ? {
+              actionLabel: "Return back",
+              duration: 8000,
+              onAction: () => router.push(returnUrl),
+            } : undefined);
             void load();
           }}
         />
