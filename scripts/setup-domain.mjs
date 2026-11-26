@@ -283,9 +283,7 @@ ${colors.cyan}Options:${colors.reset}
   const turnstileSiteKey = env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAAGQS213uIsg-UCu4";
   const googleClientId = env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || env.GOOGLE_CLIENT_ID || "915473018543-40bhajhc3scd5jdjercng1dqb74m79hu.apps.googleusercontent.com";
 
-  // ==========================================
-  // STEP 1: Vercel Project Domain Assignment
-  // ==========================================
+  // Vercel Project Domain Assignment
   log(`${colors.bold}[1/6] Vercel Domain Configuration${colors.reset}`);
   if (!vercelToken) {
     warn("VERCEL_TOKEN not found in env. Skipping Vercel domain assignment.");
@@ -355,9 +353,7 @@ ${colors.cyan}Options:${colors.reset}
     }
   }
 
-  // ==========================================
-  // STEP 2: Vercel Remote Environment Variables
-  // ==========================================
+  // Vercel Remote Environment Variables
   log(`\n${colors.bold}[2/6] Vercel Remote Environment Variables${colors.reset}`);
   if (flags.skipVercelEnv || !vercelToken) {
     info("Skipping Vercel remote environment variables sync.");
@@ -433,9 +429,7 @@ ${colors.cyan}Options:${colors.reset}
     }
   }
 
-  // ==========================================
-  // STEP 3: Local Environment Files Sync
-  // ==========================================
+  // Local Environment Files Sync
   log(`\n${colors.bold}[3/6] Local Environment Files (.env, .env.local)${colors.reset}`);
   if (flags.skipLocalEnv) {
     info("Skipping local environment files sync.");
@@ -458,9 +452,7 @@ ${colors.cyan}Options:${colors.reset}
     }
   }
 
-  // ==========================================
-  // STEP 4: Cloudflare Turnstile Origin Whitelist
-  // ==========================================
+  // Cloudflare Turnstile Origin Whitelist
   log(`\n${colors.bold}[4/6] Cloudflare Turnstile Bot Protection${colors.reset}`);
   if (flags.skipTurnstile || !cfApiToken) {
     info("Skipping Cloudflare Turnstile sync (no token or skipped).");
@@ -519,9 +511,7 @@ ${colors.cyan}Options:${colors.reset}
     }
   }
 
-  // ==========================================
-  // STEP 5: Cloudflare DNS Sync (Auto-detection)
-  // ==========================================
+  // Cloudflare DNS Sync (Auto-detection)
   log(`\n${colors.bold}[5/6] Cloudflare DNS Management${colors.reset}`);
   if (flags.skipDns || !cfApiToken) {
     info("Skipping Cloudflare DNS management.");
@@ -629,9 +619,7 @@ ${colors.cyan}Options:${colors.reset}
     }
   }
 
-  // ==========================================
-  // STEP 6: Google OAuth / GIS Checklist
-  // ==========================================
+  // Google OAuth / GIS Checklist
   log(`\n${colors.bold}[6/6] Google OAuth Credentials Checklist${colors.reset}`);
   log(`Google Sign-In requires Authorized JavaScript Origins for new domains.`);
   log(`1. Open Google Cloud Console:`);
@@ -643,9 +631,7 @@ ${colors.cyan}Options:${colors.reset}
   log(`4. Under ${colors.bold}"Authorized redirect URIs"${colors.reset} (if needed), add:`);
   log(`   ${colors.green}✔ ${targetUrl}/api/auth/callback/google${colors.reset}`);
 
-  // ==========================================
   // SUMMARY & DEPLOYMENT
-  // ==========================================
   log(`\n${colors.bold}${colors.green}=== DOMAIN SETUP COMPLETE ===${colors.reset}`);
   log(`Your application is now configured for ${colors.bold}${targetUrl}${colors.reset}`);
 

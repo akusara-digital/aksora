@@ -51,7 +51,7 @@ function token() {
   return randomBytes(16).toString("base64url");
 }
 
-// ─── Clear all tables ────────────────────────────────────────────────────────
+// Clear all tables
 async function clearAll() {
   const tables = [
     "SearchToken", "ActivityLog", "CaseVerdict", "ExecutionRun",
@@ -71,18 +71,18 @@ async function clearAll() {
   try { await pool.query(`ALTER TABLE "Task" DROP COLUMN IF EXISTS "dueDate"`); } catch {}
 }
 
-// ─── Seed data ───────────────────────────────────────────────────────────────
+// Seed data
 async function seed() {
   const company = "Akusara Project";
   const password = hashPassword(env.SEED_ADMIN_PASSWORD || "Lotus1919!");
 
-  // ── Company ──
+  // Company
   await pool.query(
     `INSERT INTO "Company" ("name", "plan", "maxUsers", "status") VALUES ($1, $2, $3, $4)`,
     [company, "pro", 50, "active"]
   );
 
-  // ── Users ──
+  // Users
   const users = [
     { name: env.SEED_ADMIN_NAME || "Admin", email: env.SEED_ADMIN_EMAIL || "admin@akusaradigital.com", role: "admin" },
     { name: "Wahyu Priyono", email: "wahyu.priyono@magnusdigital.co.id", role: "qa" },
@@ -106,7 +106,7 @@ async function seed() {
     );
   }
 
-  // ── Sprints ──
+  // Sprints
   const sprints = [
     { name: "Sprint 1 - Foundation", status: "completed", goal: "Setup project infrastructure and core modules" },
     { name: "Sprint 2 - Core Features", status: "completed", goal: "Implement main CRUD and auth system" },
@@ -124,7 +124,7 @@ async function seed() {
     );
   }
 
-  // ── Tasks (15+) ──
+  // Tasks (15+)
   const tasks = [
     { title: "Setup CI/CD pipeline", project: "Aksora", feature: "DevOps", category: "Feature", status: "done", priority: "P1", desc: "Configure GitHub Actions for automated build and deploy" },
     { title: "Implement login page", project: "Aksora", feature: "Auth", category: "Feature", status: "done", priority: "P0", desc: "Build login form with email/password authentication" },
@@ -154,7 +154,7 @@ async function seed() {
     );
   }
 
-  // ── Bugs (15+) ──
+  // Bugs (15+)
   const bugs = [
     { title: "Login fails on Safari", module: "Auth", bugType: "Functional", severity: "high", status: "open", priority: "P0" },
     { title: "Chart tooltip overlaps sidebar", module: "Dashboard", bugType: "UI/UX", severity: "medium", status: "open", priority: "P2" },
@@ -182,7 +182,7 @@ async function seed() {
     );
   }
 
-  // ── Test Plans (4) ──
+  // Test Plans (4)
   const testPlans = [
     { title: "Regression Test - Sprint 3", sprint: "Sprint 3 - Polish", scope: "Full regression on core modules", status: "active" },
     { title: "Auth Module Verification", sprint: "Sprint 2 - Core Features", scope: "Login, register, password reset, session", status: "completed" },
@@ -198,7 +198,7 @@ async function seed() {
     );
   }
 
-  // ── Test Suites (6) ──
+  // Test Suites (6)
   const testSuites = [
     { planId: "1", title: "Auth Module Tests", status: "active", notes: "All authentication and authorization tests" },
     { planId: "1", title: "Dashboard Tests", status: "active", notes: "Dashboard widgets and data display" },
@@ -216,7 +216,7 @@ async function seed() {
     );
   }
 
-  // ── Test Cases (15+) ──
+  // Test Cases (15+)
   const testCases = [
     { suiteId: "1", tcId: "TC-001", name: "Login with valid credentials", type: "Positive", status: "Pass", priority: "High" },
     { suiteId: "1", tcId: "TC-002", name: "Login with invalid password", type: "Negative", status: "Pass", priority: "High" },
@@ -244,7 +244,7 @@ async function seed() {
     );
   }
 
-  // ── Test Sessions (5) ──
+  // Test Sessions (5)
   const testSessions = [
     { date: daysAgo(1), sprint: "Sprint 3 - Polish", tester: "Wahyu Setiawan", scope: "Auth regression", total: "12", passed: "10", failed: "1", blocked: "1", result: "Partial Pass" },
     { date: daysAgo(3), sprint: "Sprint 3 - Polish", tester: "Dian Permata", scope: "Dashboard smoke test", total: "8", passed: "8", failed: "0", blocked: "0", result: "Pass" },
@@ -261,7 +261,7 @@ async function seed() {
     );
   }
 
-  // ── Deployments (5) ──
+  // Deployments (5)
   const deployments = [
     { date: daysAgo(1), version: "0.8.0", env: "staging", dev: "Budi Santoso", status: "success", changelog: "- Add notification system\n- Fix pagination\n- Improve search" },
     { date: daysAgo(5), version: "0.7.2", env: "production", dev: "Rizky Pratama", status: "success", changelog: "- Hotfix: session timeout\n- Fix CSV export" },
@@ -278,7 +278,7 @@ async function seed() {
     );
   }
 
-  // ── Work Logs (15+) ──
+  // Work Logs (15+)
   const workLogs = [
     { date: daysAgo(0), start: "09:00", end: "11:30", cat: "development", desc: "Implement notification bell component", assignee: "Hendra Wijaya" },
     { date: daysAgo(0), start: "13:00", end: "15:00", cat: "testing", desc: "Run regression tests on auth module", assignee: "Wahyu Setiawan" },
@@ -306,7 +306,7 @@ async function seed() {
     );
   }
 
-  // ── Meeting Notes (5) ──
+  // Meeting Notes (5)
   const meetings = [
     { title: "Sprint 3 Planning", attendees: "Admin, Wahyu, Hendra, Sari, Budi", content: "Discussed sprint 3 goals:\n- Focus on bug fixes\n- UI polish\n- Performance improvements", summary: "Sprint 3 focuses on stability and polish", actions: "- Fix critical bugs by Wed\n- Complete UI review by Fri\n- Deploy to staging by end of sprint" },
     { title: "Architecture Review", attendees: "Rizky, Budi, Andi", content: "Reviewed current data layer architecture.\nDecided to split into domain modules.\nDiscussed caching strategy.", summary: "Agreed on domain-driven data layer refactor", actions: "- Rizky: split data.ts\n- Budi: implement caching\n- Andi: search optimization" },
@@ -324,7 +324,7 @@ async function seed() {
     );
   }
 
-  // ── Activity Log (sample) ──
+  // Activity Log (sample)
   const activities = [
     { type: "Task", id: "1", action: "Created", summary: "Task 'Setup CI/CD pipeline' created", actor: "Admin" },
     { type: "Task", id: "2", action: "Created", summary: "Task 'Implement login page' created", actor: "Admin" },
@@ -358,7 +358,7 @@ async function seed() {
   console.log("  ✓ Activity Log (8)");
 }
 
-// ─── Run ─────────────────────────────────────────────────────────────────────
+// Run
 console.log("🗑️  Clearing all data...");
 // await clearAll();
 console.log("🌱 Seeding fresh data...");
