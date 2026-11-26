@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MagicWand, SpinnerGap } from "@phosphor-icons/react";
+import Link from "next/link";
+import { MagicWand, SpinnerGap, GearSix } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { InlineAlert } from "@/components/ui/inline-alert";
 import { toast } from "@/components/ui/toast";
@@ -14,13 +15,18 @@ export function GenerateCaseDialog({
   const [suiteId, setSuiteId] = useState(suites[0]?.id ? String(suites[0].id) : "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [missingAi, setMissingAi] = useState(false);
 
   const submit = async () => {
     setBusy(true);
     setError("");
+    setMissingAi(false);
     try {
       const ai = getAiRequestPayload();
-      if (!ai.ai_provider) throw new Error("Choose an AI provider and model in Settings > AI first.");
+      if (!ai.ai_provider) {
+        setMissingAi(true);
+        throw new Error("Choose an AI provider and model in Settings > AI first.");
+      }
       const r = await fetch(`/api/recordings/${recording.id}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,7 +72,21 @@ export function GenerateCaseDialog({
           </div>
         )}
         <p className="text-xs text-slate-500">Uses the AI model selected in Settings. Typed passwords and emails are replaced with {"{{variables}}"} in the script.</p>
-        {error && <InlineAlert variant="error" compact message={error} />}
+        {error && (
+          <div className="space-y-2">
+            <InlineAlert variant="error" compact message={error} />
+            {missingAi && (
+              <Link
+                href="/settings/ai"
+                onClick={onClose}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 underline"
+              >
+                <GearSix size={13} weight="bold" />
+                <span>Go to Settings &gt; AI to configure model</span>
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </ModalShell>
   );

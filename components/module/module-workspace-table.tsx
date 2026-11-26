@@ -171,7 +171,13 @@ export function ModuleWorkspaceTable({
       onToggleSelectAll?.();
       router.refresh();
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Failed to sync Jira statuses.", "error");
+      toast(err instanceof Error ? err.message : "Failed to sync Jira statuses.", "error", {
+        actionLabel: "Settings",
+        duration: 5000,
+        onAction: () => {
+          router.push("/settings/integrations");
+        },
+      });
     } finally {
       setBulkJiraSyncing(false);
     }
