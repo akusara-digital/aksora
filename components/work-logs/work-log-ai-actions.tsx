@@ -93,7 +93,7 @@ export function WorkLogAiActions({ actionButtons }: WorkLogAiActionsProps = {}) 
         {todayMinutes !== null && (
           <div
             className={cn(
-              "inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition shrink-0 shadow-2xs",
+              "inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold transition shrink-0 shadow-2xs select-none",
               isTodayTargetMet
                 ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                 : "border-amber-200 bg-amber-50 text-amber-800"
@@ -103,20 +103,12 @@ export function WorkLogAiActions({ actionButtons }: WorkLogAiActionsProps = {}) 
             {isTodayTargetMet ? (
               <>
                 <CheckCircle size={14} weight="bold" className="text-emerald-600 shrink-0" />
-                <span>Today: <strong>{todayHoursFormatted}h</strong> (Min 8h ✓)</span>
+                <span>Today: <strong>{todayHoursFormatted}h</strong> / 8h (Goal met ✓)</span>
               </>
             ) : (
               <>
                 <WarningCircle size={14} weight="bold" className="text-amber-600 shrink-0" />
-                <span>Today: <strong>{todayHoursFormatted}h</strong> / 8h</span>
-                <button
-                  type="button"
-                  onClick={() => setIsFillGapOpen(true)}
-                  className="ml-1 rounded bg-amber-600 hover:bg-amber-700 text-white px-1.5 py-0.5 text-[10px] font-bold transition cursor-pointer"
-                  title="Fill remaining work hours to meet 8h minimum"
-                >
-                  +{todayRemainingHours}h
-                </button>
+                <span>Today: <strong>{todayHoursFormatted}h</strong> / 8h ({todayRemainingHours}h remaining)</span>
               </>
             )}
           </div>

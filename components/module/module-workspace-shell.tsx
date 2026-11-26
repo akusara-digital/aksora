@@ -15,6 +15,7 @@ import type { ModuleKey } from"@/lib/modules";
 import { clearAiSession } from "@/lib/ai-session-cache";
 import { BugModalModeSelector, type BugCreateMode } from "@/components/bugs/bug-modal-mode-selector";
 import { BugModalHeader } from "@/components/bugs/bug-modal-header";
+import { WorkLogModalModeSelector, type WorkLogCreateMode } from "@/components/work-logs/work-log-modal-mode-selector";
 import { toast } from "@/components/ui/toast";
 import type { IssueAgentTicketDraft } from "@/lib/ai-issue-agent";
 
@@ -48,6 +49,11 @@ const AiIssueAgentContent = dynamic(
 
 const StreamlinedBugForm = dynamic(
   () => import("@/components/bugs/streamlined-bug-form").then((module) => module.StreamlinedBugForm),
+  { ssr: false }
+);
+
+const WorkLogGapFillFormContent = dynamic(
+  () => import("@/components/work-logs/work-log-gap-fill-form-content").then((module) => module.WorkLogGapFillFormContent),
   { ssr: false }
 );
 
@@ -251,6 +257,7 @@ export function ModuleWorkspaceShell({
  void setSprintDuplicate;
  const router = useRouter();
  const [bugCreateMode, setBugCreateMode] = useState<BugCreateMode>("ai");
+ const [workLogCreateMode, setWorkLogCreateMode] = useState<WorkLogCreateMode>("manual");
  const [manualBugDraft, setManualBugDraft] = useState<Record<string, unknown> | null>(null);
  const [isBugAiBusy, setIsBugAiBusy] = useState(false);
  const [selectedBugProject, setSelectedBugProject] = useState<string>(
@@ -489,6 +496,8 @@ export function ModuleWorkspaceShell({
  headerAccessory={
   module === "bugs" && !editingRow ? (
     <BugModalModeSelector mode={bugCreateMode} onChange={setBugCreateMode} />
+  ) : module === "work-logs" && !editingRow ? (
+    <WorkLogModalModeSelector mode={workLogCreateMode} onChange={setWorkLogCreateMode} />
   ) : undefined
  }
  onClose={() => {
@@ -520,6 +529,18 @@ export function ModuleWorkspaceShell({
       onCancelForm();
     }}
     onSubmit={handleDirectBugSubmit}
+  />
+ ) : module === "work-logs" && !editingRow && workLogCreateMode === "gap_fill" ? (
+  <WorkLogGapFillFormContent
+    projectOptions={relatedOptions.project || []}
+    defaultProject={selectValues.project || ""}
+    onCancel={() => {
+      onCancelForm();
+    }}
+    onSuccess={() => {
+      onCancelForm();
+      router.refresh();
+    }}
   />
  ) : (
  <ModuleWorkspaceForm
