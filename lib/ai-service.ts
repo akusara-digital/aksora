@@ -14,6 +14,7 @@ import {
   type CallLLMOptions,
   type CallLLMResult,
 } from "./ai-types";
+import { formatProviderErrorResponse } from "./error-utils";
 
 export {
   SUPPORTED_PROVIDERS,
@@ -320,7 +321,7 @@ async function callProvider(opts: CallLLMOptions): Promise<CallLLMResult> {
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
-      throw new Error(`Google Gemini request failed (${res.status}): ${errText || res.statusText}`);
+      throw new Error(formatProviderErrorResponse("Google Gemini", res.status, res.statusText, errText));
     }
 
     const data = await res.json();
@@ -383,7 +384,7 @@ async function callProvider(opts: CallLLMOptions): Promise<CallLLMResult> {
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
-      throw new Error(`Anthropic request failed (${res.status}): ${errText || res.statusText}`);
+      throw new Error(formatProviderErrorResponse("Anthropic Claude", res.status, res.statusText, errText));
     }
 
     const data = await res.json();
@@ -472,7 +473,8 @@ async function callProvider(opts: CallLLMOptions): Promise<CallLLMResult> {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(`${p} request failed (${res.status}): ${errText || res.statusText}`);
+    const providerName = p === "9router-public" ? "9Router" : p;
+    throw new Error(formatProviderErrorResponse(providerName, res.status, res.statusText, errText));
   }
 
   const data = await res.json();

@@ -16,6 +16,7 @@ import {
   parseJsonSafe,
 } from "@/lib/ai-qa-actions";
 import { formatStepScenario } from "@/lib/test-step-utils";
+import { humanizeErrorMessage } from "@/lib/error-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -393,7 +394,7 @@ Respond ONLY with valid JSON in this exact structure with no extra prose:
     return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "AI Agent execution failed" },
+      { error: humanizeErrorMessage(err, "AI Agent execution failed. Please verify your AI settings.") },
       { status: 500 }
     );
   }

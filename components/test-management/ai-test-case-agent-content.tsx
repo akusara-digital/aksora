@@ -13,6 +13,7 @@ import { isAiConfigured, getActiveAiCredentials, getActiveAiConfig } from "@/lib
 import { AI_PROVIDER_LABELS, type SupportedProvider } from "@/lib/ai-types";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { toast } from "@/components/ui/toast";
+import { humanizeErrorMessage } from "@/lib/error-utils";
 import { compressImageToWebp } from "@/lib/image-compress";
 import { validateProjectSelection } from "@/lib/project-utils";
 import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
@@ -155,9 +156,9 @@ export function AiTestCaseAgentContent({
         }),
       });
 
-      const json = await res.json();
+      const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(json.error || "Failed to process test case with AI");
+        throw new Error(json.error || `Failed to process test case with AI (HTTP ${res.status})`);
       }
 
       const rawCases = json.data?.testCases;
@@ -200,7 +201,7 @@ export function AiTestCaseAgentContent({
       toast("Test case structured. Review and tweak before saving.", "success");
       onSwitchToManual(draft);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Failed to structure test case", "error");
+      toast(humanizeErrorMessage(err, "Failed to structure test case"), "error");
     } finally {
       setLoading(false);
     }

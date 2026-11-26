@@ -13,6 +13,7 @@ import { isAiConfigured, getActiveAiCredentials, getActiveAiConfig } from "@/lib
 import { AI_PROVIDER_LABELS, type SupportedProvider } from "@/lib/ai-types";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { toast } from "@/components/ui/toast";
+import { humanizeErrorMessage } from "@/lib/error-utils";
 import { compressImageToWebp } from "@/lib/image-compress";
 import { validateProjectSelection } from "@/lib/project-utils";
 import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
@@ -144,9 +145,9 @@ export function AiIssueAgentContent({
         }),
       });
 
-      const json = await res.json();
+      const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(json.error || "Failed to process issue with AI");
+        throw new Error(json.error || `Failed to process issue with AI (HTTP ${res.status})`);
       }
 
       const ticket: IssueAgentTicketDraft = json.data?.ticket || {
@@ -175,7 +176,7 @@ export function AiIssueAgentContent({
         evidence: finalEvidence,
       });
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Failed to structure issue", "error");
+      toast(humanizeErrorMessage(err, "Failed to structure issue"), "error");
     } finally {
       setLoading(false);
     }

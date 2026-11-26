@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckCircle, WarningCircle, X, Info } from "@phosphor-icons/react";
+import { humanizeErrorMessage } from "@/lib/error-utils";
 
 type ToastType = "success" | "error" | "info" | "warning";
 
@@ -41,9 +42,13 @@ function buildToastSignature(message: string, type: ToastType, options?: ToastOp
 
 export function toast(message: string, type: ToastType = "success", options?: ToastOptions) {
   if (!toastFn) return;
-  const signature = buildToastSignature(message, type, options);
+  const sanitized =
+    type === "error" || type === "warning" || message.includes("<")
+      ? humanizeErrorMessage(message, message)
+      : message;
+  const signature = buildToastSignature(sanitized, type, options);
   if (activeToastSignatures.has(signature)) return;
-  toastFn(message, type, options);
+  toastFn(sanitized, type, options);
 }
 
 export function Toaster() {
@@ -115,7 +120,7 @@ export function Toaster() {
           {t.type === "warning" && <WarningCircle size={18} className="text-amber-500 shrink-0" weight="fill" />}
           {t.type === "info" && <Info size={18} className="text-blue-500 shrink-0" weight="fill" />}
 
-          <p className="flex-1 text-xs font-medium text-gray-800">
+          <p className="flex-1 text-xs font-medium text-gray-800 break-words leading-relaxed max-h-36 overflow-y-auto">
             {t.message}
             {t.remaining != null ? ` ${t.remaining}s` : ""}
           </p>
