@@ -15,6 +15,7 @@ export interface PushToJiraModalProps {
   trackerId?: number;
   onConfirmPush: (config: {
     assignee: string;
+    assigneeName?: string;
     environment: string;
     scope: string;
   }) => void;
@@ -76,9 +77,19 @@ export function PushToJiraModal({
 
   if (!isOpen) return null;
 
+  const effectiveDevOptions = jiraMembers.length > 0
+    ? jiraMembers
+    : devOptions.map((dev) => ({
+        value: dev.value,
+        label: dev.label.startsWith("👤") ? dev.label : `👤 ${dev.label || dev.value}`,
+      }));
+
   const handlePushClick = () => {
+    const selected = effectiveDevOptions.find((d) => d.value === assignee);
+    const readableName = selected ? selected.label.replace(/^👤\s*/, "") : assignee;
     onConfirmPush({
       assignee,
+      assigneeName: readableName,
       environment,
       scope,
     });
@@ -90,13 +101,6 @@ export function PushToJiraModal({
       ? [{ label: defaultModule, value: defaultModule }]
       : []),
   ];
-
-  const effectiveDevOptions = jiraMembers.length > 0
-    ? jiraMembers
-    : devOptions.map((dev) => ({
-        value: dev.value,
-        label: dev.label.startsWith("👤") ? dev.label : `👤 ${dev.label || dev.value}`,
-      }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4 animate-in fade-in duration-150">

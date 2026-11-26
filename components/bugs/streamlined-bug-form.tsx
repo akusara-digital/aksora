@@ -288,11 +288,12 @@ export function StreamlinedBugForm({
     setShowJiraModal(true);
   };
 
-  const handleConfirmPush = (jiraConfig: { assignee: string; environment: string; scope: string }) => {
+  const handleConfirmPush = (jiraConfig: { assignee: string; assigneeName?: string; environment: string; scope: string }) => {
     if (!pendingPayload) return;
     const finalPayload = { ...pendingPayload };
-    if (jiraConfig.assignee && !finalPayload.suggestedDev) {
-      finalPayload.suggestedDev = jiraConfig.assignee;
+    const devName = jiraConfig.assigneeName || jiraConfig.assignee;
+    if (devName && !finalPayload.suggestedDev) {
+      finalPayload.suggestedDev = devName;
     }
     setShowJiraModal(false);
     onSubmit(finalPayload, {

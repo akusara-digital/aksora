@@ -96,18 +96,20 @@ export type CreateTicketOptions = {
   environment?: string;
   scope?: string;
   assignee?: string;
+  assigneeName?: string;
   labels?: string[];
 };
 
-function bugSections(bug: TicketBug, extra?: { environment?: string; scope?: string; assignee?: string }) {
+function bugSections(bug: TicketBug, extra?: { environment?: string; scope?: string; assignee?: string; assigneeName?: string }) {
   const sections: [string, string][] = [
     ["Project", [bug.project, bug.module, extra?.scope && extra.scope !== "None (Leave empty)" ? extra.scope : ""].filter(Boolean).join(" / ") || "-"],
   ];
   if (extra?.environment) {
     sections.push(["Environment", extra.environment]);
   }
-  if (extra?.assignee && extra.assignee !== "Leave Unassigned") {
-    sections.push(["Assignee", extra.assignee]);
+  if (extra?.assigneeName || (extra?.assignee && extra.assignee !== "Leave Unassigned")) {
+    const val = String(extra.assigneeName || extra.assignee || "").trim();
+    if (val) sections.push(["Assignee", val]);
   }
   sections.push(
     ["Severity", bug.severity || "-"],
@@ -135,7 +137,7 @@ function adfParagraph(text: string, link?: string) {
 }
 
 /** Jira Cloud requires Atlassian Document Format for v3 descriptions. */
-function bugAdf(bug: TicketBug, runUrl?: string, extra?: { environment?: string; scope?: string; assignee?: string }) {
+function bugAdf(bug: TicketBug, runUrl?: string, extra?: { environment?: string; scope?: string; assignee?: string; assigneeName?: string }) {
   const content: unknown[] = [];
   for (const [label, value] of bugSections(bug, extra)) {
     content.push({ type: "heading", attrs: { level: 3 }, content: [{ type: "text", text: label }] });
@@ -214,6 +216,7 @@ export async function createTicket(tracker: TrackerRow, bug: TicketBug, opts: Cr
         environment: opts.environment,
         scope: opts.scope,
         assignee: opts.assignee,
+        assigneeName: opts.assigneeName,
       }),
     };
 

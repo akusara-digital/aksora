@@ -58,6 +58,7 @@ describe("PushToJiraModal", () => {
 
     expect(handleConfirmPush).toHaveBeenCalledWith({
       assignee: "",
+      assigneeName: "",
       environment: "Development",
       scope: "Brainstorming",
     });

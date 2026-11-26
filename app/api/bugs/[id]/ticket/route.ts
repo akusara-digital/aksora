@@ -14,6 +14,7 @@ const bodySchema = z.object({
   environment: z.string().optional(),
   scope: z.string().optional(),
   assignee: z.string().optional(),
+  assigneeName: z.string().optional(),
 });
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -54,6 +55,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       environment: parsed.data.environment,
       scope: parsed.data.scope,
       assignee: parsed.data.assignee,
+      assigneeName: parsed.data.assigneeName,
     });
     const externalTicket = ticket.url || ticket.key;
     await db.run(`UPDATE "Bug" SET "externalTicket" = ?, "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = ?`, [externalTicket, bug.id]);
