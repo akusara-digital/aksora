@@ -47,6 +47,7 @@ export function RunPlayModeFooter({
           type="button"
           onClick={onPrev}
           disabled={index === 0}
+          aria-label="Previous test case"
           style={{
             height: "48px",
             width: "48px",
@@ -57,12 +58,13 @@ export function RunPlayModeFooter({
           }}
           className="bg-white/5 border border-white/10 hover:bg-white/10 transition disabled:opacity-20"
         >
-          <CaretLeft size={20} />
+          <CaretLeft size={20} aria-hidden="true" />
         </button>
         <button
           type="button"
           onClick={onNext}
           disabled={index === totalItems - 1}
+          aria-label="Next test case"
           style={{
             height: "48px",
             width: "48px",

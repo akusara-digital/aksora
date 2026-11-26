@@ -212,10 +212,12 @@ export function ProjectMembersModal({ project, isOpen, onClose }: ProjectMembers
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close project members dialog"
             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
           >
-            <X size={18} weight="bold" />
+            <X size={18} weight="bold" aria-hidden="true" />
           </button>
         </div>
 

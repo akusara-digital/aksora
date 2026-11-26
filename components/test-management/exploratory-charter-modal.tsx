@@ -78,9 +78,10 @@ export function ExploratoryCharterModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close charter dialog"
             className="text-slate-400 hover:text-slate-600"
           >
-            <X size={18} weight="bold" />
+            <X size={18} weight="bold" aria-hidden="true" />
           </button>
         </div>
 

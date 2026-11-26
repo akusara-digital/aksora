@@ -448,9 +448,10 @@ export function QuickTestPlanModal({
             <button
               type="button"
               onClick={onClose}
+              aria-label="Close test plan modal"
               className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition cursor-pointer"
             >
-              <X size={15} weight="bold" />
+              <X size={15} weight="bold" aria-hidden="true" />
             </button>
           </div>
         </div>

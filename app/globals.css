@@ -18,7 +18,7 @@
   --border-module-header: #e5e7eb;
   --text-primary: #111827;
   --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
+  --text-muted: #64748b;
   --text-label: #6b7280;
   --accent-primary: #2563eb;
   --accent-secondary: #3b82f6;
@@ -248,7 +248,7 @@
 
 html,
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -389,24 +389,49 @@ button:not(:disabled):active,
   navigation: auto;
 }
 
-/* ── Focus ring override ──────────────────────────────────────── */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary,
+a[href],
+label[for] {
+  cursor: pointer;
+}
 
-button:focus,
-button:focus-visible,
-button:focus-within,
-a:focus,
-a:focus-visible,
-a:focus-within,
-label:focus,
-label:focus-visible,
-[role="button"]:focus,
-[role="button"]:focus-visible,
-[tabindex]:focus,
-[tabindex]:focus-visible {
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Focus ring ───────────────────────────────────────────────── */
+
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+label:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible),
+[tabindex]:focus:not(:focus-visible) {
   outline: none !important;
   outline-offset: 0 !important;
   box-shadow: none !important;
   -webkit-tap-highlight-color: transparent !important;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
 }
 
 input:not([type="checkbox"]):not([type="radio"]):not(.border-none):focus,

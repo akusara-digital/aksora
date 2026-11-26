@@ -165,11 +165,13 @@ function TestCaseImportModal({
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
           <h2 className="text-sm font-bold text-gray-900">{t.title}</h2>
           <button
+            type="button"
             onClick={handleClose}
             disabled={step === "importing"}
+            aria-label="Close import modal"
             className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
           >
-            <X size={18} weight="bold" />
+            <X size={18} weight="bold" aria-hidden="true" />
           </button>
         </div>
 

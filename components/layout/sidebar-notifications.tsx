@@ -80,8 +80,8 @@ export function NotificationPanel({
               Dismiss all
             </button>
           )}
-          <button onClick={onClose} className="text-slate-400 transition hover:text-slate-700">
-            <X size={14} weight="bold" />
+          <button onClick={onClose} aria-label="Close notifications" className="text-slate-400 transition hover:text-slate-700">
+            <X size={14} weight="bold" aria-hidden="true" />
           </button>
         </div>
       </div>
