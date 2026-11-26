@@ -35,7 +35,7 @@ export function CustomSelect({
   autoFocusOpen,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
-  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number; placement: "bottom" | "top" } | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const toneClass = getToneClass(fieldKey, value);
@@ -43,7 +43,19 @@ export function CustomSelect({
   function openDropdown() {
     if (btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
-      setRect({ top: r.bottom, left: r.left, width: Math.max(r.width, 220) });
+      const width = Math.max(r.width, 220);
+      const spaceBelow = window.innerHeight - r.bottom;
+      const spaceAbove = r.top;
+      const estHeight = Math.min(options.length * 30 + 8, 240);
+      const placement: "bottom" | "top" =
+        spaceBelow < estHeight && spaceAbove > spaceBelow ? "top" : "bottom";
+
+      setRect({
+        top: placement === "bottom" ? r.bottom + 2 : r.top - 2,
+        left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)),
+        width,
+        placement,
+      });
     }
     setOpen(true);
   }
@@ -123,12 +135,13 @@ export function CustomSelect({
             ref={listRef}
             style={{
               position: "fixed",
-              top: rect.top,
+              top: rect.placement === "bottom" ? rect.top : undefined,
+              bottom: rect.placement === "top" ? window.innerHeight - rect.top : undefined,
               left: rect.left,
               minWidth: rect.width,
               zIndex: 99999,
             }}
-            className="overflow-hidden border border-gray-200 bg-white shadow-md"
+            className="max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
           >
             {options.map((opt) => {
               const optTone = getToneClass(fieldKey, opt);

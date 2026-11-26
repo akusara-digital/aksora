@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Funnel, X, CaretDown } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
@@ -32,23 +33,67 @@ function FilterDropdown({
   onSelect: (value: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number; placement: "bottom" | "top" } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const updatePosition = useCallback(() => {
+    if (!btnRef.current) return;
+    const r = btnRef.current.getBoundingClientRect();
+    const menuWidth = Math.min(192, window.innerWidth - 16);
+    const spaceBelow = window.innerHeight - r.bottom;
+    const spaceAbove = r.top;
+    const estHeight = Math.min((filter.options.length + 1) * 32 + 12, 232);
+    const placement: "bottom" | "top" =
+      spaceBelow < estHeight && spaceAbove > spaceBelow ? "top" : "bottom";
+
+    setRect({
+      top: placement === "bottom" ? r.bottom + 4 : r.top - 4,
+      left: Math.max(8, Math.min(r.left, window.innerWidth - menuWidth - 8)),
+      width: menuWidth,
+      placement,
+    });
+  }, [filter.options.length]);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    if (!open) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        btnRef.current &&
+        !btnRef.current.contains(target)
+      ) {
+        setOpen(false);
+      }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open, updatePosition]);
 
   const selectedOption = filter.options.find((o) => o.value === activeValue);
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          if (!open) updatePosition();
+          setOpen(!open);
+        }}
         className={cn(
           "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition touch-manipulation cursor-pointer",
           activeValue
@@ -61,33 +106,48 @@ function FilterDropdown({
         </span>
         <CaretDown size={11} weight="bold" className="shrink-0" />
       </button>
-      {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 max-h-56 w-48 max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in duration-150">
-          <button
-            type="button"
-            onClick={() => { onSelect(""); setOpen(false); }}
-            className={cn(
-              "block w-full rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition",
-              !activeValue ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-700 hover:bg-gray-50",
-            )}
+      {open &&
+        rect &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: "fixed",
+              top: rect.placement === "bottom" ? rect.top : undefined,
+              bottom: rect.placement === "top" ? window.innerHeight - rect.top : undefined,
+              left: rect.left,
+              width: rect.width,
+              zIndex: 99999,
+            }}
+            className="max-h-56 overflow-y-auto rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in duration-150"
           >
-            All {filter.label}
-          </button>
-          {filter.options.map((option) => (
             <button
-              key={option.value}
               type="button"
-              onClick={() => { onSelect(option.value); setOpen(false); }}
+              onClick={() => { onSelect(""); setOpen(false); }}
               className={cn(
-                "block w-full truncate rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition",
-                activeValue === option.value ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-700 hover:bg-gray-50",
+                "block w-full rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition cursor-pointer",
+                !activeValue ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-700 hover:bg-gray-50",
               )}
             >
-              {option.label}
+              All {filter.label}
             </button>
-          ))}
-        </div>
-      )}
+            {filter.options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => { onSelect(option.value); setOpen(false); }}
+                className={cn(
+                  "block w-full truncate rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition cursor-pointer",
+                  activeValue === option.value ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-700 hover:bg-gray-50",
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

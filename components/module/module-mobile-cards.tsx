@@ -5,7 +5,8 @@ import { ModulePagination } from "@/components/module/module-pagination";
 import { PAGE_SIZE } from "@/lib/pagination";
 import { formatDate, formatRelativeTime } from "@/lib/utils";
 import { DotsThree, Eye, PencilSimple, Trash } from "@phosphor-icons/react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import type { ModuleKey } from "@/lib/modules";
 
 type TableRow = {
@@ -65,55 +66,112 @@ function CardActions({
 }) {
   void _row;
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [rect, setRect] = useState<{ top: number; left: number; placement: "bottom" | "top" } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const updatePosition = useCallback(() => {
+    if (!btnRef.current) return;
+    const r = btnRef.current.getBoundingClientRect();
+    const menuWidth = 144;
+    const spaceBelow = window.innerHeight - r.bottom;
+    const spaceAbove = r.top;
+    const estHeight = 120;
+    const placement: "bottom" | "top" =
+      spaceBelow < estHeight && spaceAbove > spaceBelow ? "top" : "bottom";
+
+    setRect({
+      top: placement === "bottom" ? r.bottom + 4 : r.top - 4,
+      left: Math.max(8, Math.min(r.right - menuWidth, window.innerWidth - menuWidth - 8)),
+      placement,
+    });
+  }, []);
 
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        btnRef.current &&
+        !btnRef.current.contains(target)
+      ) {
+        setOpen(false);
+      }
+    };
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+    document.addEventListener("keydown", handleEscape);
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open, updatePosition]);
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <button
+        ref={btnRef}
         type="button"
-        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        className=" p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!open) updatePosition();
+          setOpen(!open);
+        }}
+        className=" p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
       >
         <DotsThree size={18} weight="bold" />
       </button>
-      {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-36  border border-gray-200 bg-white shadow-md animate-in fade-in  duration-150">
-          <button
-            type="button"
-            onClick={() => { onView(); setOpen(false); }}
-            className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+      {open &&
+        rect &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: "fixed",
+              top: rect.placement === "bottom" ? rect.top : undefined,
+              bottom: rect.placement === "top" ? window.innerHeight - rect.top : undefined,
+              left: rect.left,
+              zIndex: 99999,
+            }}
+            className="w-36 rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in duration-150"
           >
-            <Eye size={14} weight="bold" /> View
-          </button>
-          {canEdit && (
             <button
               type="button"
-              onClick={() => { onEdit(); setOpen(false); }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+              onClick={() => { onView(); setOpen(false); }}
+              className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
             >
-              <PencilSimple size={14} weight="bold" /> Edit
+              <Eye size={14} weight="bold" /> View
             </button>
-          )}
-          {canDelete && (
-            <button
-              type="button"
-              onClick={() => { onDelete(); setOpen(false); }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50"
-            >
-              <Trash size={14} weight="bold" /> Delete
-            </button>
-          )}
-        </div>
-      )}
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => { onEdit(); setOpen(false); }}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+              >
+                <PencilSimple size={14} weight="bold" /> Edit
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => { onDelete(); setOpen(false); }}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 cursor-pointer"
+              >
+                <Trash size={14} weight="bold" /> Delete
+              </button>
+            )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

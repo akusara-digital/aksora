@@ -52,7 +52,7 @@ export function TestSessionsToolsMenu({
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 z-30 mt-1 w-60 origin-top-right rounded-lg border border-gray-200 bg-white py-1 shadow-lg ring-1 ring-black/5 animate-in fade-in-50 zoom-in-95 duration-100">
+          <div className="absolute right-0 z-50 mt-1 w-60 origin-top-right rounded-lg border border-gray-200 bg-white py-1 shadow-lg ring-1 ring-black/5 animate-in fade-in-50 zoom-in-95 duration-100">
             <div className="px-3 py-1.5 border-b border-gray-100">
               <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                 Session AI Automations

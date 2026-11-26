@@ -40,6 +40,9 @@
   --font-sans: "Inter", sans-serif;
   --font-mono: "Inter", monospace;
   --font-serif: "Inter", serif;
+  --shadow-md: 0 4px 12px -1px rgb(15 23 42 / 0.14), 0 2px 6px -2px rgb(15 23 42 / 0.1), 0 0 0 1px rgb(15 23 42 / 0.04);
+  --shadow-lg: 0 12px 28px -4px rgb(15 23 42 / 0.18), 0 6px 12px -4px rgb(15 23 42 / 0.12), 0 0 0 1px rgb(15 23 42 / 0.06);
+  --shadow-xl: 0 20px 40px -6px rgb(15 23 42 / 0.22), 0 8px 18px -6px rgb(15 23 42 / 0.14), 0 0 0 1px rgb(15 23 42 / 0.07);
 }
 
 /* ── Dark mode ─────────────────────────────────────────────────
@@ -75,6 +78,9 @@
   --text-label: #94a3b8;
   --accent-primary: #3b82f6;
   --accent-secondary: #60a5fa;
+  --shadow-md: 0 4px 12px -1px rgb(0 0 0 / 0.35), 0 2px 6px -2px rgb(0 0 0 / 0.25), 0 0 0 1px rgb(255 255 255 / 0.06);
+  --shadow-lg: 0 12px 28px -4px rgb(0 0 0 / 0.45), 0 6px 12px -4px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.08);
+  --shadow-xl: 0 20px 40px -6px rgb(0 0 0 / 0.55), 0 8px 18px -6px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.1);
 
   --color-white: oklch(21% 0.034 264.665);
 
