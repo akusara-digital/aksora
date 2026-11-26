@@ -9,7 +9,13 @@ const nextConfig: NextConfig = {
   turbopack: {},
   serverExternalPackages: ["pdfkit", "exceljs"],
   experimental: {
-    optimizePackageImports: ["@phosphor-icons/react", "recharts"],
+    optimizePackageImports: [
+      "@phosphor-icons/react",
+      "recharts",
+      "@tanstack/react-virtual",
+      "@dnd-kit/core",
+      "@dnd-kit/sortable",
+    ],
   },
   headers: async () => [
     {
