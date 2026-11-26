@@ -119,6 +119,7 @@ export function QuickCreateSuiteModal({
   const [aiPrompt, setAiPrompt] = useState("");
   const [coverageLevel, setCoverageLevel] = useState<"smoke" | "standard" | "comprehensive">("standard");
   const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const [hasDraftSession, setHasDraftSession] = useState(false);
   const [showAiUnconfigured, setShowAiUnconfigured] = useState(false);
 
   const aiTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -401,11 +402,14 @@ export function QuickCreateSuiteModal({
     if (session) {
       if (session.inputPrompt && !aiPrompt) setAiPrompt(session.inputPrompt);
       if (session.resultDraft) {
+        setHasDraftSession(true);
         if (!title && session.resultDraft.title) setTitle(session.resultDraft.title);
-        if (session.resultDraft.cases && session.resultDraft.cases.length > 0 && initialCases.length === 0) {
+        if (session.resultDraft.cases && session.resultDraft.cases.length > 0) {
           setInitialCases(session.resultDraft.cases);
           setShowInitialCases(true);
         }
+      } else if (session.inputPrompt && session.inputPrompt.trim().length > 0) {
+        setHasDraftSession(true);
       }
     }
   }, [isOpen]);
@@ -476,6 +480,28 @@ export function QuickCreateSuiteModal({
             /* ================= AUTO (AI) MODE ================= */
             <div className="flex flex-col justify-between min-h-[480px] sm:min-h-[510px] p-4 sm:p-5 text-xs text-slate-800">
               <div className="space-y-3.5">
+                {hasDraftSession && (
+                  <AiDraftRestoredBanner
+                    domain="test_suite"
+                    onDiscard={() => {
+                      clearAiSession("test_suite");
+                      setHasDraftSession(false);
+                      setAiPrompt("");
+                      setTitle("");
+                      setNotes("");
+                      setInitialCases([
+                        {
+                          id: `case-${Date.now()}`,
+                          caseName: "",
+                          typeCase: "Positive",
+                          priority: "Medium",
+                          expectedResult: "",
+                        },
+                      ]);
+                      toast("Draft discarded", "info");
+                    }}
+                  />
+                )}
                 {/* AI Input Container */}
                 <div className="rounded-none border border-blue-500/30 bg-white p-3.5 sm:p-4 shadow-xs ring-2 ring-blue-500/10 focus-within:border-blue-500 transition">
                   <textarea

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 interface AiDraftRestoredBannerProps {
   isProcessing?: boolean;
   hasDraft?: boolean;
+  domain?: string;
   onDiscard?: () => void;
   className?: string;
   message?: string;
