@@ -124,8 +124,8 @@ export async function deleteWebhook(userId: number, id: number) {
 function normalizeEventType(event: string): string {
   const parts = event.toLowerCase().trim().split(".");
   if (parts.length !== 2) return event.toLowerCase().trim();
-  let [entity, action] = parts;
-  entity = entity.replace(/-/g, "");
+  const [rawEntity, action] = parts;
+  let entity = rawEntity.replace(/-/g, "");
   if (entity.endsWith("s")) entity = entity.slice(0, -1);
   return `${entity}.${action}`;
 }

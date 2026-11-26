@@ -11,6 +11,7 @@ const eslintConfig = defineConfig([
       "react-hooks/error-boundaries": "warn",
       "react-hooks/purity": "warn",
       "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/refs": "warn",
     },
   },
   // Override default ignores of eslint-config-next.
