@@ -102,8 +102,9 @@ export function ModuleWorkspaceForm({
       "md:col-span-1"
     );
 
+    const isStretch = customSpanClass?.includes("self-stretch") || customSpanClass?.includes("h-full");
     return (
-      <label key={field.name} className={cn("flex self-start flex-col gap-1.5 w-full", spanClass)}>
+      <label key={field.name} className={cn("flex flex-col gap-1.5 w-full", isStretch ? "self-stretch" : "self-start", spanClass)}>
         <ModuleWorkspaceFormField
           module={module}
           field={field}
@@ -220,9 +221,9 @@ export function ModuleWorkspaceForm({
               <div className="space-y-4">
                 {renderField("preconditions", "w-full")}
                 {renderField("stepsToReproduce", "w-full")}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start">
-                  {renderField("expectedResult", "w-full")}
-                  {renderField("actualResult", "w-full")}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-stretch">
+                  {renderField("expectedResult", "w-full h-full flex flex-col")}
+                  {renderField("actualResult", "w-full h-full flex flex-col")}
                 </div>
               </div>
             </div>

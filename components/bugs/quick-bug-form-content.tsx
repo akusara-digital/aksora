@@ -253,25 +253,27 @@ export function QuickBugFormContent({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          <div className="grid grid-cols-2 gap-3 items-stretch">
+            <div className="flex flex-col">
               <label className="block text-[10px] font-bold uppercase text-emerald-700 mb-1">Expected Result</label>
               <AutoResizeTextarea
+                syncGroup="quick-bug-expected-actual"
                 value={expected}
                 onChange={(e) => setExpected(e.target.value)}
                 rows={2}
                 maxHeight={160}
-                className="border-emerald-200 bg-emerald-50/50 p-2 text-xs font-medium text-emerald-900 leading-relaxed"
+                className="w-full flex-1 border-emerald-200 bg-emerald-50/50 p-2 text-xs font-medium text-emerald-900 leading-relaxed"
               />
             </div>
-            <div>
+            <div className="flex flex-col">
               <label className="block text-[10px] font-bold uppercase text-rose-700 mb-1">Actual Result</label>
               <AutoResizeTextarea
+                syncGroup="quick-bug-expected-actual"
                 value={actual}
                 onChange={(e) => setActual(e.target.value)}
                 rows={2}
                 maxHeight={160}
-                className="border-rose-200 bg-rose-50/50 p-2 text-xs font-medium text-rose-900 leading-relaxed"
+                className="w-full flex-1 border-rose-200 bg-rose-50/50 p-2 text-xs font-medium text-rose-900 leading-relaxed"
               />
             </div>
           </div>

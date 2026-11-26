@@ -14,6 +14,59 @@ export interface AutoResizeTextareaProps
   error?: boolean;
   minHeight?: number;
   maxHeight?: number;
+  syncGroup?: string;
+}
+
+type SyncEntry = {
+  element: HTMLTextAreaElement;
+  calculateMinHeight: () => number;
+  maxHeight: number;
+};
+
+const syncRegistry = new Map<string, Set<SyncEntry>>();
+
+function syncGroupHeights(groupName: string, activeEl?: HTMLTextAreaElement | null) {
+  const entries = syncRegistry.get(groupName);
+  if (!entries || entries.size === 0) return;
+
+  const targetForm = activeEl?.closest("form") ?? activeEl?.closest("[role='dialog']") ?? null;
+  const connected: SyncEntry[] = [];
+
+  for (const entry of entries) {
+    if (!entry.element.isConnected) {
+      entries.delete(entry);
+      continue;
+    }
+    const entryForm = entry.element.closest("form") ?? entry.element.closest("[role='dialog']") ?? null;
+    if (targetForm && entryForm && targetForm !== entryForm) {
+      continue;
+    }
+    connected.push(entry);
+  }
+
+  if (connected.length === 0) return;
+
+  // Reset all elements in group to auto so natural scrollHeight can be read accurately
+  for (const entry of connected) {
+    entry.element.style.height = "auto";
+  }
+
+  // Calculate maximum target height across all entries in the group
+  let maxTargetHeight = 0;
+  for (const entry of connected) {
+    const minH = entry.calculateMinHeight();
+    const naturalH = entry.element.scrollHeight;
+    const clampedH = Math.min(Math.max(naturalH, minH), entry.maxHeight);
+    if (clampedH > maxTargetHeight) {
+      maxTargetHeight = clampedH;
+    }
+  }
+
+  // Apply synchronized height to all elements in the group
+  for (const entry of connected) {
+    entry.element.style.height = `${maxTargetHeight}px`;
+    entry.element.style.overflowY = entry.element.scrollHeight > entry.maxHeight ? "auto" : "hidden";
+  }
 }
 
 export const AutoResizeTextarea = forwardRef<
@@ -27,6 +80,7 @@ export const AutoResizeTextarea = forwardRef<
     className,
     rows = 3,
     style,
+    syncGroup,
     onInput,
     ...props
   },
@@ -46,6 +100,11 @@ export const AutoResizeTextarea = forwardRef<
   const syncHeight = () => {
     const el = innerRef.current;
     if (!el) return;
+
+    if (syncGroup) {
+      syncGroupHeights(syncGroup, el);
+      return;
+    }
 
     const minH = calculateMinHeight();
     const maxH = maxHeight;
@@ -67,8 +126,33 @@ export const AutoResizeTextarea = forwardRef<
   };
 
   useLayoutEffect(() => {
-    syncHeight();
-  }, [props.value, props.defaultValue, rows, minHeight, maxHeight]);
+    if (syncGroup && innerRef.current) {
+      let set = syncRegistry.get(syncGroup);
+      if (!set) {
+        set = new Set();
+        syncRegistry.set(syncGroup, set);
+      }
+      const entry: SyncEntry = {
+        element: innerRef.current,
+        calculateMinHeight,
+        maxHeight,
+      };
+      set.add(entry);
+
+      syncGroupHeights(syncGroup, innerRef.current);
+
+      return () => {
+        set.delete(entry);
+        if (set.size === 0) {
+          syncRegistry.delete(syncGroup);
+        } else {
+          syncGroupHeights(syncGroup);
+        }
+      };
+    } else {
+      syncHeight();
+    }
+  }, [syncGroup, props.value, props.defaultValue, rows, minHeight, maxHeight]);
 
   useEffect(() => {
     const handleResize = () => syncHeight();

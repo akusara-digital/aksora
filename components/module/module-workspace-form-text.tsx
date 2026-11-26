@@ -187,11 +187,16 @@ export function ModuleWorkspaceFormText({
 
  if (field.kind === "textarea") {
    return (
-     <div className="space-y-0">
-       <div className="relative">
+     <div className="space-y-0 h-full flex flex-col">
+       <div className="relative flex-1 flex flex-col">
          <AutoResizeTextarea
            name={field.name}
            defaultValue={initialValue}
+           syncGroup={
+             field.name === "expectedResult" || field.name === "actualResult"
+               ? "module-workspace-expected-actual"
+               : undefined
+           }
            rows={field.rows ?? 1}
            minHeight={field.rows && field.rows >= 3 ? 96 : field.rows === 2 ? 64 : 40}
            maxHeight={280}
@@ -200,6 +205,7 @@ export function ModuleWorkspaceFormText({
            disabled={module === "test-plans" && field.name === "scope"}
            error={!!fieldError}
            className={cn(
+             "w-full flex-1",
              module === "test-plans" &&
                field.name === "scope" &&
                "border-blue-200/80 bg-blue-50/60 text-blue-900 cursor-not-allowed select-none",

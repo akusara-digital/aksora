@@ -464,30 +464,32 @@ export function StreamlinedBugForm({
         </div>
 
         {/* Row 4: EXPECTED & ACTUAL RESULT (Side by Side) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+          <div className="flex flex-col">
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
               Expected Result
             </label>
             <AutoResizeTextarea
+              syncGroup="bug-expected-actual"
               value={expectedResult}
               onChange={(e) => setExpectedResult(e.target.value)}
               rows={2}
               placeholder="Order placed with confirmation screen"
-              className="w-full rounded-none border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
+              className="w-full flex-1 rounded-none border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
             />
           </div>
 
-          <div>
+          <div className="flex flex-col">
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
               Actual Result
             </label>
             <AutoResizeTextarea
+              syncGroup="bug-expected-actual"
               value={actualResult}
               onChange={(e) => setActualResult(e.target.value)}
               rows={2}
               placeholder="Page crashes with 500 error toast"
-              className="w-full rounded-none border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
+              className="w-full flex-1 rounded-none border border-slate-200 bg-white p-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 leading-relaxed"
             />
           </div>
         </div>
