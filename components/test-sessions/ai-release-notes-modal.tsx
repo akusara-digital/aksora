@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Scroll, Copy, Check, Sparkle, Tag } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
@@ -8,6 +8,7 @@ import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { cn } from "@/lib/utils";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import { saveAiSession, getAiSession } from "@/lib/ai-session-cache";
 
 export function AiReleaseNotesModal({
   isOpen,
@@ -26,6 +27,22 @@ export function AiReleaseNotesModal({
   const [highlights, setHighlights] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const [showUnconfigured, setShowUnconfigured] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const session = getAiSession<{
+      userFacing: string;
+      techChangelog: string;
+      highlights: string[];
+      version?: string;
+    }>("release_notes");
+    if (session?.resultDraft) {
+      if (session.resultDraft.userFacing) setUserFacing(session.resultDraft.userFacing);
+      if (session.resultDraft.techChangelog) setTechChangelog(session.resultDraft.techChangelog);
+      if (session.resultDraft.highlights) setHighlights(session.resultDraft.highlights);
+      if (session.resultDraft.version) setVersion(session.resultDraft.version);
+    }
+  }, [isOpen]);
 
   const handleGenerate = async () => {
     if (!isAiConfigured()) {
@@ -68,6 +85,15 @@ export function AiReleaseNotesModal({
       setUserFacing(json.data?.userFacing || "");
       setTechChangelog(json.data?.technicalChangelog || "");
       setHighlights(json.data?.highlights || []);
+      saveAiSession("release_notes", {
+        status: "completed",
+        resultDraft: {
+          userFacing: json.data?.userFacing || "",
+          techChangelog: json.data?.technicalChangelog || "",
+          highlights: json.data?.highlights || [],
+          version,
+        },
+      });
       toast(`Release notes for ${version} generated!`, "success");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Generation failed", "error");
@@ -93,6 +119,7 @@ export function AiReleaseNotesModal({
       <ModalShell
         isOpen={isOpen}
         onClose={onClose}
+        isBusy={generating}
         title="Release Notes & Changelog Generator"
         description="Aggregate resolved tickets and closed bugs into customer announcements and engineering changelogs."
         maxWidth="2xl"

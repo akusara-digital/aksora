@@ -85,6 +85,7 @@ export function AiSmokeSuiteModal({
       <ModalShell
         isOpen={isOpen}
         onClose={onClose}
+        isBusy={assembling}
         title="Assemble Targeted Smoke Suite"
         description={`Select high-risk test cases for ${suiteTitle} based on PR descriptions, commit changelogs, or deployment notes.`}
         maxWidth="xl"

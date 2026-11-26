@@ -22,6 +22,12 @@ import { ProjectDropdownContent } from "@/components/projects/project-dropdown-c
 import { getActiveAiConfig } from "@/lib/ai-keys";
 import { validateProjectSelection } from "@/lib/project-utils";
 import { ProjectRequiredBanner } from "@/components/projects/project-required-banner";
+import { AiDraftRestoredBanner } from "@/components/shared/ai-draft-restored-banner";
+import {
+  saveAiSession,
+  getAiSession,
+  clearAiSession,
+} from "@/lib/ai-session-cache";
 
 export interface QuickTestPlanModalProps {
   isOpen: boolean;
@@ -66,6 +72,7 @@ export function QuickTestPlanModal({
   const [aiPrompt, setAiPrompt] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [pending, setPending] = useState(false);
+  const [hasDraftSession, setHasDraftSession] = useState(false);
   const [showCollapsible, setShowCollapsible] = useState(false);
   const [activeEngine, setActiveEngine] = useState<{ provider: string; model: string }>({
     provider: "",
@@ -148,10 +155,38 @@ export function QuickTestPlanModal({
       setScope("");
       setNotes("");
       setAssignee("");
-      setAiPrompt("");
       setShowCollapsible(false);
+
+      const session = getAiSession<{ title: string; scope: string; project?: string }>("test_plan");
+      if (session) {
+        if (session.inputPrompt) setAiPrompt(session.inputPrompt);
+        if (session.resultDraft) {
+          setHasDraftSession(true);
+          if (session.resultDraft.title) setTitle(session.resultDraft.title);
+          if (session.resultDraft.scope) setScope(session.resultDraft.scope);
+          if (session.resultDraft.project) setProject(session.resultDraft.project);
+        } else if (session.inputPrompt && session.inputPrompt.trim().length > 0) {
+          setHasDraftSession(true);
+        }
+      } else {
+        setAiPrompt("");
+        setHasDraftSession(false);
+      }
     }
   }, [isOpen, initialData, defaultProject, projectOptions]);
+
+  // Handle ESC key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (analyzing || pending) return;
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, analyzing, pending, onClose]);
 
   if (!isOpen) return null;
 
@@ -181,10 +216,20 @@ export function QuickTestPlanModal({
       const json = await res.json().catch(() => ({}));
       const payload = json.data || {};
 
-      setTitle(payload.title || aiPrompt.slice(0, 50) + " Plan");
+      const planTitle = payload.title || aiPrompt.slice(0, 50) + " Plan";
+      const planScope = payload.scope || aiPrompt;
+      setTitle(planTitle);
       if (payload.project && !project) setProject(payload.project);
       if (payload.scope) setScope(payload.scope);
       else setScope(aiPrompt);
+
+      saveAiSession("test_plan", {
+        status: "completed",
+        resultDraft: { title: planTitle, scope: planScope, project: payload.project || project },
+        inputPrompt: aiPrompt,
+        project: payload.project || project,
+      });
+      setHasDraftSession(true);
 
       toast("AI structured the test plan requirements. Review below.", "success");
       setMode("manual");
@@ -242,6 +287,8 @@ export function QuickTestPlanModal({
       }
 
       toast(isEditing ? "Test plan updated successfully." : "Test plan created successfully.", "success");
+      clearAiSession("test_plan");
+      setHasDraftSession(false);
       if (onCreated && json.data?.id) {
         onCreated(json.data.id);
       }
@@ -256,7 +303,15 @@ export function QuickTestPlanModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/40 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+        onClick={() => {
+          if (analyzing || pending) return;
+          onClose();
+        }}
+      />
       <div className="relative flex min-h-[580px] max-h-[92vh] w-full max-w-2xl sm:max-w-3xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-100">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gray-50/60">
@@ -368,6 +423,19 @@ export function QuickTestPlanModal({
           {mode === "ai" && !isEditing ? (
             <div className="flex flex-col h-full justify-between space-y-4 min-h-[420px]">
               <div className="space-y-3.5">
+                {hasDraftSession && (
+                  <AiDraftRestoredBanner
+                    domain="test_plan"
+                    onDiscard={() => {
+                      clearAiSession("test_plan");
+                      setHasDraftSession(false);
+                      setAiPrompt("");
+                      setTitle("");
+                      setScope("");
+                      toast("Draft discarded", "info");
+                    }}
+                  />
+                )}
                 {/* Central AI Prompt Card Container */}
                 <div className="flex flex-col rounded-none border border-slate-200 bg-white p-3.5 sm:p-4 shadow-2xs transition-all hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">

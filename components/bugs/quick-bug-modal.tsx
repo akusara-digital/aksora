@@ -10,6 +10,11 @@ import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { QuickBugFormContent } from "@/components/bugs/quick-bug-form-content";
 import { compressImageToWebp } from "@/lib/image-compress";
 import { cn } from "@/lib/utils";
+import {
+  saveAiSession,
+  getAiSession,
+  clearAiSession,
+} from "@/lib/ai-session-cache";
 
 interface QuickBugModalProps {
   isOpen: boolean;
@@ -123,6 +128,12 @@ export function QuickBugModal({
         );
         if (enhanced.suggestedSeverity) setSeverity(enhanced.suggestedSeverity);
         setHasPreview(true);
+        saveAiSession("bug", {
+          status: "completed",
+          resultDraft: enhanced,
+          inputPrompt: textToAnalyze,
+          project: proj,
+        });
         toast("Bug structured by AI! Review and save.", "success");
       }
     } catch (err) {
@@ -280,6 +291,7 @@ export function QuickBugModal({
       try {
         const res = await fetch("/api/items/bugs", { method: "POST", body: fd });
         if (res.ok) {
+          clearAiSession("bug");
           toast("Bug created successfully with evidence!", "success");
           onClose();
           setRawText("");
@@ -301,6 +313,7 @@ export function QuickBugModal({
       <ModalShell
         isOpen={isOpen}
         onClose={onClose}
+        isBusy={analyzing || analyzingImage || saving}
         title="Quick Bug Capture (AI-Assisted)"
         description="Type or paste any messy bug notes, logs, or user reports. AI will instantly structure it into an engineering-grade ticket."
         maxWidth="xl"

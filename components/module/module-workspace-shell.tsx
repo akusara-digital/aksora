@@ -320,6 +320,7 @@ export function ModuleWorkspaceShell({
          toast("Bug created successfully in Aksora!", "success");
        }
 
+       clearAiSession("bug");
        setManualBugDraft(null);
        onCancelForm();
        router.refresh();

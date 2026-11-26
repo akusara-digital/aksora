@@ -189,6 +189,7 @@ export function AiTaskToCasesButton({ task, className }: AiTaskToCasesButtonProp
         <ModalShell
           isOpen={showModal}
           onClose={() => setShowModal(false)}
+          isBusy={saving}
           title="Generated Test Cases"
           description={`AI analyzed requirements for "${task.title}". Review and save to a suite.`}
           icon={<Sparkle size={18} weight="fill" className="text-purple-600" />}

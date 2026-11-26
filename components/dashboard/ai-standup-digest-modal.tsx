@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChatCenteredText, Copy, Check, Sparkle } from "@phosphor-icons/react";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "@/components/ui/toast";
@@ -8,6 +8,7 @@ import { isAiConfigured, getActiveAiCredentials } from "@/lib/ai-keys";
 import { AiUnconfiguredModal } from "@/components/shared/ai-unconfigured-modal";
 import { cn } from "@/lib/utils";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import { saveAiSession, getAiSession } from "@/lib/ai-session-cache";
 
 export function AiStandupDigestModal({
   isOpen,
@@ -23,6 +24,15 @@ export function AiStandupDigestModal({
   const [headline, setHeadline] = useState("");
   const [copied, setCopied] = useState(false);
   const [showUnconfigured, setShowUnconfigured] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const session = getAiSession<{ standupText: string; headline: string }>("standup");
+    if (session?.resultDraft) {
+      if (session.resultDraft.standupText) setStandupText(session.resultDraft.standupText);
+      if (session.resultDraft.headline) setHeadline(session.resultDraft.headline);
+    }
+  }, [isOpen]);
 
   const handleGenerate = async () => {
     if (!isAiConfigured()) {
@@ -66,6 +76,13 @@ export function AiStandupDigestModal({
 
       setStandupText(json.data?.markdown || "");
       setHeadline(json.data?.headline || "");
+      saveAiSession("standup", {
+        status: "completed",
+        resultDraft: {
+          standupText: json.data?.markdown || "",
+          headline: json.data?.headline || "",
+        },
+      });
       toast("Daily standup digest generated!", "success");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Standup generation failed", "error");
@@ -90,6 +107,7 @@ export function AiStandupDigestModal({
       <ModalShell
         isOpen={isOpen}
         onClose={onClose}
+        isBusy={generating}
         title="Daily Standup & QA Progress Digest"
         description="Automated aggregation of recent test runs, executed suites, and defect triage for daily engineering sync."
         maxWidth="lg"
