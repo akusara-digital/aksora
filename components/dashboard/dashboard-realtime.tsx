@@ -17,8 +17,8 @@ interface SSENotification {
 
 // Constants
 
-const BACKOFF_BASE = 15000;
-const BACKOFF_MAX = 120000;
+const BACKOFF_BASE = 30000;
+const BACKOFF_MAX = 180000;
 const MAX_ATTEMPTS = 6;
 const UNREAD_COLLAPSE_THRESHOLD = 20;
 

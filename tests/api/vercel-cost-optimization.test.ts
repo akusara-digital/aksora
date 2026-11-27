@@ -55,4 +55,11 @@ describe("Aksora Vercel cost & Fluid Compute optimizations", () => {
     expect(robots).toContain("/notes");
     expect(robots).toContain("/settings");
   });
+
+  it("auth/me offloads base64 avatars to cached avatar endpoint", () => {
+    const me = read("app", "api", "auth", "me", "route.ts");
+    expect(me).toContain("/api/auth/avatar/");
+    const avatarRoute = read("app", "api", "auth", "avatar", "[userId]", "route.ts");
+    expect(avatarRoute).toContain("public, max-age=86400, s-maxage=86400");
+  });
 });

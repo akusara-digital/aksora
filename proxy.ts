@@ -12,6 +12,7 @@ const publicPaths = [
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
   "/api/auth/me",
+  "/api/auth/avatar/",
   "/api/health",
   "/api/vitals",
   "/api/public/v1",

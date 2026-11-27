@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { authEnabled, getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -27,7 +28,13 @@ export async function GET() {
       'SELECT "avatar" FROM "User" WHERE "id" = CAST(? AS INTEGER)',
       [user.id]
     );
-    avatar = row?.avatar || "";
+    const rawAvatar = row?.avatar || "";
+    if (rawAvatar.startsWith("data:image/")) {
+      const v = crypto.createHash("sha256").update(rawAvatar).digest("hex").slice(0, 8);
+      avatar = `/api/auth/avatar/${user.id}?v=${v}`;
+    } else {
+      avatar = rawAvatar;
+    }
   } catch { /* avatar column may not exist yet */ }
 
   const memberships = user.id ? await getWorkspaceMembershipsForUser(user.id) : [];
