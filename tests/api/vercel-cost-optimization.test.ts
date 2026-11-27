@@ -47,4 +47,12 @@ describe("Aksora Vercel cost & Fluid Compute optimizations", () => {
     expect(read("app", "api", "ai", "models", "route.ts")).toContain("public, s-maxage=3600");
     expect(read("app", "api", "announcements", "route.ts")).toContain("private, max-age=120");
   });
+
+  it("presence API throttles stale row pruning and robots disallows private app paths", () => {
+    const presence = read("app", "api", "dashboard", "presence", "route.ts");
+    expect(presence).toContain("PRUNE_INTERVAL_MS");
+    const robots = read("app", "robots.ts");
+    expect(robots).toContain("/notes");
+    expect(robots).toContain("/settings");
+  });
 });

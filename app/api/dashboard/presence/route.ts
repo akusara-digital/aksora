@@ -9,6 +9,9 @@ type PresenceBody = {
   action: "heartbeat" | "disconnect";
 };
 
+const PRUNE_INTERVAL_MS = 60_000;
+let lastPrunedAt = 0;
+
 function errorResponse(message: string, code: string, status: number) {
   return NextResponse.json({ error: message, code }, { status });
 }
@@ -56,8 +59,12 @@ export async function POST(request: Request) {
       } else {
         await upsertHeartbeat(company, user.id, displayName);
       }
-      // Opportunistically prune stale presence rows (cheap, indexed query)
-      await removeStalePresence();
+      // Opportunistically prune stale presence rows at most once per minute
+      const now = Date.now();
+      if (now - lastPrunedAt >= PRUNE_INTERVAL_MS) {
+        lastPrunedAt = now;
+        await removeStalePresence();
+      }
     } else {
       // disconnect - remove the user's presence row
       await db.run(`DELETE FROM "PresenceHeartbeat" WHERE "userId" = CAST(? AS INTEGER)`, [user.id]);
